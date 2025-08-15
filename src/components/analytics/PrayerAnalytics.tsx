@@ -1,7 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 import { Calendar, TrendingUp, Target, Flame } from 'lucide-react'
 
 interface PrayerAnalyticsProps {
@@ -107,20 +106,24 @@ export function PrayerAnalytics({ stats }: PrayerAnalyticsProps) {
           <CardDescription>Your prayer completions this week</CardDescription>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={stats.weeklyData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis domain={[0, 5]} />
-              <Tooltip 
-                formatter={(value, name) => [
-                  `${value} prayers`,
-                  name === 'completed' ? 'Completed' : 'Total'
-                ]}
-              />
-              <Bar dataKey="completed" fill="#10b981" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="space-y-4">
+            {stats.weeklyData.map((day, index) => (
+              <div key={index} className="flex items-center justify-between">
+                <span className="text-sm">{day.date}</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-20 bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-emerald-500 h-2 rounded-full"
+                      style={{ width: `${(day.completed / day.total) * 100}%` }}
+                    />
+                  </div>
+                  <span className="text-sm text-muted-foreground">
+                    {day.completed}/{day.total}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
         </CardContent>
       </Card>
 

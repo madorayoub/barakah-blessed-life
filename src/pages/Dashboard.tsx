@@ -9,6 +9,7 @@ import { Link } from "react-router-dom"
 const Dashboard = () => {
   const { user, signOut } = useAuth()
   const { prayerTimes, loading, isPrayerComplete, markPrayerComplete, unmarkPrayerComplete, completions } = usePrayerTimes()
+  const { tasks, loading: tasksLoading } = useTasks()
   return (
     <div className="min-h-screen bg-background">
       {/* Mobile Bottom Navigation (visible on mobile) */}

@@ -1,7 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts'
 import { CheckCircle, Clock, TrendingUp, Target } from 'lucide-react'
 
 interface TaskAnalyticsProps {
@@ -25,12 +24,6 @@ const COLORS = [
 ]
 
 export function TaskAnalytics({ stats }: TaskAnalyticsProps) {
-  const pieData = stats.byCategory.map((cat, index) => ({
-    name: cat.category,
-    value: cat.completed,
-    total: cat.total,
-    color: COLORS[index % COLORS.length]
-  }))
 
   const categoryCompletionData = stats.byCategory.map(cat => ({
     category: cat.category,
@@ -104,7 +97,7 @@ export function TaskAnalytics({ stats }: TaskAnalyticsProps) {
         </Card>
       </div>
 
-      {/* Charts */}
+      {/* Category Progress */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Task Distribution by Category */}
         <Card>
@@ -113,30 +106,33 @@ export function TaskAnalytics({ stats }: TaskAnalyticsProps) {
             <CardDescription>Distribution of completed tasks</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={pieData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={100}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {pieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  formatter={(value, name, props) => [
-                    `${value} tasks`,
-                    props.payload.name
-                  ]}
-                />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
+            <div className="space-y-4">
+              {stats.byCategory.map((category, index) => (
+                <div key={category.category} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div 
+                        className="w-3 h-3 rounded-full" 
+                        style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                      />
+                      <span className="text-sm font-medium">{category.category}</span>
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      {category.completed} tasks
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="h-2 rounded-full"
+                      style={{ 
+                        backgroundColor: COLORS[index % COLORS.length],
+                        width: `${category.total > 0 ? (category.completed / category.total) * 100 : 0}%` 
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
 
@@ -147,26 +143,19 @@ export function TaskAnalytics({ stats }: TaskAnalyticsProps) {
             <CardDescription>Completion rates by category</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={categoryCompletionData} layout="horizontal">
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" domain={[0, 100]} />
-                <YAxis 
-                  type="category" 
-                  dataKey="category" 
-                  width={80}
-                  tick={{ fontSize: 12 }}
-                />
-                <Tooltip 
-                  formatter={(value) => [`${typeof value === 'number' ? value.toFixed(1) : value}%`, 'Completion Rate']}
-                />
-                <Bar 
-                  dataKey="completionRate" 
-                  fill="#10b981" 
-                  radius={[0, 4, 4, 0]} 
-                />
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="space-y-4">
+              {categoryCompletionData.map((item, index) => (
+                <div key={item.category} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">{item.category}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {Math.round(item.completionRate)}%
+                    </span>
+                  </div>
+                  <Progress value={item.completionRate} className="h-2" />
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
       </div>
