@@ -1,5 +1,5 @@
 import { Calendar, Moon } from "lucide-react"
-import { IslamicCard, IslamicCardContent, IslamicCardHeader, IslamicCardTitle } from "@/components/ui/islamic-card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 const IslamicCalendar = () => {
   const today = new Date()
@@ -12,21 +12,21 @@ const IslamicCalendar = () => {
   ]
 
   return (
-    <IslamicCard variant="sacred" className="w-full max-w-md">
-      <IslamicCardHeader className="pb-4">
-        <IslamicCardTitle className="flex items-center gap-2">
-          <Calendar className="h-5 w-5 text-accent" />
+    <Card className="w-full max-w-md bg-gradient-to-br from-gray-50 to-gray-100">
+      <CardHeader className="pb-4">
+        <CardTitle className="flex items-center gap-2">
+          <Calendar className="h-5 w-5 text-amber-500" />
           Islamic Calendar
-        </IslamicCardTitle>
+        </CardTitle>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Moon className="h-3 w-3" />
           <span>{islamicDate}</span>
         </div>
-      </IslamicCardHeader>
-      <IslamicCardContent className="space-y-3">
+      </CardHeader>
+      <CardContent className="space-y-3">
         <div className="bg-card/50 p-4 rounded-lg border">
           <div className="text-center">
-            <div className="text-2xl font-display font-bold text-primary">
+            <div className="text-2xl font-bold text-primary">
               {today.getDate()}
             </div>
             <div className="text-sm text-muted-foreground">
@@ -39,7 +39,7 @@ const IslamicCalendar = () => {
         </div>
 
         <div className="space-y-2">
-          <h4 className="font-display font-semibold text-sm text-foreground">
+          <h4 className="font-semibold text-sm text-foreground">
             Upcoming Events
           </h4>
           {islamicEvents.map((event, index) => (
@@ -47,13 +47,13 @@ const IslamicCalendar = () => {
               key={index}
               className={`p-3 rounded-lg border transition-all ${
                 event.special
-                  ? "gradient-gold text-accent-foreground shadow-blessed"
+                  ? "bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg"
                   : "bg-secondary text-secondary-foreground"
               }`}
             >
               <div className="flex justify-between items-start">
                 <div>
-                  <div className="font-display font-medium text-sm">
+                  <div className="font-medium text-sm">
                     {event.event}
                   </div>
                   <div className="text-xs opacity-80">
@@ -61,14 +61,14 @@ const IslamicCalendar = () => {
                   </div>
                 </div>
                 {event.special && (
-                  <Moon className="h-4 w-4 animate-gentle-float" />
+                  <Moon className="h-4 w-4" />
                 )}
               </div>
             </div>
           ))}
         </div>
-      </IslamicCardContent>
-    </IslamicCard>
+        </CardContent>
+    </Card>
   )
 }
 

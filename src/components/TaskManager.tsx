@@ -2,7 +2,7 @@ import { useState } from "react"
 import { Plus, Check, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { IslamicCard, IslamicCardContent, IslamicCardHeader, IslamicCardTitle } from "@/components/ui/islamic-card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 interface Task {
   id: number
@@ -41,16 +41,16 @@ const TaskManager = () => {
   const completedCount = tasks.filter(task => task.completed).length
 
   return (
-    <IslamicCard variant="default" className="w-full max-w-md">
-      <IslamicCardHeader className="pb-4">
-        <IslamicCardTitle className="flex items-center justify-between">
+    <Card className="w-full max-w-md">
+      <CardHeader className="pb-4">
+        <CardTitle className="flex items-center justify-between">
           <span>Today's Tasks</span>
           <span className="text-sm font-normal text-muted-foreground">
             {completedCount}/{tasks.length}
           </span>
-        </IslamicCardTitle>
-      </IslamicCardHeader>
-      <IslamicCardContent className="space-y-4">
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
         <div className="flex gap-2">
           <Input
             placeholder="Add a new task..."
@@ -92,13 +92,13 @@ const TaskManager = () => {
                 {task.text}
               </span>
               {task.priority === "blessed" && (
-                <Star className="h-4 w-4 text-accent" fill="currentColor" />
+                <Star className="h-4 w-4 text-amber-500" fill="currentColor" />
               )}
             </div>
           ))}
         </div>
-      </IslamicCardContent>
-    </IslamicCard>
+        </CardContent>
+    </Card>
   )
 }
 

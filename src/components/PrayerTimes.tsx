@@ -1,5 +1,5 @@
 import { Clock, MapPin } from "lucide-react"
-import { IslamicCard, IslamicCardContent, IslamicCardHeader, IslamicCardTitle } from "@/components/ui/islamic-card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 const PrayerTimes = () => {
   const currentTime = new Date().toLocaleTimeString('en-US', { 
@@ -17,24 +17,24 @@ const PrayerTimes = () => {
   ]
 
   return (
-    <IslamicCard variant="prayer" className="w-full max-w-md">
-      <IslamicCardHeader className="pb-4">
-        <IslamicCardTitle className="flex items-center gap-2">
-          <Clock className="h-5 w-5 text-accent" />
+    <Card className="w-full max-w-md bg-gradient-to-br from-emerald-50 to-emerald-100">
+      <CardHeader className="pb-4">
+        <CardTitle className="flex items-center gap-2">
+          <Clock className="h-5 w-5 text-amber-500" />
           Prayer Times
-        </IslamicCardTitle>
+        </CardTitle>
         <div className="flex items-center gap-1 text-sm text-muted-foreground">
           <MapPin className="h-3 w-3" />
           <span>Current Location</span>
         </div>
-      </IslamicCardHeader>
-      <IslamicCardContent className="space-y-3">
+      </CardHeader>
+      <CardContent className="space-y-3">
         {prayers.map((prayer) => (
           <div
             key={prayer.name}
             className={`flex items-center justify-between p-3 rounded-lg transition-all ${
               prayer.current
-                ? "gradient-gold text-accent-foreground shadow-blessed"
+                ? "bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg"
                 : prayer.completed
                 ? "bg-secondary text-secondary-foreground"
                 : "bg-muted"
@@ -46,11 +46,11 @@ const PrayerTimes = () => {
                   prayer.completed
                     ? "bg-primary"
                     : prayer.current
-                    ? "bg-accent-foreground animate-pulse"
+                    ? "bg-amber-600 animate-pulse"
                     : "bg-muted-foreground"
                 }`}
               />
-              <span className="font-display font-medium">{prayer.name}</span>
+              <span className="font-medium">{prayer.name}</span>
             </div>
             <span className="font-mono text-sm font-semibold">{prayer.time}</span>
           </div>
@@ -58,8 +58,8 @@ const PrayerTimes = () => {
         <div className="mt-4 text-center text-sm text-muted-foreground">
           Current time: {currentTime}
         </div>
-      </IslamicCardContent>
-    </IslamicCard>
+        </CardContent>
+    </Card>
   )
 }
 
