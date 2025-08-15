@@ -9,6 +9,8 @@ import { useNotifications } from '@/hooks/useNotifications'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from '@/hooks/use-toast'
 
+// Onboarding component - manages initial app setup flow
+
 interface OnboardingStep {
   id: string
   title: string
