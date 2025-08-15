@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/hooks/useAuth'
+import { useNotifications } from '@/hooks/useNotifications'
 import { calculatePrayerTimes, DailyPrayerTimes, PrayerSettings } from '@/lib/prayerTimes'
 import { toast } from '@/hooks/use-toast'
 
@@ -12,6 +13,7 @@ interface PrayerCompletion {
 
 export function usePrayerTimes() {
   const { user } = useAuth()
+  const { schedulePrayerNotifications } = useNotifications()
   const [prayerTimes, setPrayerTimes] = useState<DailyPrayerTimes | null>(null)
   const [completions, setCompletions] = useState<PrayerCompletion[]>([])
   const [settings, setSettings] = useState<PrayerSettings | null>(null)
@@ -127,6 +129,9 @@ export function usePrayerTimes() {
           settings
         )
         setPrayerTimes(times)
+        
+        // Schedule notifications for today's prayers
+        schedulePrayerNotifications(times.prayers)
       } catch (error) {
         console.error('Error calculating prayer times:', error)
         toast({
@@ -137,7 +142,7 @@ export function usePrayerTimes() {
       }
     }
     setLoading(false)
-  }, [location, settings])
+  }, [location, settings, schedulePrayerNotifications])
 
   // Load today's prayer completions
   useEffect(() => {

@@ -12,6 +12,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from '@/hooks/use-toast'
 import { CalendarExport } from '@/components/CalendarExport'
+import { useNotifications } from '@/hooks/useNotifications'
 
 interface UserProfile {
   display_name?: string
@@ -37,6 +38,7 @@ interface PrayerSettings {
 
 const Settings = () => {
   const { user, signOut } = useAuth()
+  const { permission, preferences, requestPermission, updatePreferences } = useNotifications()
   const [profile, setProfile] = useState<UserProfile>({})
   const [prayerSettings, setPrayerSettings] = useState<PrayerSettings>({
     calculation_method: 'ISNA',
@@ -453,45 +455,107 @@ const Settings = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="notifications_enabled" className="text-base font-medium">
-                    Enable Notifications
-                  </Label>
-                  <p className="text-sm text-muted-foreground">
-                    Receive reminders for prayer times and tasks
-                  </p>
+              {/* Browser Permission Status */}
+              <div className="p-4 rounded-lg border bg-muted/50">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-medium">Browser Notifications</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Status: {permission === 'granted' ? 'Enabled' : permission === 'denied' ? 'Blocked' : 'Not requested'}
+                    </p>
+                  </div>
+                  {permission !== 'granted' && (
+                    <Button onClick={requestPermission} variant="outline">
+                      Enable
+                    </Button>
+                  )}
                 </div>
-                <Switch
-                  id="notifications_enabled"
-                  checked={prayerSettings.notifications_enabled}
-                  onCheckedChange={(checked) => setPrayerSettings(prev => ({ ...prev, notifications_enabled: checked }))}
-                />
               </div>
 
-              {prayerSettings.notifications_enabled && (
-                <div className="space-y-2 pl-4 border-l-2 border-primary/20">
-                  <Label htmlFor="notification_minutes_before">
-                    Remind me before prayer time (minutes)
-                  </Label>
-                  <Select
-                    value={prayerSettings.notification_minutes_before.toString()}
-                    onValueChange={(value) => setPrayerSettings(prev => ({ 
-                      ...prev, 
-                      notification_minutes_before: parseInt(value) 
-                    }))}
-                  >
-                    <SelectTrigger className="w-40">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="5">5 minutes</SelectItem>
-                      <SelectItem value="10">10 minutes</SelectItem>
-                      <SelectItem value="15">15 minutes</SelectItem>
-                      <SelectItem value="20">20 minutes</SelectItem>
-                      <SelectItem value="30">30 minutes</SelectItem>
-                    </SelectContent>
-                  </Select>
+              {permission === 'granted' && (
+                <>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label htmlFor="prayer_notifications" className="text-base font-medium">
+                        Prayer Reminders
+                      </Label>
+                      <p className="text-sm text-muted-foreground">
+                        Get notified before each prayer time
+                      </p>
+                    </div>
+                    <Switch
+                      id="prayer_notifications"
+                      checked={preferences.prayerReminders}
+                      onCheckedChange={(checked) => updatePreferences({ prayerReminders: checked })}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label htmlFor="task_notifications" className="text-base font-medium">
+                        Task Reminders
+                      </Label>
+                      <p className="text-sm text-muted-foreground">
+                        Get notified about upcoming task due dates
+                      </p>
+                    </div>
+                    <Switch
+                      id="task_notifications"
+                      checked={preferences.taskReminders}
+                      onCheckedChange={(checked) => updatePreferences({ taskReminders: checked })}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label htmlFor="daily_goals" className="text-base font-medium">
+                        Daily Spiritual Goals
+                      </Label>
+                      <p className="text-sm text-muted-foreground">
+                        Reminders for dhikr, Quran reading, and other practices
+                      </p>
+                    </div>
+                    <Switch
+                      id="daily_goals"
+                      checked={preferences.dailyGoals}
+                      onCheckedChange={(checked) => updatePreferences({ dailyGoals: checked })}
+                    />
+                  </div>
+
+                  <div className="space-y-2 pl-4 border-l-2 border-primary/20">
+                    <Label htmlFor="notification_timing">
+                      Remind me before prayer time
+                    </Label>
+                    <Select
+                      value={preferences.minutesBefore.toString()}
+                      onValueChange={(value) => updatePreferences({ minutesBefore: parseInt(value) })}
+                    >
+                      <SelectTrigger className="w-40">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="5">5 minutes</SelectItem>
+                        <SelectItem value="10">10 minutes</SelectItem>
+                        <SelectItem value="15">15 minutes</SelectItem>
+                        <SelectItem value="20">20 minutes</SelectItem>
+                        <SelectItem value="30">30 minutes</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
+              )}
+
+              {permission === 'denied' && (
+                <div className="p-4 rounded-lg border border-orange-200 bg-orange-50">
+                  <h4 className="font-medium text-orange-900 mb-2">Notifications Blocked</h4>
+                  <p className="text-sm text-orange-700 mb-3">
+                    Notifications are currently blocked in your browser. To enable them:
+                  </p>
+                  <ol className="text-sm text-orange-700 space-y-1 list-decimal list-inside">
+                    <li>Click the lock icon in your browser's address bar</li>
+                    <li>Change notification permission to "Allow"</li>
+                    <li>Refresh this page</li>
+                  </ol>
                 </div>
               )}
             </CardContent>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/hooks/useAuth'
+import { useNotifications } from '@/hooks/useNotifications'
 import { toast } from '@/hooks/use-toast'
 
 export interface Task {
@@ -50,10 +51,38 @@ export interface TaskTemplate {
 
 export function useTasks() {
   const { user } = useAuth()
+  const { sendTaskReminder } = useNotifications()
   const [tasks, setTasks] = useState<Task[]>([])
   const [categories, setCategories] = useState<TaskCategory[]>([])
   const [templates, setTemplates] = useState<TaskTemplate[]>([])
   const [loading, setLoading] = useState(true)
+
+  // Schedule task reminders
+  useEffect(() => {
+    const scheduleTaskReminders = () => {
+      const now = new Date()
+      const today = now.toISOString().split('T')[0]
+      
+      tasks.forEach(task => {
+        if (task.due_date === today && task.due_time && task.status === 'pending') {
+          const [hours, minutes] = task.due_time.split(':')
+          const dueDateTime = new Date()
+          dueDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0)
+          
+          // Remind 30 minutes before
+          const reminderTime = new Date(dueDateTime.getTime() - 30 * 60000)
+          
+          if (reminderTime > now) {
+            setTimeout(() => {
+              sendTaskReminder(task.title, 'in 30 minutes')
+            }, reminderTime.getTime() - now.getTime())
+          }
+        }
+      })
+    }
+
+    scheduleTaskReminders()
+  }, [tasks, sendTaskReminder])
 
   // Load user's tasks
   useEffect(() => {
