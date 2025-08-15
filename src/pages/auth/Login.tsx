@@ -1,20 +1,39 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Mail, Lock, Eye, EyeOff } from "lucide-react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useAuth } from "@/hooks/useAuth"
 
 const Login = () => {
+  const { signIn, user, loading } = useAuth()
+  const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState({
     email: "",
     password: ""
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Redirect authenticated users
+  useEffect(() => {
+    if (user && !loading) {
+      navigate('/dashboard')
+    }
+  }, [user, loading, navigate])
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("Login form submitted:", formData)
+    setIsSubmitting(true)
+    
+    const { error } = await signIn(formData.email, formData.password)
+    
+    if (!error) {
+      navigate('/dashboard')
+    }
+    
+    setIsSubmitting(false)
   }
 
   return (
@@ -71,8 +90,8 @@ const Login = () => {
             </Link>
           </div>
 
-          <Button type="submit" className="w-full">
-            Sign In
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? "Signing in..." : "Sign In"}
           </Button>
         </form>
 

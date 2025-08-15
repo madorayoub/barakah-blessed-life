@@ -1,21 +1,47 @@
-import { useState } from "react"
-import { Mail, Lock, Eye, EyeOff } from "lucide-react"
-import { Link } from "react-router-dom"
+import { useState, useEffect } from "react"
+import { Mail, Lock, Eye, EyeOff, User } from "lucide-react"
+import { Link, useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useAuth } from "@/hooks/useAuth"
 
 const Signup = () => {
+  const { signUp, user, loading } = useAuth()
+  const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState({
+    displayName: "",
     email: "",
     password: "",
     confirmPassword: ""
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Redirect authenticated users
+  useEffect(() => {
+    if (user && !loading) {
+      navigate('/dashboard')
+    }
+  }, [user, loading, navigate])
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("Signup form submitted:", formData)
+    
+    if (formData.password !== formData.confirmPassword) {
+      return // Let HTML5 validation handle this
+    }
+    
+    setIsSubmitting(true)
+    
+    const { error } = await signUp(formData.email, formData.password, formData.displayName)
+    
+    if (!error) {
+      // User will be redirected after email confirmation
+    }
+    
+    setIsSubmitting(false)
   }
 
   return (
@@ -27,6 +53,21 @@ const Signup = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="displayName">Display Name</Label>
+            <div className="relative">
+              <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="displayName"
+                type="text"
+                placeholder="Enter your display name"
+                className="pl-10"
+                value={formData.displayName}
+                onChange={(e) => setFormData({...formData, displayName: e.target.value})}
+              />
+            </div>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <div className="relative">
@@ -72,18 +113,25 @@ const Signup = () => {
               <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
                 id="confirmPassword"
-                type="password"
+                type={showConfirmPassword ? "text" : "password"}
                 placeholder="Confirm your password"
-                className="pl-10"
+                className="pl-10 pr-10"
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
                 required
               />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-3 text-muted-foreground"
+              >
+                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
             </div>
           </div>
 
-          <Button type="submit" className="w-full">
-            Create Account
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? "Creating Account..." : "Create Account"}
           </Button>
         </form>
 

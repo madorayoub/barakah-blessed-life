@@ -4,15 +4,25 @@ import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useAuth } from "@/hooks/useAuth"
 
 const ForgotPassword = () => {
+  const { resetPassword } = useAuth()
   const [email, setEmail] = useState("")
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsSubmitted(true)
-    console.log("Password reset requested for:", email)
+    setIsSubmitting(true)
+    
+    const { error } = await resetPassword(email)
+    
+    if (!error) {
+      setIsSubmitted(true)
+    }
+    
+    setIsSubmitting(false)
   }
 
   if (isSubmitted) {
@@ -74,9 +84,9 @@ const ForgotPassword = () => {
             </div>
           </div>
 
-          <Button type="submit" className="w-full">
-            Send Reset Link
-          </Button>
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? "Sending..." : "Send Reset Link"}
+            </Button>
         </form>
 
         <div className="text-center">
