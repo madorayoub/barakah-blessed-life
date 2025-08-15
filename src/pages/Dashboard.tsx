@@ -1,4 +1,4 @@
-import { LayoutDashboard, CheckSquare, Clock, Calendar, User, Check, X } from "lucide-react"
+import { LayoutDashboard, CheckSquare, Clock, Calendar, User, Check, X, BarChart3 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { usePrayerTimes } from "@/hooks/usePrayerTimes"
 import { useTasks } from "@/hooks/useTasks"
@@ -14,26 +14,26 @@ const Dashboard = () => {
       {/* Mobile Bottom Navigation (visible on mobile) */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t md:hidden">
         <div className="flex items-center justify-around py-2">
-          <button className="flex flex-col items-center gap-1 p-2 text-primary">
+          <Link to="/dashboard" className="flex flex-col items-center gap-1 p-2 text-primary">
             <LayoutDashboard className="h-5 w-5" />
             <span className="text-xs">Dashboard</span>
-          </button>
-          <button className="flex flex-col items-center gap-1 p-2 text-muted-foreground">
+          </Link>
+          <Link to="/tasks" className="flex flex-col items-center gap-1 p-2 text-muted-foreground">
             <CheckSquare className="h-5 w-5" />
             <span className="text-xs">Tasks</span>
-          </button>
-          <button className="flex flex-col items-center gap-1 p-2 text-muted-foreground">
+          </Link>
+          <Link to="/prayers" className="flex flex-col items-center gap-1 p-2 text-muted-foreground">
             <Clock className="h-5 w-5" />
             <span className="text-xs">Prayers</span>
-          </button>
-          <button className="flex flex-col items-center gap-1 p-2 text-muted-foreground">
-            <Calendar className="h-5 w-5" />
-            <span className="text-xs">Calendar</span>
-          </button>
-          <button className="flex flex-col items-center gap-1 p-2 text-muted-foreground">
+          </Link>
+          <Link to="/analytics" className="flex flex-col items-center gap-1 p-2 text-muted-foreground">
+            <BarChart3 className="h-5 w-5" />
+            <span className="text-xs">Analytics</span>
+          </Link>
+          <Link to="/settings" className="flex flex-col items-center gap-1 p-2 text-muted-foreground">
             <User className="h-5 w-5" />
-            <span className="text-xs">Profile</span>
-          </button>
+            <span className="text-xs">Settings</span>
+          </Link>
         </div>
       </nav>
 
@@ -51,6 +51,7 @@ const Dashboard = () => {
                 <Link to="/tasks" className="text-muted-foreground hover:text-foreground">Tasks</Link>
                 <Link to="/prayers" className="text-muted-foreground hover:text-foreground">Prayers</Link>
                 <Link to="/calendar" className="text-muted-foreground hover:text-foreground">Calendar</Link>
+                <Link to="/analytics" className="text-muted-foreground hover:text-foreground">Analytics</Link>
                 <Link to="/settings" className="text-muted-foreground hover:text-foreground">Settings</Link>
               </div>
               <Button onClick={signOut} variant="outline" size="sm">

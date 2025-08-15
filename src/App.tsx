@@ -25,6 +25,7 @@ import Dashboard from "./pages/Dashboard";
 import Tasks from "./pages/Tasks";
 import Prayers from "./pages/Prayers";
 import CalendarView from "./pages/CalendarView";
+import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
 import DesignSystem from "./pages/DesignSystem";
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -82,6 +83,7 @@ const App = () => {
           <Route path="/tasks" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
           <Route path="/prayers" element={<ProtectedRoute><Prayers /></ProtectedRoute>} />
           <Route path="/calendar" element={<ProtectedRoute><CalendarView /></ProtectedRoute>} />
+          <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
           
           {/* Design System */}
