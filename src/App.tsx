@@ -23,6 +23,7 @@ import Tasks from "./pages/Tasks";
 import Prayers from "./pages/Prayers";
 import CalendarView from "./pages/CalendarView";
 import Settings from "./pages/Settings";
+import DesignSystem from "./pages/DesignSystem";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +54,9 @@ const App = () => (
           <Route path="/prayers" element={<Prayers />} />
           <Route path="/calendar" element={<CalendarView />} />
           <Route path="/settings" element={<Settings />} />
+          
+          {/* Design System */}
+          <Route path="/design-system" element={<DesignSystem />} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

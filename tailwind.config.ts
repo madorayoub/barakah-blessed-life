@@ -24,10 +24,46 @@ export default {
 				ring: 'hsl(var(--ring))',
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
+				
+				// Emerald Brand Colors
+				emerald: {
+					50: 'hsl(var(--emerald-50))',
+					100: 'hsl(var(--emerald-100))',
+					600: 'hsl(var(--emerald-600))',
+					700: 'hsl(var(--emerald-700))',
+					900: 'hsl(var(--emerald-900))'
+				},
+				
+				// Gold Accent Colors
+				amber: {
+					500: 'hsl(var(--amber-500))',
+					600: 'hsl(var(--amber-600))'
+				},
+				
+				// Neutral Scale
+				gray: {
+					50: 'hsl(var(--gray-50))',
+					100: 'hsl(var(--gray-100))',
+					600: 'hsl(var(--gray-600))',
+					800: 'hsl(var(--gray-800))',
+					900: 'hsl(var(--gray-900))'
+				},
+				
+				// Status Colors
+				green: {
+					500: 'hsl(var(--green-500))'
+				},
+				red: {
+					500: 'hsl(var(--red-500))'
+				},
+				yellow: {
+					500: 'hsl(var(--yellow-500))'
+				},
+				
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
 					foreground: 'hsl(var(--primary-foreground))',
-					glow: 'hsl(var(--primary-glow))'
+					dark: 'hsl(var(--primary-dark))'
 				},
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
@@ -53,11 +89,6 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				pattern: {
-					light: 'hsl(var(--pattern-light))',
-					medium: 'hsl(var(--pattern-medium))',
-					dark: 'hsl(var(--pattern-dark))'
-				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
@@ -70,12 +101,29 @@ export default {
 				}
 			},
 			fontFamily: {
-				display: ['Amiri', 'Georgia', 'serif'],
-				body: ['Inter', '-apple-system', 'sans-serif']
+				sans: ['Inter', 'Noto Sans Arabic', '-apple-system', 'sans-serif'],
+				body: ['Inter', 'Noto Sans Arabic', '-apple-system', 'sans-serif']
+			},
+			fontSize: {
+				'sm': ['14px', '20px'],
+				'base': ['16px', '24px'],
+				'lg': ['18px', '28px'],
+				'xl': ['20px', '28px'],
+				'2xl': ['24px', '32px'],
+				'3xl': ['30px', '36px'],
+				'4xl': ['36px', '40px']
 			},
 			spacing: {
-				'prayer': 'var(--spacing-prayer)',
-				'blessed': 'var(--spacing-blessed)'
+				'1': '4px',
+				'2': '8px',
+				'3': '12px',
+				'4': '16px',
+				'6': '24px',
+				'8': '32px',
+				'12': '48px',
+				'16': '64px',
+				'20': '80px',
+				'24': '96px'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
