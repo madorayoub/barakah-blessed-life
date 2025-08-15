@@ -36,6 +36,18 @@ export function usePrayerTimes() {
         }
 
         setSettings(data)
+        
+        // Force recalculation when settings change
+        if (location && data) {
+          const today = new Date()
+          const times = calculatePrayerTimes(
+            location.latitude,
+            location.longitude,
+            today,
+            data
+          )
+          setPrayerTimes(times)
+        }
       } catch (error) {
         console.error('Error loading prayer settings:', error)
       }

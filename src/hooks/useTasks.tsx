@@ -115,10 +115,22 @@ export function useTasks() {
     loadCategories()
   }, [user])
 
-  // Load task templates
+  // Load task templates (filter by difficulty mode)
   useEffect(() => {
     async function loadTemplates() {
       try {
+        // Get user's difficulty mode
+        let difficultyMode = 'basic'
+        if (user) {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('difficulty_mode')
+            .eq('user_id', user.id)
+            .maybeSingle()
+          
+          difficultyMode = profileData?.difficulty_mode || 'basic'
+        }
+
         const { data, error } = await supabase
           .from('task_templates')
           .select('*')
@@ -129,7 +141,17 @@ export function useTasks() {
           return
         }
 
-        setTemplates(data || [])
+        // Filter templates based on difficulty mode
+        let filteredTemplates = data || []
+        if (difficultyMode === 'basic') {
+          // In basic mode, only show essential worship tasks
+          filteredTemplates = filteredTemplates.filter(template => 
+            ['Morning Dhikr', 'Evening Dhikr', 'Quran Reading', 'Friday Prayer'].includes(template.name)
+          )
+        }
+        // In advanced mode, show all templates
+
+        setTemplates(filteredTemplates)
       } catch (error) {
         console.error('Error loading templates:', error)
       }
@@ -137,7 +159,7 @@ export function useTasks() {
 
     loadTemplates()
     setLoading(false)
-  }, [])
+  }, [user])
 
   const createTask = async (taskData: Omit<Task, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
     if (!user) return
