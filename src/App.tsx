@@ -25,6 +25,7 @@ import Prayers from "./pages/Prayers";
 import CalendarView from "./pages/CalendarView";
 import Settings from "./pages/Settings";
 import DesignSystem from "./pages/DesignSystem";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -51,11 +52,11 @@ const App = () => (
           <Route path="/onboarding/preferences" element={<Preferences />} />
           
           {/* Main App */}
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/tasks" element={<Tasks />} />
-          <Route path="/prayers" element={<Prayers />} />
-          <Route path="/calendar" element={<CalendarView />} />
-          <Route path="/settings" element={<Settings />} />
+          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/tasks" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
+          <Route path="/prayers" element={<ProtectedRoute><Prayers /></ProtectedRoute>} />
+          <Route path="/calendar" element={<ProtectedRoute><CalendarView /></ProtectedRoute>} />
+          <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
           
           {/* Design System */}
           <Route path="/design-system" element={<DesignSystem />} />

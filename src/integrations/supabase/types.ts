@@ -14,6 +14,84 @@ export type Database = {
   }
   public: {
     Tables: {
+      prayer_completions: {
+        Row: {
+          completed_at: string
+          created_at: string
+          id: string
+          prayer_date: string
+          prayer_name: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          created_at?: string
+          id?: string
+          prayer_date: string
+          prayer_name: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          created_at?: string
+          id?: string
+          prayer_date?: string
+          prayer_name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      prayer_settings: {
+        Row: {
+          asr_adjustment: number | null
+          calculation_method: string
+          created_at: string
+          dhuhr_adjustment: number | null
+          fajr_adjustment: number | null
+          high_latitude_rule: string
+          id: string
+          isha_adjustment: number | null
+          madhab: string
+          maghrib_adjustment: number | null
+          notification_minutes_before: number | null
+          notifications_enabled: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          asr_adjustment?: number | null
+          calculation_method?: string
+          created_at?: string
+          dhuhr_adjustment?: number | null
+          fajr_adjustment?: number | null
+          high_latitude_rule?: string
+          id?: string
+          isha_adjustment?: number | null
+          madhab?: string
+          maghrib_adjustment?: number | null
+          notification_minutes_before?: number | null
+          notifications_enabled?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          asr_adjustment?: number | null
+          calculation_method?: string
+          created_at?: string
+          dhuhr_adjustment?: number | null
+          fajr_adjustment?: number | null
+          high_latitude_rule?: string
+          id?: string
+          isha_adjustment?: number | null
+          madhab?: string
+          maghrib_adjustment?: number | null
+          notification_minutes_before?: number | null
+          notifications_enabled?: boolean | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
