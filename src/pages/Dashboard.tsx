@@ -10,6 +10,9 @@ const Dashboard = () => {
   const { user, signOut } = useAuth()
   const { prayerTimes, loading, isPrayerComplete, markPrayerComplete, unmarkPrayerComplete, completions } = usePrayerTimes()
   const { tasks, loading: tasksLoading } = useTasks()
+  
+  console.log('Dashboard render:', { user, prayerTimes, loading, tasks, tasksLoading })
+  
   return (
     <div className="min-h-screen bg-background">
       {/* Mobile Bottom Navigation (visible on mobile) */}
