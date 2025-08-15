@@ -1,0 +1,142 @@
+import { Check, Clock, Flag, Trash2, MoreHorizontal } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { Task } from '@/hooks/useTasks'
+import { format } from 'date-fns'
+
+interface TaskCardProps {
+  task: Task
+  onComplete: (taskId: string) => void
+  onDelete: (taskId: string) => void
+  onEdit?: (task: Task) => void
+}
+
+export function TaskCard({ task, onComplete, onDelete, onEdit }: TaskCardProps) {
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'urgent': return 'border-red-500 bg-red-50'
+      case 'high': return 'border-orange-500 bg-orange-50'
+      case 'medium': return 'border-blue-500 bg-blue-50'
+      case 'low': return 'border-gray-500 bg-gray-50'
+      default: return 'border-gray-500 bg-gray-50'
+    }
+  }
+
+  const getPriorityTextColor = (priority: string) => {
+    switch (priority) {
+      case 'urgent': return 'text-red-700'
+      case 'high': return 'text-orange-700'
+      case 'medium': return 'text-blue-700'
+      case 'low': return 'text-gray-700'
+      default: return 'text-gray-700'
+    }
+  }
+
+  const isCompleted = task.status === 'completed'
+  const isOverdue = task.due_date && new Date(task.due_date) < new Date() && !isCompleted
+
+  return (
+    <Card className={`transition-all duration-200 hover:shadow-md ${isCompleted ? 'opacity-75' : ''}`}>
+      <CardContent className="p-4">
+        <div className="flex items-start gap-3">
+          {/* Completion Checkbox */}
+          <button
+            onClick={() => onComplete(task.id)}
+            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 ${
+              isCompleted 
+                ? 'bg-primary border-primary text-white' 
+                : 'border-muted-foreground hover:border-primary transition-colors'
+            }`}
+          >
+            {isCompleted && <Check className="h-3 w-3" />}
+          </button>
+
+          {/* Task Content */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-2">
+              <h3 className={`font-medium ${isCompleted ? 'line-through text-muted-foreground' : ''}`}>
+                {task.title}
+              </h3>
+              
+              {/* Actions Menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {onEdit && (
+                    <DropdownMenuItem onClick={() => onEdit(task)}>
+                      Edit Task
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem 
+                    onClick={() => onDelete(task.id)}
+                    className="text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
+            {/* Description */}
+            {task.description && (
+              <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                {task.description}
+              </p>
+            )}
+
+            {/* Badges and Info */}
+            <div className="flex items-center gap-2 mt-3 flex-wrap">
+              {/* Priority Badge */}
+              <Badge 
+                variant="outline" 
+                className={`text-xs border ${getPriorityColor(task.priority)} ${getPriorityTextColor(task.priority)}`}
+              >
+                <Flag className="h-3 w-3 mr-1" />
+                {task.priority}
+              </Badge>
+
+              {/* Category Badge */}
+              {task.category && (
+                <Badge 
+                  variant="secondary" 
+                  className="text-xs"
+                  style={{ backgroundColor: `${task.category.color}20`, color: task.category.color }}
+                >
+                  {task.category.name}
+                </Badge>
+              )}
+
+              {/* Due Date */}
+              {task.due_date && (
+                <div className={`flex items-center gap-1 text-xs ${
+                  isOverdue ? 'text-red-600' : 'text-muted-foreground'
+                }`}>
+                  <Clock className="h-3 w-3" />
+                  <span>
+                    {format(new Date(task.due_date), 'MMM d')}
+                    {task.due_time && ` at ${task.due_time}`}
+                    {isOverdue && ' (Overdue)'}
+                  </span>
+                </div>
+              )}
+
+              {/* Recurring Badge */}
+              {task.is_recurring && (
+                <Badge variant="outline" className="text-xs">
+                  Recurring
+                </Badge>
+              )}
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}

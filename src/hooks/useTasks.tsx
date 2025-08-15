@@ -1,0 +1,322 @@
+import { useState, useEffect } from 'react'
+import { supabase } from '@/integrations/supabase/client'
+import { useAuth } from '@/hooks/useAuth'
+import { toast } from '@/hooks/use-toast'
+
+export interface Task {
+  id: string
+  user_id: string
+  category_id?: string
+  title: string
+  description?: string
+  priority: 'low' | 'medium' | 'high' | 'urgent'
+  status: 'pending' | 'in_progress' | 'completed' | 'cancelled'
+  due_date?: string
+  due_time?: string
+  is_recurring: boolean
+  recurring_pattern?: string
+  parent_task_id?: string
+  completed_at?: string
+  created_at: string
+  updated_at: string
+  category?: TaskCategory
+  subtasks?: Task[]
+}
+
+export interface TaskCategory {
+  id: string
+  user_id: string
+  name: string
+  color: string
+  icon: string
+  is_default: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface TaskTemplate {
+  id: string
+  name: string
+  description?: string
+  category: string
+  priority: string
+  is_recurring: boolean
+  recurring_pattern?: string
+  estimated_duration?: number
+  icon: string
+  is_system: boolean
+  created_at: string
+}
+
+export function useTasks() {
+  const { user } = useAuth()
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [categories, setCategories] = useState<TaskCategory[]>([])
+  const [templates, setTemplates] = useState<TaskTemplate[]>([])
+  const [loading, setLoading] = useState(true)
+
+  // Load user's tasks
+  useEffect(() => {
+    async function loadTasks() {
+      if (!user) return
+
+      try {
+        const { data, error } = await supabase
+          .from('tasks')
+          .select(`
+            *,
+            category:task_categories(*)
+          `)
+          .eq('user_id', user.id)
+          .is('parent_task_id', null) // Only get parent tasks
+          .order('created_at', { ascending: false })
+
+        if (error) {
+          console.error('Error loading tasks:', error)
+          return
+        }
+
+        // Type assertion since we know the data structure
+        setTasks((data as any[])?.map(task => ({
+          ...task,
+          priority: task.priority as Task['priority']
+        })) || [])
+      } catch (error) {
+        console.error('Error loading tasks:', error)
+      }
+    }
+
+    loadTasks()
+  }, [user])
+
+  // Load user's categories
+  useEffect(() => {
+    async function loadCategories() {
+      if (!user) return
+
+      try {
+        const { data, error } = await supabase
+          .from('task_categories')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('name')
+
+        if (error) {
+          console.error('Error loading categories:', error)
+          return
+        }
+
+        setCategories(data || [])
+      } catch (error) {
+        console.error('Error loading categories:', error)
+      }
+    }
+
+    loadCategories()
+  }, [user])
+
+  // Load task templates
+  useEffect(() => {
+    async function loadTemplates() {
+      try {
+        const { data, error } = await supabase
+          .from('task_templates')
+          .select('*')
+          .order('name')
+
+        if (error) {
+          console.error('Error loading templates:', error)
+          return
+        }
+
+        setTemplates(data || [])
+      } catch (error) {
+        console.error('Error loading templates:', error)
+      }
+    }
+
+    loadTemplates()
+    setLoading(false)
+  }, [])
+
+  const createTask = async (taskData: Omit<Task, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
+    if (!user) return
+
+    try {
+      const { data, error } = await supabase
+        .from('tasks')
+        .insert({
+          ...taskData,
+          user_id: user.id
+        })
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Error creating task:', error)
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to create task"
+        })
+        return
+      }
+
+      setTasks(prev => [(data as any), ...prev].map(task => ({
+        ...task,
+        priority: task.priority as Task['priority']
+      })))
+      toast({
+        title: "Task created",
+        description: `"${taskData.title}" has been added to your tasks`
+      })
+
+      return data as Task
+    } catch (error) {
+      console.error('Error creating task:', error)
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to create task"
+      })
+    }
+  }
+
+  const updateTask = async (taskId: string, updates: Partial<Task>) => {
+    if (!user) return
+
+    try {
+      const { data, error } = await supabase
+        .from('tasks')
+        .update(updates)
+        .eq('id', taskId)
+        .eq('user_id', user.id)
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Error updating task:', error)
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to update task"
+        })
+        return
+      }
+
+      setTasks(prev => prev.map(task => 
+        task.id === taskId 
+          ? { ...task, ...(data as any), priority: (data as any).priority as Task['priority'] } 
+          : task
+      ))
+      return data as Task
+    } catch (error) {
+      console.error('Error updating task:', error)
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update task"
+      })
+    }
+  }
+
+  const completeTask = async (taskId: string) => {
+    const completed_at = new Date().toISOString()
+    const result = await updateTask(taskId, { 
+      status: 'completed',
+      completed_at
+    })
+
+    if (result) {
+      toast({
+        title: "Task completed",
+        description: "Great job! Keep up the good work"
+      })
+    }
+  }
+
+  const deleteTask = async (taskId: string) => {
+    if (!user) return
+
+    try {
+      const { error } = await supabase
+        .from('tasks')
+        .delete()
+        .eq('id', taskId)
+        .eq('user_id', user.id)
+
+      if (error) {
+        console.error('Error deleting task:', error)
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to delete task"
+        })
+        return
+      }
+
+      setTasks(prev => prev.filter(task => task.id !== taskId))
+      toast({
+        title: "Task deleted",
+        description: "Task has been removed"
+      })
+    } catch (error) {
+      console.error('Error deleting task:', error)
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete task"
+      })
+    }
+  }
+
+  const createTaskFromTemplate = async (template: TaskTemplate) => {
+    const taskData = {
+      title: template.name,
+      description: template.description,
+      priority: template.priority as Task['priority'],
+      status: 'pending' as Task['status'],
+      is_recurring: template.is_recurring,
+      recurring_pattern: template.recurring_pattern,
+      due_date: new Date().toISOString().split('T')[0], // Today
+    }
+
+    return await createTask(taskData)
+  }
+
+  const getTodaysTasks = () => {
+    const today = new Date().toISOString().split('T')[0]
+    return tasks.filter(task => 
+      task.due_date === today && 
+      task.status !== 'completed' && 
+      task.status !== 'cancelled'
+    )
+  }
+
+  const getCompletedTasksToday = () => {
+    const today = new Date().toISOString().split('T')[0]
+    return tasks.filter(task => 
+      task.completed_at && 
+      task.completed_at.startsWith(today)
+    )
+  }
+
+  const getTasksByCategory = (categoryId: string) => {
+    return tasks.filter(task => task.category_id === categoryId)
+  }
+
+  return {
+    tasks,
+    categories,
+    templates,
+    loading,
+    createTask,
+    updateTask,
+    completeTask,
+    deleteTask,
+    createTaskFromTemplate,
+    getTodaysTasks,
+    getCompletedTasksToday,
+    getTasksByCategory
+  }
+}

@@ -1,13 +1,14 @@
 import { LayoutDashboard, CheckSquare, Clock, Calendar, User, Check, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { usePrayerTimes } from "@/hooks/usePrayerTimes"
+import { useTasks } from "@/hooks/useTasks"
 import { useAuth } from "@/hooks/useAuth"
 import { formatPrayerTime, getNextPrayer, getTimeUntilPrayer } from "@/lib/prayerTimes"
 import { Link } from "react-router-dom"
 
 const Dashboard = () => {
   const { user, signOut } = useAuth()
-  const { prayerTimes, loading, isPrayerComplete, markPrayerComplete, unmarkPrayerComplete } = usePrayerTimes()
+  const { prayerTimes, loading, isPrayerComplete, markPrayerComplete, unmarkPrayerComplete, completions } = usePrayerTimes()
   return (
     <div className="min-h-screen bg-background">
       {/* Mobile Bottom Navigation (visible on mobile) */}
@@ -126,62 +127,149 @@ const Dashboard = () => {
 
           {/* Today's Tasks */}
           <div className="bg-white rounded-lg border p-6">
-            <h2 className="text-lg font-semibold mb-4">Today's Tasks</h2>
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="w-4 h-4 rounded-full bg-primary"></div>
-                <span className="line-through text-muted-foreground">Morning dhikr</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-4 h-4 rounded-full bg-primary"></div>
-                <span className="line-through text-muted-foreground">Read Quran</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-4 h-4 rounded-full border-2 border-muted"></div>
-                <span>Complete work project</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-4 h-4 rounded-full border-2 border-muted"></div>
-                <span>Evening dhikr</span>
-              </div>
-            </div>
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <CheckSquare className="h-5 w-5 text-primary" />
+              Today's Tasks
+            </h2>
+            <TasksSection />
           </div>
 
           {/* Progress Overview */}
-          <div className="bg-white rounded-lg border p-6">
-            <h2 className="text-lg font-semibold mb-4">This Week</h2>
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span>Prayers Completed</span>
-                  <span>32/35</span>
-                </div>
-                <div className="w-full bg-muted rounded-full h-2">
-                  <div className="bg-primary h-2 rounded-full" style={{width: '91%'}}></div>
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span>Quran Reading</span>
-                  <span>5/7 days</span>
-                </div>
-                <div className="w-full bg-muted rounded-full h-2">
-                  <div className="bg-primary h-2 rounded-full" style={{width: '71%'}}></div>
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span>Tasks Completed</span>
-                  <span>18/24</span>
-                </div>
-                <div className="w-full bg-muted rounded-full h-2">
-                  <div className="bg-primary h-2 rounded-full" style={{width: '75%'}}></div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <ProgressSection />
         </div>
       </main>
+    </div>
+  )
+}
+
+// Components for cleaner code organization
+function TasksSection() {
+  const { getTodaysTasks, getCompletedTasksToday, completeTask, deleteTask, loading } = useTasks()
+  const todaysTasks = getTodaysTasks()
+  const completedToday = getCompletedTasksToday()
+
+  if (loading) {
+    return (
+      <div className="space-y-3">
+        {[1,2,3].map(i => (
+          <div key={i} className="flex items-center gap-3 animate-pulse">
+            <div className="w-4 h-4 rounded-full bg-muted"></div>
+            <div className="h-4 bg-muted rounded flex-1"></div>
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  if (todaysTasks.length === 0 && completedToday.length === 0) {
+    return (
+      <div className="text-center text-muted-foreground py-4">
+        <p>No tasks for today</p>
+        <p className="text-xs mt-1">Add some tasks to get started</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-3">
+      {/* Today's pending tasks */}
+      {todaysTasks.slice(0, 3).map((task) => (
+        <div key={task.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent">
+          <button
+            onClick={() => completeTask(task.id)}
+            className="w-4 h-4 rounded-full border-2 border-muted-foreground hover:border-primary transition-colors"
+          />
+          <span className="flex-1 text-sm">{task.title}</span>
+          {task.priority === 'high' || task.priority === 'urgent' ? (
+            <div className="w-2 h-2 rounded-full bg-red-500"></div>
+          ) : null}
+        </div>
+      ))}
+      
+      {/* Completed tasks for today */}
+      {completedToday.slice(0, 2).map((task) => (
+        <div key={task.id} className="flex items-center gap-3 p-2 rounded-lg opacity-75">
+          <div className="w-4 h-4 rounded-full bg-primary flex items-center justify-center">
+            <Check className="h-3 w-3 text-white" />
+          </div>
+          <span className="flex-1 text-sm line-through text-muted-foreground">{task.title}</span>
+        </div>
+      ))}
+
+      {todaysTasks.length > 3 && (
+        <div className="text-center pt-2">
+          <Link to="/tasks" className="text-sm text-primary hover:underline">
+            View all {todaysTasks.length} tasks
+          </Link>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ProgressSection() {
+  const { tasks } = useTasks()
+  const { completions } = usePrayerTimes()
+  
+  // Calculate this week's stats
+  const startOfWeek = new Date()
+  startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay())
+  
+  const thisWeekTasks = tasks.filter(task => {
+    const taskDate = new Date(task.created_at)
+    return taskDate >= startOfWeek
+  })
+  
+  const completedThisWeek = thisWeekTasks.filter(task => task.status === 'completed').length
+  const totalTasksThisWeek = thisWeekTasks.length
+  
+  // Prayer stats for this week (simplified)
+  const totalPrayersThisWeek = 35 // 5 prayers × 7 days
+  const completedPrayers = completions.length + 32 // Today's + mock past data
+  
+  const prayerPercentage = Math.round((completedPrayers / totalPrayersThisWeek) * 100)
+  const taskPercentage = totalTasksThisWeek > 0 ? Math.round((completedThisWeek / totalTasksThisWeek) * 100) : 0
+  
+  return (
+    <div className="bg-white rounded-lg border p-6">
+      <h2 className="text-lg font-semibold mb-4">This Week</h2>
+      <div className="space-y-4">
+        <div>
+          <div className="flex justify-between text-sm mb-1">
+            <span>Prayers Completed</span>
+            <span>{completedPrayers}/{totalPrayersThisWeek}</span>
+          </div>
+          <div className="w-full bg-muted rounded-full h-2">
+            <div 
+              className="bg-primary h-2 rounded-full transition-all duration-300" 
+              style={{width: `${prayerPercentage}%`}}
+            />
+          </div>
+        </div>
+        
+        <div>
+          <div className="flex justify-between text-sm mb-1">
+            <span>Tasks Completed</span>
+            <span>{completedThisWeek}/{totalTasksThisWeek}</span>
+          </div>
+          <div className="w-full bg-muted rounded-full h-2">
+            <div 
+              className="bg-primary h-2 rounded-full transition-all duration-300" 
+              style={{width: `${taskPercentage}%`}}
+            />
+          </div>
+        </div>
+        
+        <div>
+          <div className="flex justify-between text-sm mb-1">
+            <span>Spiritual Goals</span>
+            <span>3/5 days</span>
+          </div>
+          <div className="w-full bg-muted rounded-full h-2">
+            <div className="bg-primary h-2 rounded-full" style={{width: '60%'}} />
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

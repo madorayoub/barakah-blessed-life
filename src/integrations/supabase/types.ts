@@ -134,6 +134,150 @@ export type Database = {
         }
         Relationships: []
       }
+      task_categories: {
+        Row: {
+          color: string
+          created_at: string
+          icon: string | null
+          id: string
+          is_default: boolean | null
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          icon?: string | null
+          id?: string
+          is_default?: boolean | null
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          icon?: string | null
+          id?: string
+          is_default?: boolean | null
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      task_templates: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          estimated_duration: number | null
+          icon: string | null
+          id: string
+          is_recurring: boolean | null
+          is_system: boolean | null
+          name: string
+          priority: string
+          recurring_pattern: string | null
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          estimated_duration?: number | null
+          icon?: string | null
+          id?: string
+          is_recurring?: boolean | null
+          is_system?: boolean | null
+          name: string
+          priority?: string
+          recurring_pattern?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          estimated_duration?: number | null
+          icon?: string | null
+          id?: string
+          is_recurring?: boolean | null
+          is_system?: boolean | null
+          name?: string
+          priority?: string
+          recurring_pattern?: string | null
+        }
+        Relationships: []
+      }
+      tasks: {
+        Row: {
+          category_id: string | null
+          completed_at: string | null
+          created_at: string
+          description: string | null
+          due_date: string | null
+          due_time: string | null
+          id: string
+          is_recurring: boolean | null
+          parent_task_id: string | null
+          priority: string
+          recurring_pattern: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          due_time?: string | null
+          id?: string
+          is_recurring?: boolean | null
+          parent_task_id?: string | null
+          priority?: string
+          recurring_pattern?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          due_time?: string | null
+          id?: string
+          is_recurring?: boolean | null
+          parent_task_id?: string | null
+          priority?: string
+          recurring_pattern?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "task_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_parent_task_id_fkey"
+            columns: ["parent_task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
