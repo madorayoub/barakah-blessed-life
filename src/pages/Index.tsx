@@ -1,5 +1,6 @@
 import { Star, Clock, Book, Target, Heart, Compass } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Link } from "react-router-dom"
 import PrayerTimes from "@/components/PrayerTimes"
 import TaskManager from "@/components/TaskManager"
 import IslamicCalendar from "@/components/IslamicCalendar"
@@ -66,9 +67,11 @@ const Index = () => {
               <Button size="lg" className="gradient-primary text-primary-foreground shadow-blessed hover:shadow-divine transition-all duration-300">
                 Start Your Journey
               </Button>
-              <Button size="lg" variant="outline" className="border-primary text-primary hover:bg-primary/10">
-                Learn More
-              </Button>
+              <Link to="/demo">
+                <Button size="lg" variant="outline" className="border-primary text-primary hover:bg-primary/10">
+                  View Demo & Features
+                </Button>
+              </Link>
             </div>
             <div className="mt-8 text-sm text-muted-foreground flex items-center justify-center gap-2">
               <Star className="h-4 w-4 text-accent" fill="currentColor" />
