@@ -7,6 +7,23 @@ import Index from "./pages/Index";
 import Demo from "./pages/Demo";
 import NotFound from "./pages/NotFound";
 
+// Auth pages
+import Signup from "./pages/auth/Signup";
+import Login from "./pages/auth/Login";
+import ForgotPassword from "./pages/auth/ForgotPassword";
+
+// Onboarding pages
+import LocationSetup from "./pages/onboarding/LocationSetup";
+import PrayerMethod from "./pages/onboarding/PrayerMethod";
+import Preferences from "./pages/onboarding/Preferences";
+
+// Main app pages
+import Dashboard from "./pages/Dashboard";
+import Tasks from "./pages/Tasks";
+import Prayers from "./pages/Prayers";
+import CalendarView from "./pages/CalendarView";
+import Settings from "./pages/Settings";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -16,8 +33,27 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          {/* Landing and Demo */}
           <Route path="/" element={<Index />} />
           <Route path="/demo" element={<Demo />} />
+          
+          {/* Authentication */}
+          <Route path="/auth/signup" element={<Signup />} />
+          <Route path="/auth/login" element={<Login />} />
+          <Route path="/auth/forgot-password" element={<ForgotPassword />} />
+          
+          {/* Onboarding */}
+          <Route path="/onboarding/location-setup" element={<LocationSetup />} />
+          <Route path="/onboarding/prayer-method" element={<PrayerMethod />} />
+          <Route path="/onboarding/preferences" element={<Preferences />} />
+          
+          {/* Main App */}
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/tasks" element={<Tasks />} />
+          <Route path="/prayers" element={<Prayers />} />
+          <Route path="/calendar" element={<CalendarView />} />
+          <Route path="/settings" element={<Settings />} />
+          
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

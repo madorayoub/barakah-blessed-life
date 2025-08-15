@@ -64,9 +64,11 @@ const Index = () => {
               with daily tasks, guided by Islamic principles
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="gradient-primary text-primary-foreground shadow-blessed hover:shadow-divine transition-all duration-300">
-                Start Your Journey
-              </Button>
+              <Link to="/auth/signup">
+                <Button size="lg" className="gradient-primary text-primary-foreground shadow-blessed hover:shadow-divine transition-all duration-300">
+                  Start Your Journey
+                </Button>
+              </Link>
               <Link to="/demo">
                 <Button size="lg" variant="outline" className="border-primary text-primary hover:bg-primary/10">
                   View Demo & Features
