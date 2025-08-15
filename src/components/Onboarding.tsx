@@ -8,7 +8,6 @@ import { useAuth } from '@/hooks/useAuth'
 import { useNotifications } from '@/hooks/useNotifications'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from '@/hooks/use-toast'
-import { useNavigate } from 'react-router-dom'
 
 interface OnboardingStep {
   id: string
@@ -63,7 +62,6 @@ interface OnboardingProps {
 export function Onboarding({ onComplete }: OnboardingProps) {
   const { user } = useAuth()
   const { requestPermission } = useNotifications()
-  const navigate = useNavigate()
   const [currentStep, setCurrentStep] = useState(0)
   const [formData, setFormData] = useState({
     location_city: '',
@@ -156,7 +154,6 @@ export function Onboarding({ onComplete }: OnboardingProps) {
       })
 
       onComplete()
-      navigate('/dashboard')
     } catch (error) {
       console.error('Error completing onboarding:', error)
       toast({
