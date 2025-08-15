@@ -26,7 +26,8 @@ export default {
 				foreground: 'hsl(var(--foreground))',
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
-					foreground: 'hsl(var(--primary-foreground))'
+					foreground: 'hsl(var(--primary-foreground))',
+					glow: 'hsl(var(--primary-glow))'
 				},
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
@@ -52,6 +53,11 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				pattern: {
+					light: 'hsl(var(--pattern-light))',
+					medium: 'hsl(var(--pattern-medium))',
+					dark: 'hsl(var(--pattern-dark))'
+				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
@@ -62,6 +68,14 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				}
+			},
+			fontFamily: {
+				display: ['Amiri', 'Georgia', 'serif'],
+				body: ['Inter', '-apple-system', 'sans-serif']
+			},
+			spacing: {
+				'prayer': 'var(--spacing-prayer)',
+				'blessed': 'var(--spacing-blessed)'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
