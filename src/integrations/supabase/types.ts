@@ -175,6 +175,7 @@ export type Database = {
           estimated_duration: number | null
           icon: string | null
           id: string
+          is_public: boolean | null
           is_recurring: boolean | null
           is_system: boolean | null
           name: string
@@ -188,6 +189,7 @@ export type Database = {
           estimated_duration?: number | null
           icon?: string | null
           id?: string
+          is_public?: boolean | null
           is_recurring?: boolean | null
           is_system?: boolean | null
           name: string
@@ -201,6 +203,7 @@ export type Database = {
           estimated_duration?: number | null
           icon?: string | null
           id?: string
+          is_public?: boolean | null
           is_recurring?: boolean | null
           is_system?: boolean | null
           name?: string
