@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useReducer } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/hooks/useAuth'
 import { useNotifications } from '@/hooks/useNotifications'
@@ -56,6 +56,9 @@ export function useTasks() {
   const [categories, setCategories] = useState<TaskCategory[]>([])
   const [templates, setTemplates] = useState<TaskTemplate[]>([])
   const [loading, setLoading] = useState(true)
+  
+  // Force re-render hook for stubborn UI updates
+  const [, forceUpdate] = useReducer(x => x + 1, 0)
 
   // Schedule task reminders
   useEffect(() => {
@@ -307,29 +310,42 @@ export function useTasks() {
       console.log('✅ Tasks BEFORE create:', tasks.length)
       console.log('✅ Task IDs before:', tasks.map(t => t.id))
       
-      // OPTIMISTIC UPDATE: Add to state immediately for instant UI feedback
+      // OPTIMISTIC UPDATE: Create completely NEW array - React will detect the change
       if (!cleanTaskData.parent_task_id) {
-        // It's a main task
-        setTasks(prev => {
-          const updatedTasks = [newTask, ...prev]
-          console.log('✅ Tasks AFTER create:', updatedTasks.length)
-          console.log('✅ Task IDs after:', updatedTasks.map(t => t.id))
-          return updatedTasks
+        // It's a main task - create completely NEW array
+        setTasks(prevTasks => {
+          console.log('✅ BEFORE create - prevTasks length:', prevTasks.length)
+          
+          // Create completely NEW array with new task at the beginning
+          const completelyNewTasksArray = [newTask, ...prevTasks]
+          
+          console.log('✅ AFTER create - new array length:', completelyNewTasksArray.length)
+          console.log('✅ New array reference created:', completelyNewTasksArray !== prevTasks)
+          
+          return completelyNewTasksArray
         })
       } else {
-        // It's a subtask - add to parent's subtasks
-        setTasks(prev => prev.map(task => {
-          if (task.id === cleanTaskData.parent_task_id) {
-            console.log('✅ Adding subtask to parent:', task.title)
-            return {
-              ...task,
-              subtasks: [...(task.subtasks || []), newTask]
+        // It's a subtask - create NEW array with NEW objects
+        setTasks(prevTasks => {
+          const completelyNewTasksArray = prevTasks.map(task => {
+            if (task.id === cleanTaskData.parent_task_id) {
+              console.log('✅ Adding subtask to parent:', task.title)
+              // Create NEW task object with NEW subtasks array
+              return {
+                ...task, // NEW task object
+                subtasks: [...(task.subtasks || []), newTask] // NEW subtasks array
+              }
             }
-          }
-          return task
-        }))
+            // Return NEW task object (shallow copy for immutability)
+            return { ...task }
+          })
+          return completelyNewTasksArray
+        })
       }
-
+      
+      // Force component re-render to ensure UI updates
+      forceUpdate()
+      console.log('✅ Force update triggered')
       toast({
         title: cleanTaskData.parent_task_id ? "Subtask created" : "Task created",
         description: `"${cleanTaskData.title}" has been ${cleanTaskData.parent_task_id ? 'added to your subtasks' : 'created successfully'}`
@@ -490,18 +506,26 @@ export function useTasks() {
       console.log('🔥 Tasks BEFORE delete:', tasks.length)
       console.log('🔥 Task IDs before:', tasks.map(t => t.id))
       
-      // OPTIMISTIC UPDATE: Remove from state immediately for instant UI feedback
-      setTasks(prev => {
-        const filteredTasks = prev.filter(task => task.id !== taskId)
-        // Also remove from subtasks of any parent tasks
-        const updatedTasks = filteredTasks.map(task => ({
-          ...task,
-          subtasks: (task.subtasks || []).filter(subtask => subtask.id !== taskId)
+      // OPTIMISTIC UPDATE: Create completely NEW array - React will detect the change
+      setTasks(prevTasks => {
+        console.log('🔥 BEFORE filter - prevTasks length:', prevTasks.length)
+        
+        // Step 1: Filter out the deleted task - creates NEW array
+        const filteredMainTasks = [...prevTasks.filter(task => task.id !== taskId)]
+        
+        // Step 2: Create NEW array with NEW objects, removing subtasks - complete immutability
+        const completelyNewTasksArray = filteredMainTasks.map(task => ({
+          ...task, // Create NEW task object
+          subtasks: [...(task.subtasks || []).filter(subtask => subtask.id !== taskId)] // Create NEW subtasks array
         }))
         
-        console.log('🔥 Tasks AFTER delete:', updatedTasks.length)
-        console.log('🔥 Task IDs after:', updatedTasks.map(t => t.id))
-        return updatedTasks
+        console.log('🔥 AFTER filter - new array length:', completelyNewTasksArray.length)
+        console.log('🔥 New array reference created:', completelyNewTasksArray !== prevTasks)
+      
+      // Force component re-render to ensure UI updates
+      forceUpdate()
+      console.log('🔥 Force update triggered')
+        return completelyNewTasksArray
       })
 
       const { error } = await supabase
