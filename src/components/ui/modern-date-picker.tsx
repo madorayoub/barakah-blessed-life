@@ -277,28 +277,16 @@ export function ModernDatePicker({
           </PopoverContent>
         </Popover>
 
-        {/* Time Picker (if enabled) - Styled to match date picker */}
+        {/* Time Picker (if enabled) - Simple and reliable */}
         {showTime && (
-          <div className="flex-shrink-0">
-            <div 
-              className="relative cursor-pointer"
-              onClick={(e) => {
-                const input = e.currentTarget.querySelector('input[type="time"]') as HTMLInputElement;
-                input?.focus();
-                input?.showPicker?.();
-              }}
-            >
-              <div className="min-h-[36px] w-28 border-2 border-gray-200 rounded-lg px-3 py-2 flex items-center gap-2 hover:border-primary focus-within:border-primary transition-colors bg-white">
-                <Clock className="h-4 w-4 text-primary flex-shrink-0" />
-                <Input
-                  type="time"
-                  value={timeValue || ''}
-                  onChange={(e) => onTimeChange?.(e.target.value)}
-                  className="border-0 p-0 h-auto text-sm text-gray-900 font-medium bg-transparent focus:ring-0 focus:outline-none cursor-pointer flex-1"
-                  placeholder="--:--"
-                />
-              </div>
-            </div>
+          <div className="flex-shrink-0 relative">
+            <Input
+              type="time"
+              value={timeValue || ''}
+              onChange={(e) => onTimeChange?.(e.target.value)}
+              className="min-h-[36px] w-28 pl-8 pr-3 py-2 border-2 border-gray-200 rounded-lg bg-white text-gray-900 text-sm hover:border-primary focus:border-primary transition-colors cursor-pointer"
+            />
+            <Clock className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-primary pointer-events-none" />
           </div>
         )}
       </div>
