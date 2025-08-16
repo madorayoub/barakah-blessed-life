@@ -23,7 +23,7 @@ export function AppHeader({ title, subtitle }: AppHeaderProps) {
                 <span className="text-white font-bold text-lg">ب</span>
               </div>
               <div className="hidden sm:block">
-                <h1 className="text-xl font-bold text-foreground tracking-tight">Barakah Tasks</h1>
+                <h1 className="text-xl font-bold text-foreground tracking-tight">Barakah Life</h1>
               </div>
             </Link>
             

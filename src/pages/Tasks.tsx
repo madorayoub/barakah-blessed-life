@@ -53,7 +53,7 @@ const Tasks = () => {
   return (
     <div className="min-h-screen bg-background">
       <AppHeader 
-        title="Tasks" 
+        title="Barakah Tasks" 
         subtitle="Organize your spiritual and daily tasks" 
       />
       

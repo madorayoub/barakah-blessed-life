@@ -19,7 +19,7 @@ const CalendarView = () => {
   return (
     <div className="min-h-screen bg-background">
       <AppHeader 
-        title="Calendar" 
+        title="Barakah Calendar" 
         subtitle="Your Islamic schedule and prayer times" 
       />
 

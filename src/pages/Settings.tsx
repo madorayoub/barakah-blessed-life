@@ -569,7 +569,7 @@ const Settings = () => {
                   <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-600 to-emerald-700 flex items-center justify-center">
                     <Star className="h-4 w-4 text-white" fill="currentColor" />
                   </div>
-                  <h3 className="font-bold text-lg">Barakah Tasks</h3>
+                  <h3 className="font-bold text-lg">Barakah Life</h3>
                 </div>
                 <p className="text-sm text-muted-foreground">
                   Version 1.0.0 • Built with love for the Muslim community
