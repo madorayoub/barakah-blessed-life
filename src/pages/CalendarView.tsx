@@ -7,6 +7,7 @@ import { CalendarExport } from '@/components/CalendarExport'
 import CalendarMonth from '@/components/CalendarMonth'
 import { GoogleCalendarConnect } from '@/components/GoogleCalendarConnect'
 import { AppleCalendarExport } from '@/components/AppleCalendarExport'
+import { CalDAVIntegration } from '@/components/CalDAVIntegration'
 import { useNavigate } from 'react-router-dom'
 
 const CalendarView = () => {
@@ -37,9 +38,10 @@ const CalendarView = () => {
 
       <main className="container mx-auto px-4 py-8 max-w-6xl">
         <Tabs defaultValue="calendar" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="calendar">Calendar View</TabsTrigger>
             <TabsTrigger value="export">Export & Sync</TabsTrigger>
+            <TabsTrigger value="caldav">CalDAV Integration</TabsTrigger>
           </TabsList>
 
           <TabsContent value="calendar" className="space-y-6">
@@ -211,6 +213,52 @@ const CalendarView = () => {
               </p>
             </CardContent>
           </Card>
+
+          </TabsContent>
+
+          <TabsContent value="caldav" className="space-y-8">
+            {/* CalDAV Integration Hero */}
+            <Card className="bg-gradient-to-r from-purple-50 to-indigo-50 border-purple-200">
+              <CardHeader className="text-center">
+                <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-purple-600 to-indigo-700 flex items-center justify-center mb-4">
+                  <Calendar className="h-8 w-8 text-white" />
+                </div>
+                <CardTitle className="text-2xl">Universal Calendar Protocol</CardTitle>
+                <CardDescription className="text-base">
+                  Connect to ANY CalDAV-compatible calendar service: iCloud, Google, Outlook, and more
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            {/* CalDAV Integration Component */}
+            <CalDAVIntegration />
+
+            {/* Technical Information */}
+            <Card className="border-blue-200 bg-blue-50">
+              <CardHeader>
+                <CardTitle className="text-blue-900">Why CalDAV?</CardTitle>
+              </CardHeader>
+              <CardContent className="text-blue-800">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <div className="font-medium mb-2">✅ Universal Compatibility</div>
+                    <div>Works with iCloud, Google, Outlook, and any CalDAV server</div>
+                  </div>
+                  <div>
+                    <div className="font-medium mb-2">✅ Real-Time Sync</div>
+                    <div>Two-way synchronization just like native integrations</div>
+                  </div>
+                  <div>
+                    <div className="font-medium mb-2">✅ Cross-Platform</div>
+                    <div>Sync across iPhone, iPad, Mac, PC, and web browsers</div>
+                  </div>
+                  <div>
+                    <div className="font-medium mb-2">✅ Standard Protocol</div>
+                    <div>Industry-standard CalDAV protocol used by major providers</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
           </TabsContent>
         </Tabs>
