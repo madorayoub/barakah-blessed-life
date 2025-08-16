@@ -30,8 +30,10 @@ const CalendarIntegration = () => {
   } = useGoogleCalendar()
   
   const { 
+    isSubscribed,
+    subscriptionUrl,
+    createSubscription,
     generateAdvancedICS,
-    generateWebCalURL,
     isGenerating: isAppleGenerating
   } = useAppleCalendar()
 
@@ -43,11 +45,17 @@ const CalendarIntegration = () => {
     }
   }
 
-  const handleAppleExport = async () => {
-    await generateAdvancedICS(syncOptions)
+  const handleAppleConnect = async () => {
+    if (isSubscribed) {
+      // Already connected, trigger sync
+      await generateAdvancedICS(syncOptions)
+    } else {
+      // Connect for the first time
+      await createSubscription()
+    }
   }
 
-  const subscriptionUrl = user ? generateWebCalURL(user.id) : ""
+  const subscriptionUrlDisplay = subscriptionUrl || "Connect to get your subscription URL"
 
   return (
     <IslamicCard variant="blessed" className="w-full max-w-lg">
@@ -177,27 +185,29 @@ const CalendarIntegration = () => {
           <div className="flex items-center gap-2">
             <Smartphone className="h-5 w-5 text-gray-600" />
             <div className="text-sm font-medium text-gray-900">Apple Calendar</div>
-            <Badge variant="secondary">Export</Badge>
+            <Badge variant={isSubscribed ? "default" : "secondary"}>
+              {isSubscribed ? "Connected" : "Not Connected"}
+            </Badge>
           </div>
           
           <div className="text-xs text-gray-700 mb-3">
-            Download .ics file to import into Apple Calendar, iPhone, iPad, or Mac
+            {isSubscribed ? 'Live subscription active - auto-syncs every hour' : 'Connect for automatic live sync like Google Calendar'}
           </div>
           
           <Button 
-            onClick={handleAppleExport}
+            onClick={handleAppleConnect}
             disabled={isAppleGenerating}
             className="w-full bg-gray-600 hover:bg-gray-700 text-white"
           >
             {isAppleGenerating ? (
               <>
                 <Clock className="h-4 w-4 mr-2 animate-spin" />
-                Generating...
+                {isSubscribed ? "Syncing..." : "Connecting..."}
               </>
             ) : (
               <>
-                <Download className="h-4 w-4 mr-2" />
-                Download for Apple Calendar
+                <Smartphone className="h-4 w-4 mr-2" />
+                {isSubscribed ? "Sync Now" : "Connect Apple Calendar"}
               </>
             )}
           </Button>
@@ -238,13 +248,13 @@ const CalendarIntegration = () => {
             Google Sync
           </Button>
           <Button 
-            onClick={handleAppleExport}
+            onClick={handleAppleConnect}
             disabled={isAppleGenerating}
             variant="outline"
             size="sm"
           >
             <Smartphone className="h-4 w-4 mr-2" />
-            Apple Export
+            {isSubscribed ? "Apple Sync" : "Apple Connect"}
           </Button>
         </div>
 

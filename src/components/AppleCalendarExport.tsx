@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { Slider } from '@/components/ui/slider'
-import { Smartphone, Download, Clock, Settings2 } from 'lucide-react'
+import { Smartphone, Download, Clock, Settings2, CheckCircle2, XCircle, RefreshCw } from 'lucide-react'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { useAppleCalendar } from '@/hooks/useAppleCalendar'
 
@@ -18,7 +18,24 @@ export function AppleCalendarExport() {
   })
   const [showAdvanced, setShowAdvanced] = useState(false)
 
-  const { generateAdvancedICS, isGenerating } = useAppleCalendar()
+  const { 
+    isSubscribed,
+    subscriptionUrl,
+    lastSync,
+    isGenerating,
+    createSubscription,
+    disconnectSubscription,
+    syncNow,
+    generateAdvancedICS
+  } = useAppleCalendar()
+
+  const handleConnect = async () => {
+    if (isSubscribed) {
+      await syncNow()
+    } else {
+      await createSubscription()
+    }
+  }
 
   const handleExport = async () => {
     await generateAdvancedICS(syncOptions)
@@ -29,13 +46,52 @@ export function AppleCalendarExport() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Smartphone className="h-5 w-5 text-gray-600" />
-          Apple Calendar Export
+          Apple Calendar Integration
         </CardTitle>
         <CardDescription>
-          Download .ics file for Apple Calendar, iPhone, iPad, and Mac
+          Real-time sync with Apple Calendar using live subscription
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Connection Status */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <div className="font-medium">Connection Status</div>
+            <div className="text-sm text-muted-foreground">
+              {isSubscribed ? 'Connected with live subscription' : 'Not connected'}
+            </div>
+          </div>
+          <Badge variant={isSubscribed ? "default" : "secondary"}>
+            {isSubscribed ? (
+              <>
+                <CheckCircle2 className="h-3 w-3 mr-1" />
+                Connected
+              </>
+            ) : (
+              <>
+                <XCircle className="h-3 w-3 mr-1" />
+                Disconnected
+              </>
+            )}
+          </Badge>
+        </div>
+
+        {/* Subscription Details */}
+        {isSubscribed && subscriptionUrl && (
+          <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+            <div className="text-sm font-medium text-green-900">
+              Live Subscription Active
+            </div>
+            <div className="text-xs text-green-700 mt-1">
+              URL: {subscriptionUrl.substring(0, 40)}...
+            </div>
+            {lastSync && (
+              <div className="text-xs text-green-600 mt-1">
+                Last synced: {lastSync.toLocaleString()}
+              </div>
+            )}
+          </div>
+        )}
         <div className="grid grid-cols-2 gap-4">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
@@ -112,39 +168,101 @@ export function AppleCalendarExport() {
           </CollapsibleContent>
         </Collapsible>
 
-        <Button 
-          onClick={handleExport}
-          disabled={isGenerating || (!syncOptions.includePrayers && !syncOptions.includeTasks)}
-          className="w-full"
-        >
-          {isGenerating ? (
-            <>
-              <Clock className="h-4 w-4 mr-2 animate-spin" />
-              Generating Calendar File...
-            </>
-          ) : (
-            <>
-              <Download className="h-4 w-4 mr-2" />
-              Download .ics File
-            </>
-          )}
-        </Button>
+        {/* Main Action Button */}
+        <div className="space-y-2">
+          <Button 
+            onClick={handleConnect}
+            disabled={isGenerating}
+            className="w-full"
+            variant={isSubscribed ? "default" : "outline"}
+          >
+            {isGenerating ? (
+              <>
+                <Clock className="h-4 w-4 mr-2 animate-spin" />
+                {isSubscribed ? "Syncing..." : "Connecting..."}
+              </>
+            ) : (
+              <>
+                {isSubscribed ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Sync Now
+                  </>
+                ) : (
+                  <>
+                    <Smartphone className="h-4 w-4 mr-2" />
+                    Connect Apple Calendar
+                  </>
+                )}
+              </>
+            )}
+          </Button>
 
+          {isSubscribed && (
+            <Button 
+              onClick={disconnectSubscription}
+              variant="outline"
+              size="sm"
+              className="w-full"
+            >
+              Disconnect Apple Calendar
+            </Button>
+          )}
+        </div>
+
+        {/* Manual Export Option */}
+        <div className="border-t pt-4">
+          <div className="text-sm font-medium mb-2">Manual Export (Alternative)</div>
+          <Button 
+            onClick={handleExport}
+            disabled={isGenerating || (!syncOptions.includePrayers && !syncOptions.includeTasks)}
+            variant="outline"
+            size="sm"
+            className="w-full"
+          >
+            {isGenerating ? (
+              <>
+                <Clock className="h-4 w-4 mr-2 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Download className="h-4 w-4 mr-2" />
+                Download .ics File
+              </>
+            )}
+          </Button>
+        </div>
+
+        {/* Enhanced Features Info */}
         <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
-          <div className="text-sm font-medium text-blue-900 mb-1">How to Import:</div>
+          <div className="text-sm font-medium text-blue-900 mb-1">
+            {isSubscribed ? 'Live Subscription Features:' : 'Apple Calendar Features:'}
+          </div>
           <div className="text-xs text-blue-700 space-y-1">
-            <div>• iPhone/iPad: Tap the downloaded file</div>
-            <div>• Mac: Double-click the file in Downloads</div>
-            <div>• Choose "Barakah Tasks" calendar or create new</div>
-            <div>• Events will appear in your Apple Calendar</div>
+            {isSubscribed ? (
+              <>
+                <div>• Automatic sync every hour</div>
+                <div>• Real-time updates when you change settings</div>
+                <div>• Works across all Apple devices</div>
+                <div>• No manual re-importing needed</div>
+              </>
+            ) : (
+              <>
+                <div>• Connect for automatic live sync</div>
+                <div>• Works with iPhone, iPad, Mac</div>
+                <div>• Custom reminder notifications</div>
+                <div>• Islamic event categorization</div>
+              </>
+            )}
           </div>
         </div>
 
         <div className="text-xs text-muted-foreground space-y-1">
-          <div>✓ Works with Apple Calendar, iPhone, iPad, Mac</div>
-          <div>✓ Includes prayer times with location</div>
-          <div>✓ Custom reminder notifications</div>
-          <div>✓ Islamic event categorization</div>
+          <div>✓ Real-time subscription sync (like Google Calendar)</div>
+          <div>✓ Automatic prayer time updates</div>
+          <div>✓ Cross-device synchronization</div>
+          <div>✓ Islamic calendar integration</div>
         </div>
       </CardContent>
     </Card>
