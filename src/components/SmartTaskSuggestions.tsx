@@ -203,7 +203,7 @@ export function SmartTaskSuggestions({ onTaskSuggested }: SmartTaskSuggestionsPr
     const interval = setInterval(generateSmartSuggestions, 10 * 60 * 1000)
     
     return () => clearInterval(interval)
-  }, [generateSmartSuggestions])
+  }, []) // Remove dependency to prevent infinite loops
 
   const handleCreateSuggestion = async (suggestion: any) => {
     if (suggestion.action === 'existing_task') {

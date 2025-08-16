@@ -84,19 +84,23 @@ export function usePrayerTimes() {
           // Try to get current location
           if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
-              (position) => {
+              async (position) => {
                 const { latitude, longitude } = position.coords
                 setLocation({ latitude, longitude })
                 
                 // Save location to profile
-                supabase
-                  .from('profiles')
-                  .update({
-                    location_latitude: latitude,
-                    location_longitude: longitude
-                  })
-                  .eq('user_id', user.id)
-                  .then()
+                try {
+                  await supabase
+                    .from('profiles')
+                    .update({
+                      location_latitude: latitude,
+                      location_longitude: longitude
+                    })
+                    .eq('user_id', user.id)
+                  console.log('Location saved to profile')
+                } catch (err) {
+                  console.error('Error saving location:', err)
+                }
               },
               (error) => {
                 console.error('Error getting location:', error)
@@ -115,7 +119,7 @@ export function usePrayerTimes() {
     }
 
     loadLocation()
-  }, [user])
+  }, [user, toast])
 
   // Calculate prayer times when location and settings are available
   useEffect(() => {
@@ -142,7 +146,7 @@ export function usePrayerTimes() {
       }
     }
     setLoading(false)
-  }, [location, settings, schedulePrayerNotifications])
+  }, [location, settings, schedulePrayerNotifications, toast])
 
   // Load today's prayer completions
   useEffect(() => {
