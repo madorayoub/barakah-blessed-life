@@ -44,17 +44,21 @@ export function useAnalytics() {
     if (!user) return
 
     const now = new Date()
-    const weekStart = startOfWeek(now, { weekStartsOn: 1 })
+    const userCreatedAt = new Date(user.created_at)
+    
+    // Use user registration date as the starting point, not calendar periods
+    const trackingStartDate = userCreatedAt > startOfMonth(now) ? userCreatedAt : startOfMonth(now)
+    const weekTrackingStart = userCreatedAt > startOfWeek(now, { weekStartsOn: 1 }) ? userCreatedAt : startOfWeek(now, { weekStartsOn: 1 })
+    
     const weekEnd = endOfWeek(now, { weekStartsOn: 1 })
-    const monthStart = startOfMonth(now)
     const monthEnd = endOfMonth(now)
 
-    // Get prayer completions for the current month
+    // Get prayer completions from user registration date forward
     const { data: completions, error } = await supabase
       .from('prayer_completions')
       .select('*')
       .eq('user_id', user.id)
-      .gte('prayer_date', format(monthStart, 'yyyy-MM-dd'))
+      .gte('prayer_date', format(trackingStartDate, 'yyyy-MM-dd'))
       .lte('prayer_date', format(monthEnd, 'yyyy-MM-dd'))
 
     if (error) {
@@ -62,18 +66,18 @@ export function useAnalytics() {
       return
     }
 
-    // Calculate basic stats
+    // Calculate fair stats based on days since registration
     const prayers = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha']
-    const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd })
-    const totalPossiblePrayers = daysInMonth.length * prayers.length
+    const daysTracked = eachDayOfInterval({ start: trackingStartDate, end: now })
+    const totalPossiblePrayers = daysTracked.length * prayers.length
     const completedPrayers = completions?.length || 0
     const completionRate = totalPossiblePrayers > 0 ? (completedPrayers / totalPossiblePrayers) * 100 : 0
 
-    // Calculate missed prayers by type
+    // Calculate missed prayers by type (fair calculation from registration date)
     const missedByPrayer: Record<string, number> = {}
     prayers.forEach(prayer => {
       const prayerCompletions = completions?.filter(c => c.prayer_name === prayer).length || 0
-      missedByPrayer[prayer] = daysInMonth.length - prayerCompletions
+      missedByPrayer[prayer] = daysTracked.length - prayerCompletions
     })
 
     // Calculate current streak
@@ -90,8 +94,8 @@ export function useAnalytics() {
       }
     }
 
-    // Calculate weekly data for chart
-    const weeklyData = eachDayOfInterval({ start: weekStart, end: weekEnd }).map(date => {
+    // Calculate weekly data for chart (fair calculation from user join date)
+    const weeklyData = eachDayOfInterval({ start: weekTrackingStart, end: weekEnd }).map(date => {
       const dateStr = format(date, 'yyyy-MM-dd')
       const dayCompletions = completions?.filter(c => c.prayer_date === dateStr).length || 0
       return {
@@ -101,8 +105,8 @@ export function useAnalytics() {
       }
     })
 
-    // Calculate monthly heatmap
-    const monthlyHeatmap = daysInMonth.map(date => {
+    // Calculate monthly heatmap (from user tracking date)
+    const monthlyHeatmap = daysTracked.map(date => {
       const dateStr = format(date, 'yyyy-MM-dd')
       const count = completions?.filter(c => c.prayer_date === dateStr).length || 0
       return {
@@ -238,7 +242,17 @@ export function useAnalytics() {
   }, [prayerStats, taskStats])
 
   const getMotivationalMessage = () => {
-    if (!prayerStats) return "Keep up your spiritual journey!"
+    if (!prayerStats || !user) return "Keep up your spiritual journey!"
+
+    const userCreatedAt = new Date(user.created_at)
+    const daysSinceJoining = Math.floor((Date.now() - userCreatedAt.getTime()) / (1000 * 60 * 60 * 24))
+    
+    // Special messaging for new users
+    if (daysSinceJoining === 0) {
+      return "Welcome to Barakah Tasks! Start your spiritual journey today - every prayer is a step closer to Allah."
+    } else if (daysSinceJoining <= 3) {
+      return `Day ${daysSinceJoining + 1} of your journey! You're building a beautiful foundation of worship.`
+    }
 
     if (prayerStats.currentStreak >= 7) {
       return "Masha'Allah! Your dedication to prayer is inspiring. May Allah accept your efforts."
@@ -260,6 +274,12 @@ export function useAnalytics() {
     return verses[Math.floor(Math.random() * verses.length)]
   }
 
+  const getDaysSinceJoining = () => {
+    if (!user) return 0
+    const userCreatedAt = new Date(user.created_at)
+    return Math.floor((Date.now() - userCreatedAt.getTime()) / (1000 * 60 * 60 * 24)) + 1
+  }
+
   return {
     prayerStats,
     taskStats,
@@ -267,6 +287,7 @@ export function useAnalytics() {
     loading,
     getMotivationalMessage,
     getQuranVerse,
+    getDaysSinceJoining,
     refreshStats: () => {
       calculatePrayerStats()
       calculateTaskStats()

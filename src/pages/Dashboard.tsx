@@ -215,29 +215,44 @@ function TasksSection() {
 function ProgressSection() {
   const { tasks } = useTasks()
   const { completions } = usePrayerTimes()
+  const { user } = useAuth()
   
-  // Calculate this week's stats
+  if (!user) return null
+
+  // Calculate fair progress tracking from user registration date
+  const userCreatedAt = new Date(user.created_at)
+  const now = new Date()
+  const daysSinceJoining = Math.floor((now.getTime() - userCreatedAt.getTime()) / (1000 * 60 * 60 * 24)) + 1
+  
+  // Calculate this week's stats (from user join date if mid-week join)
   const startOfWeek = new Date()
   startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay())
+  const weekTrackingStart = userCreatedAt > startOfWeek ? userCreatedAt : startOfWeek
   
   const thisWeekTasks = tasks.filter(task => {
     const taskDate = new Date(task.created_at)
-    return taskDate >= startOfWeek
+    return taskDate >= weekTrackingStart
   })
   
   const completedThisWeek = thisWeekTasks.filter(task => task.status === 'completed').length
   const totalTasksThisWeek = thisWeekTasks.length
   
-  // Prayer stats for this week (simplified)
-  const totalPrayersThisWeek = 35 // 5 prayers × 7 days
-  const completedPrayers = completions.length + 32 // Today's + mock past data
+  // Fair prayer calculation - only count days since joining
+  const daysInThisWeek = Math.floor((now.getTime() - weekTrackingStart.getTime()) / (1000 * 60 * 60 * 24)) + 1
+  const totalPrayersThisWeek = daysInThisWeek * 5 // 5 prayers per day since joining
+  const completedPrayers = completions.length // Today's completed prayers (for demo)
   
-  const prayerPercentage = Math.round((completedPrayers / totalPrayersThisWeek) * 100)
+  const prayerPercentage = totalPrayersThisWeek > 0 ? Math.round((completedPrayers / totalPrayersThisWeek) * 100) : 0
   const taskPercentage = totalTasksThisWeek > 0 ? Math.round((completedThisWeek / totalTasksThisWeek) * 100) : 0
   
   return (
     <div className="bg-white rounded-lg border p-6">
-      <h2 className="text-lg font-semibold mb-4">This Week</h2>
+      <h2 className="text-lg font-semibold mb-4">
+        Progress Since Joining
+        <span className="text-xs text-muted-foreground block font-normal">
+          Day {daysSinceJoining} of your spiritual journey
+        </span>
+      </h2>
       <div className="space-y-4">
         <div>
           <div className="flex justify-between text-sm mb-1">
@@ -250,6 +265,11 @@ function ProgressSection() {
               style={{width: `${prayerPercentage}%`}}
             />
           </div>
+          {daysSinceJoining <= 3 && (
+            <p className="text-xs text-muted-foreground mt-1">
+              Fair tracking - only counting from your join date
+            </p>
+          )}
         </div>
         
         <div>
