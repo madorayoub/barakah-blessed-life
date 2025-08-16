@@ -25,20 +25,62 @@ const iconMap: Record<string, any> = {
   'circle': Plus
 }
 
-// Islamic template icons mapping
+// Islamic template icons mapping - comprehensive coverage
 const islamicTemplateIcons: Record<string, string> = {
+  // Prayer times
   'fajr': '🌅',
   'dhuhr': '☀️', 
   'asr': '🌤️',
   'maghrib': '🌇',
   'isha': '🌙',
+  
+  // Islamic practices  
   'quran': '📖',
   'dhikr': '📿',
-  'study': '🕌',
+  'dua': '🤲',
   'prayer': '🤲',
+  'study': '🕌',
+  'hadith': '📜',
+  'mosque': '🕌',
   'charity': '💝',
+  'zakat': '💰',
   'hajj': '🕋',
-  'ramadan': '🌙'
+  'umrah': '🕋',
+  'ramadan': '🌙',
+  'fasting': '🌙',
+  'tasbih': '📿',
+  'salah': '🤲',
+  'wudu': '💧',
+  'qibla': '🧭',
+  'islamic': '☪️',
+  'recitation': '📖',
+  'memorization': '🧠',
+  'reflection': '💭'
+}
+
+// Helper function to get the appropriate icon for a template
+const getTemplateIcon = (templateName: string): string => {
+  const name = templateName.toLowerCase()
+  
+  // Direct matches first
+  for (const [key, icon] of Object.entries(islamicTemplateIcons)) {
+    if (name.includes(key)) {
+      return icon
+    }
+  }
+  
+  // Fallback based on common Islamic terms
+  if (name.includes('prayer') || name.includes('salah')) return '🤲'
+  if (name.includes('quran') || name.includes('qur')) return '📖'
+  if (name.includes('dhikr') || name.includes('remembrance')) return '📿'
+  if (name.includes('dua') || name.includes('supplication')) return '🤲'
+  if (name.includes('study') || name.includes('learn')) return '🕌'
+  if (name.includes('hadith')) return '📜'
+  if (name.includes('charity') || name.includes('sadaqah')) return '💝'
+  if (name.includes('fast') || name.includes('suhur') || name.includes('iftar')) return '🌙'
+  
+  // Default Islamic icon
+  return '☪️'
 }
 
 interface NewTaskDialogProps {
@@ -183,13 +225,8 @@ export function NewTaskDialog({ children }: NewTaskDialogProps) {
               <h3 className="text-sm font-medium text-gray-700 text-center">Islamic Templates</h3>
               <div className="grid grid-cols-2 gap-3 max-h-48 overflow-y-auto">
                 {templates.map((template, index) => {
-                  // Get appropriate Islamic icon or fallback
-                  const templateIcon = islamicTemplateIcons[template.name.toLowerCase()] || 
-                                     islamicTemplateIcons[template.name.toLowerCase().includes('prayer') ? 'prayer' : ''] ||
-                                     islamicTemplateIcons[template.name.toLowerCase().includes('quran') ? 'quran' : ''] ||
-                                     islamicTemplateIcons[template.name.toLowerCase().includes('dhikr') ? 'dhikr' : ''] ||
-                                     islamicTemplateIcons[template.name.toLowerCase().includes('study') ? 'study' : ''] ||
-                                     '📿' // Default fallback
+                  // Use the comprehensive icon detection function
+                  const templateIcon = getTemplateIcon(template.name)
                   
                   return (
                     <Card 
@@ -197,12 +234,12 @@ export function NewTaskDialog({ children }: NewTaskDialogProps) {
                       className={`cursor-pointer transition-all duration-200 border-2 rounded-lg shadow-sm hover:shadow-md ${getTemplateColor(index)}`}
                       onClick={() => handleTemplateSelect(template)}
                     >
-                      <CardContent className="p-4">
-                        <div className="flex items-center gap-3">
-                          <div className="text-xl w-8 h-8 flex items-center justify-center">
-                            {templateIcon}
-                          </div>
-                          <div className="flex-1 min-w-0">
+                       <CardContent className="p-4">
+                         <div className="flex items-center gap-3">
+                           <div className="text-2xl w-6 h-6 flex items-center justify-center flex-shrink-0" style={{ fontSize: '24px', lineHeight: '24px' }}>
+                             {templateIcon}
+                           </div>
+                           <div className="flex-1 min-w-0 ml-3">
                             <h4 className="text-sm font-semibold text-gray-900 truncate">{template.name}</h4>
                             <p className="text-xs text-gray-600 truncate mt-1">{template.description}</p>
                           </div>
