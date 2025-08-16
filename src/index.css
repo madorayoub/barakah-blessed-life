@@ -8,16 +8,22 @@ Exact color specifications as per Phase 2 requirements
 
 @layer base {
   :root {
-    /* Emerald Brand Colors (Primary) */
+    /* Islamic Brand Colors (Primary) */
     --emerald-50: 152 68% 96%;
     --emerald-100: 152 56% 91%;  
-    --emerald-600: 158 64% 52%;  /* Primary brand */
+    --emerald-600: 158 64% 52%;  /* Primary brand #1ca094 */
     --emerald-700: 158 61% 42%;  /* Primary dark */
     --emerald-900: 158 64% 18%;  /* Deep emerald for text */
 
-    /* Gold Accent (use sparingly) */
-    --amber-500: 38 92% 50%;   
-    --amber-600: 32 95% 44%;   
+    /* Gold Accent (#FFD700) */
+    --gold-400: 51 100% 62%;
+    --gold-500: 48 96% 53%;   
+    --gold-600: 32 95% 44%;   
+
+    /* Cream Backgrounds (#FFF8E7) */
+    --cream-50: 49 100% 96%;
+    --cream-100: 49 52% 94%;
+    --cream-200: 49 38% 89%;
 
     /* Neutral Scale */
     --gray-50: 210 20% 98%;     /* Background light */
@@ -31,8 +37,27 @@ Exact color specifications as per Phase 2 requirements
     --red-500: 0 84% 60%;       /* Error */
     --yellow-500: 48 96% 53%;   /* Warning */
 
+    /* Islamic Shadows - subtle but elegant */
+    --shadow-soft: 0 2px 8px rgba(28, 160, 148, 0.08);
+    --shadow-medium: 0 4px 12px rgba(28, 160, 148, 0.15);
+    --shadow-strong: 0 8px 24px rgba(28, 160, 148, 0.12);
+    --shadow-glow: 0 0 20px rgba(255, 215, 0, 0.3);
+
+    /* Islamic Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--emerald-600)), hsl(var(--emerald-700)));
+    --gradient-peaceful: linear-gradient(135deg, hsl(var(--cream-50)), hsl(var(--cream-100)));
+    --gradient-gold: linear-gradient(135deg, hsl(var(--gold-400)), hsl(var(--gold-600)));
+
+    /* Sacred Spacing */
+    --spacing-prayer: 1.5rem 2rem;
+    --spacing-blessed: 2rem 2.5rem;
+
+    /* Pattern Colors */
+    --pattern-light: 158 64% 52% / 0.03;
+    --pattern-medium: 158 64% 52% / 0.08;
+
     /* Design System Mapping */
-    --background: var(--gray-50);
+    --background: var(--cream-50);
     --foreground: var(--gray-900);
 
     --card: 0 0% 100%;
@@ -51,7 +76,7 @@ Exact color specifications as per Phase 2 requirements
     --muted: var(--gray-100);
     --muted-foreground: var(--gray-600);
 
-    --accent: var(--amber-500);
+    --accent: var(--gold-500);
     --accent-foreground: var(--gray-900);
 
     --destructive: var(--red-500);
@@ -77,20 +102,9 @@ Exact color specifications as per Phase 2 requirements
     --text-4xl: 36px;
     --text-4xl-height: 40px;
 
-    /* Spacing System (8px Grid) */
-    --space-1: 4px;
-    --space-2: 8px;
-    --space-3: 12px;
-    --space-4: 16px;
-    --space-6: 24px;
-    --space-8: 32px;
-    --space-12: 48px;
-    --space-16: 64px;
-    --space-20: 80px;
-    --space-24: 96px;
-
     /* Font Family - Arabic Compatible */
     --font-family: 'Inter', 'Noto Sans Arabic', -apple-system, sans-serif;
+    --font-display: 'Inter', 'Noto Sans Arabic', -apple-system, sans-serif;
 
     --radius: 0.75rem;
 

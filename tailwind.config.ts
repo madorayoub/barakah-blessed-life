@@ -25,7 +25,7 @@ export default {
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
 				
-				// Emerald Brand Colors
+				// Islamic Brand Colors
 				emerald: {
 					50: 'hsl(var(--emerald-50))',
 					100: 'hsl(var(--emerald-100))',
@@ -35,9 +35,17 @@ export default {
 				},
 				
 				// Gold Accent Colors
-				amber: {
-					500: 'hsl(var(--amber-500))',
-					600: 'hsl(var(--amber-600))'
+				gold: {
+					400: 'hsl(var(--gold-400))',
+					500: 'hsl(var(--gold-500))',
+					600: 'hsl(var(--gold-600))'
+				},
+				
+				// Cream Backgrounds
+				cream: {
+					50: 'hsl(var(--cream-50))',
+					100: 'hsl(var(--cream-100))',
+					200: 'hsl(var(--cream-200))'
 				},
 				
 				// Neutral Scale
@@ -102,7 +110,8 @@ export default {
 			},
 			fontFamily: {
 				sans: ['Inter', 'Noto Sans Arabic', '-apple-system', 'sans-serif'],
-				body: ['Inter', 'Noto Sans Arabic', '-apple-system', 'sans-serif']
+				body: ['Inter', 'Noto Sans Arabic', '-apple-system', 'sans-serif'],
+				display: ['Inter', 'Noto Sans Arabic', '-apple-system', 'sans-serif']
 			},
 			fontSize: {
 				'sm': ['14px', '20px'],
@@ -113,22 +122,16 @@ export default {
 				'3xl': ['30px', '36px'],
 				'4xl': ['36px', '40px']
 			},
-			spacing: {
-				'1': '4px',
-				'2': '8px',
-				'3': '12px',
-				'4': '16px',
-				'6': '24px',
-				'8': '32px',
-				'12': '48px',
-				'16': '64px',
-				'20': '80px',
-				'24': '96px'
-			},
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
+			},
+			boxShadow: {
+				'sacred': 'var(--shadow-soft)',
+				'blessed': 'var(--shadow-medium)',
+				'divine': 'var(--shadow-strong)',
+				'golden': 'var(--shadow-glow)'
 			},
 			keyframes: {
 				'accordion-down': {
@@ -146,11 +149,26 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'gentle-float': {
+					'0%, 100%': { transform: 'translateY(0)' },
+					'50%': { transform: 'translateY(-8px)' }
+				},
+				'prayer-pulse': {
+					'0%, 100%': { opacity: '1', transform: 'scale(1)' },
+					'50%': { opacity: '0.9', transform: 'scale(1.02)' }
+				},
+				'blessing-glow': {
+					'0%, 100%': { boxShadow: 'var(--shadow-soft)' },
+					'50%': { boxShadow: 'var(--shadow-glow)' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'gentle-float': 'gentle-float 6s ease-in-out infinite',
+				'prayer-pulse': 'prayer-pulse 3s ease-in-out infinite',
+				'blessing-glow': 'blessing-glow 4s ease-in-out infinite'
 			}
 		}
 	},
