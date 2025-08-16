@@ -114,14 +114,15 @@ export function ModernDatePicker({
       setIsOpen(false)
     }
     if (e.key === 'Enter' || e.key === ' ') {
-      setIsOpen(true)
+      e.preventDefault()
+      setIsOpen(!isOpen)
     }
   }
 
   const handleInputClick = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    setIsOpen(true)
+    setIsOpen(!isOpen)
   }
 
   const isToday = (date: Date) => {
@@ -171,16 +172,17 @@ export function ModernDatePicker({
         {/* Date Picker with Large Click Target */}
         <Popover open={isOpen} onOpenChange={setIsOpen}>
           <PopoverTrigger asChild>
-            <div 
+            <Button
+              variant="outline"
               onClick={handleInputClick}
               onKeyDown={handleKeyDown}
               className={cn(
-                "w-full min-h-[48px] cursor-pointer border-2 border-gray-200 rounded-lg px-4 py-3 flex items-center justify-between hover:border-primary focus:border-primary transition-colors bg-white focus:outline-none focus:ring-2 focus:ring-primary/20",
+                "w-full min-h-[48px] justify-between text-left font-normal border-2 border-gray-200 rounded-lg px-4 py-3 hover:border-primary focus:border-primary transition-colors bg-white focus:outline-none focus:ring-2 focus:ring-primary/20",
                 !selectedDate && "text-gray-500"
               )}
-              role="button"
+              role="combobox"
+              aria-expanded={isOpen}
               aria-label="Open date picker"
-              tabIndex={0}
             >
               <span className="text-gray-900 font-medium flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-primary" />
@@ -189,7 +191,7 @@ export function ModernDatePicker({
               <div className="h-5 w-5 text-gray-400">
                 {isOpen ? "📅" : "▼"}
               </div>
-            </div>
+            </Button>
           </PopoverTrigger>
           <PopoverContent 
             className="w-auto p-0 border border-gray-200 shadow-xl rounded-xl max-w-80 bg-white" 
