@@ -142,15 +142,21 @@ export function useTasks() {
             
             if (payload.eventType === 'INSERT') {
               const newTask = payload.new as any
-              // Only add if it's a parent task (not a subtask)
+              // Only add if it's a parent task (not a subtask) and not already in state
               if (!newTask.parent_task_id) {
-                const formattedTask = {
-                  ...newTask,
-                  priority: newTask.priority as Task['priority'],
-                  status: newTask.status as Task['status'],
-                  subtasks: []
-                } as Task
-                setTasks(prev => [formattedTask, ...prev])
+                setTasks(prev => {
+                  // Check if task already exists (from optimistic update)
+                  const exists = prev.some(task => task.id === newTask.id)
+                  if (exists) return prev
+                  
+                  const formattedTask = {
+                    ...newTask,
+                    priority: newTask.priority as Task['priority'],
+                    status: newTask.status as Task['status'],
+                    subtasks: []
+                  } as Task
+                  return [formattedTask, ...prev]
+                })
               }
             } else if (payload.eventType === 'UPDATE') {
               const updatedTask = payload.new as any
@@ -290,19 +296,35 @@ export function useTasks() {
         return
       }
 
-      // Real-time subscription will handle state updates automatically
+      const newTask = {
+        ...data,
+        priority: data.priority as Task['priority'],
+        status: data.status as Task['status'],
+        subtasks: Array.isArray(data.subtasks) ? data.subtasks : []
+      } as Task
+
+      // OPTIMISTIC UPDATE: Add to state immediately for instant UI feedback
+      if (!cleanTaskData.parent_task_id) {
+        setTasks(prev => [newTask, ...prev])
+      } else {
+        // Handle subtask creation
+        setTasks(prev => prev.map(task => {
+          if (task.id === cleanTaskData.parent_task_id) {
+            return {
+              ...task,
+              subtasks: [...(task.subtasks || []), newTask]
+            }
+          }
+          return task
+        }))
+      }
 
       toast({
         title: cleanTaskData.parent_task_id ? "Subtask created" : "Task created",
         description: `"${cleanTaskData.title}" has been ${cleanTaskData.parent_task_id ? 'added to your subtasks' : 'created successfully'}`
       })
 
-      return {
-        ...data,
-        priority: data.priority as Task['priority'],
-        status: data.status as Task['status'],
-        subtasks: Array.isArray(data.subtasks) ? data.subtasks : []
-      } as Task
+      return newTask
     } catch (error) {
       console.error('Error creating task:', error)
       toast({
@@ -350,13 +372,32 @@ export function useTasks() {
         return
       }
 
-      // Real-time subscription will handle state updates automatically
-      return {
+      const updatedTask = {
         ...data,
         priority: data.priority as Task['priority'],
         status: data.status as Task['status'],
         subtasks: Array.isArray(data.subtasks) ? data.subtasks : []
       } as Task
+
+      // OPTIMISTIC UPDATE: Update state immediately for instant UI feedback
+      setTasks(prev => prev.map(task => {
+        if (task.id === taskId) {
+          return {
+            ...task,
+            ...updatedTask,
+            subtasks: task.subtasks || []
+          }
+        }
+        // Also update if this is a subtask
+        return {
+          ...task,
+          subtasks: (task.subtasks || []).map(subtask => 
+            subtask.id === taskId ? { ...subtask, ...updatedTask } : subtask
+          )
+        }
+      }))
+
+      return updatedTask
     } catch (error) {
       console.error('Error updating task:', error)
       toast({
@@ -418,6 +459,16 @@ export function useTasks() {
     if (!user) return
 
     try {
+      // OPTIMISTIC UPDATE: Remove from state immediately for instant UI feedback
+      setTasks(prev => prev.map(task => {
+        if (task.id === taskId) return null // Will be filtered out
+        // Also remove from subtasks
+        return {
+          ...task,
+          subtasks: (task.subtasks || []).filter(subtask => subtask.id !== taskId)
+        }
+      }).filter(Boolean) as Task[])
+
       const { error } = await supabase
         .from('tasks')
         .delete()
@@ -426,6 +477,32 @@ export function useTasks() {
 
       if (error) {
         console.error('Error deleting task:', error)
+        // Revert optimistic update on error
+        const { data: taskData } = await supabase
+          .from('tasks')
+          .select(`
+            *,
+            category:task_categories(*),
+            subtasks:tasks!parent_task_id(*)
+          `)
+          .eq('user_id', user.id)
+          .is('parent_task_id', null)
+          .order('created_at', { ascending: false })
+        
+        if (taskData) {
+          setTasks((taskData as any[])?.map(task => ({
+            ...task,
+            priority: task.priority as Task['priority'],
+            status: task.status as Task['status'],
+            subtasks: Array.isArray(task.subtasks) ? task.subtasks.map((sub: any) => ({
+              ...sub,
+              priority: sub.priority as Task['priority'],
+              status: sub.status as Task['status'],
+              subtasks: []
+            })) : []
+          })) || [])
+        }
+        
         toast({
           variant: "destructive",
           title: "Error",
@@ -433,8 +510,6 @@ export function useTasks() {
         })
         return
       }
-
-      // Real-time subscription will handle state updates automatically
 
       toast({
         title: "Task deleted",
