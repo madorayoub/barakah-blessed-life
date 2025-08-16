@@ -21,7 +21,7 @@ export type TaskViewType = 'list' | 'board' | 'calendar'
 export function TaskViews({ tasks, onTaskComplete, onTaskDelete, onTaskEdit, onTaskCreate, loading }: TaskViewsProps) {
   const [currentView, setCurrentView] = useState<TaskViewType>('board')
   const [searchTerm, setSearchTerm] = useState('')
-  const [filterStatus, setFilterStatus] = useState<'all' | 'my-tasks' | 'today' | 'this-week' | 'overdue'>('all')
+  const [filterStatus, setFilterStatus] = useState<'all' | 'today' | 'this-week' | 'overdue'>('all')
 
   // Smart filtering logic
   const getFilteredTasks = () => {
@@ -35,8 +35,6 @@ export function TaskViews({ tasks, onTaskComplete, onTaskDelete, onTaskEdit, onT
     const thisWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
 
     switch (filterStatus) {
-      case 'my-tasks':
-        return filtered.filter(task => task.status !== 'completed')
       case 'today':
         return filtered.filter(task => {
           if (!task.due_date) return false
@@ -145,13 +143,6 @@ export function TaskViews({ tasks, onTaskComplete, onTaskDelete, onTaskEdit, onT
               onClick={() => setFilterStatus('all')}
             >
               All
-            </Button>
-            <Button
-              variant={filterStatus === 'my-tasks' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setFilterStatus('my-tasks')}
-            >
-              My Tasks
             </Button>
             <Button
               variant={filterStatus === 'today' ? 'default' : 'outline'}
