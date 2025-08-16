@@ -24,6 +24,7 @@ import { PrayerAnalytics } from '@/components/analytics/PrayerAnalytics'
 import { TaskAnalytics } from '@/components/analytics/TaskAnalytics'
 import { Achievements } from '@/components/analytics/Achievements'
 import { ExportReport } from '@/components/analytics/ExportReport'
+import { getFairTrackingMessage, getFairTrackingStatus, isFairTrackingActive } from '@/lib/fairTracking'
 
 export default function Analytics() {
   const navigate = useNavigate()
@@ -96,7 +97,7 @@ export default function Analytics() {
         <div>
           <h2 className="text-xl md:text-2xl font-semibold mb-2">Your Spiritual Journey</h2>
           <p className="text-muted-foreground">
-            Day {daysSinceJoining} of your journey • Fair tracking from your join date
+            Day {daysSinceJoining} of your journey {isFairTrackingActive(daysSinceJoining) && "• Fair tracking from your join date"}
           </p>
         </div>
 
@@ -147,7 +148,7 @@ export default function Analytics() {
               </div>
               <p className="text-xs md:text-sm text-muted-foreground">Since Joining</p>
               <Progress value={weeklyProgress} className="h-1.5 md:h-2 mt-1 md:mt-2" />
-              {daysSinceJoining <= 7 && (
+              {isFairTrackingActive(daysSinceJoining) && (
                 <p className="text-xs text-green-600 mt-1">Fair tracking!</p>
               )}
             </CardContent>
@@ -179,7 +180,7 @@ export default function Analytics() {
                       <CardTitle className="text-base md:text-lg">Prayer Patterns</CardTitle>
                       <CardDescription className="text-sm">
                         {prayerStats?.completionRate?.toFixed(0) || 0}% completion rate since joining
-                        {daysSinceJoining <= 7 && " • Fair tracking active"}
+                        {getFairTrackingStatus(daysSinceJoining) && ` • ${getFairTrackingStatus(daysSinceJoining)}`}
                       </CardDescription>
                     </div>
                   </div>

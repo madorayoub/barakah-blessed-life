@@ -4,6 +4,7 @@ import { usePrayerTimes } from "@/hooks/usePrayerTimes"
 import { useTasks } from "@/hooks/useTasks"
 import { useAuth } from "@/hooks/useAuth"
 import { formatPrayerTime, getNextPrayer, getTimeUntilPrayer } from "@/lib/prayerTimes"
+import { getFairTrackingMessage, isFairTrackingActive } from "@/lib/fairTracking"
 import { Link } from "react-router-dom"
 
 const Dashboard = () => {
@@ -265,9 +266,9 @@ function ProgressSection() {
               style={{width: `${prayerPercentage}%`}}
             />
           </div>
-          {daysSinceJoining <= 3 && (
+          {isFairTrackingActive(daysSinceJoining) && (
             <p className="text-xs text-muted-foreground mt-1">
-              Fair tracking - only counting from your join date
+              {getFairTrackingMessage(daysSinceJoining)}
             </p>
           )}
         </div>
