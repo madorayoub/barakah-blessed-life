@@ -25,6 +25,22 @@ const iconMap: Record<string, any> = {
   'circle': Plus
 }
 
+// Islamic template icons mapping
+const islamicTemplateIcons: Record<string, string> = {
+  'fajr': '🌅',
+  'dhuhr': '☀️', 
+  'asr': '🌤️',
+  'maghrib': '🌇',
+  'isha': '🌙',
+  'quran': '📖',
+  'dhikr': '📿',
+  'study': '🕌',
+  'prayer': '🤲',
+  'charity': '💝',
+  'hajj': '🕋',
+  'ramadan': '🌙'
+}
+
 interface NewTaskDialogProps {
   children: React.ReactNode
 }
@@ -165,24 +181,30 @@ export function NewTaskDialog({ children }: NewTaskDialogProps) {
             /* Compact Templates Section */
             <div className="space-y-3">
               <h3 className="text-sm font-medium text-gray-700 text-center">Islamic Templates</h3>
-              <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+              <div className="grid grid-cols-2 gap-3 max-h-48 overflow-y-auto">
                 {templates.map((template, index) => {
-                  const IconComponent = iconMap[template.icon] || Plus
+                  // Get appropriate Islamic icon or fallback
+                  const templateIcon = islamicTemplateIcons[template.name.toLowerCase()] || 
+                                     islamicTemplateIcons[template.name.toLowerCase().includes('prayer') ? 'prayer' : ''] ||
+                                     islamicTemplateIcons[template.name.toLowerCase().includes('quran') ? 'quran' : ''] ||
+                                     islamicTemplateIcons[template.name.toLowerCase().includes('dhikr') ? 'dhikr' : ''] ||
+                                     islamicTemplateIcons[template.name.toLowerCase().includes('study') ? 'study' : ''] ||
+                                     '📿' // Default fallback
                   
                   return (
                     <Card 
                       key={template.id} 
-                      className={`cursor-pointer transition-all duration-200 border ${getTemplateColor(index)}`}
+                      className={`cursor-pointer transition-all duration-200 border-2 rounded-lg shadow-sm hover:shadow-md ${getTemplateColor(index)}`}
                       onClick={() => handleTemplateSelect(template)}
                     >
-                      <CardContent className="p-3">
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded bg-white/50 flex items-center justify-center">
-                            <IconComponent className="h-3 w-3 text-gray-600" />
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="text-xl w-8 h-8 flex items-center justify-center">
+                            {templateIcon}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h4 className="text-sm font-medium text-gray-900 truncate">{template.name}</h4>
-                            <p className="text-xs text-gray-500 truncate">{template.description}</p>
+                            <h4 className="text-sm font-semibold text-gray-900 truncate">{template.name}</h4>
+                            <p className="text-xs text-gray-600 truncate mt-1">{template.description}</p>
                           </div>
                         </div>
                       </CardContent>
@@ -204,7 +226,7 @@ export function NewTaskDialog({ children }: NewTaskDialogProps) {
                     value={formData.title}
                     onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                     placeholder="What needs to be done?"
-                    className="h-9 text-sm"
+                    className="h-10 px-3 text-sm bg-gray-50 border border-gray-300 rounded-md focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                     required
                   />
                 </div>
@@ -232,7 +254,7 @@ export function NewTaskDialog({ children }: NewTaskDialogProps) {
                       setFormData(prev => ({ ...prev, priority: value }))
                     }
                   >
-                    <SelectTrigger className="h-9 text-sm">
+                    <SelectTrigger className="h-10 px-3 text-sm bg-gray-50 border border-gray-300 rounded-md focus:bg-white focus:border-primary transition-all">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -251,7 +273,7 @@ export function NewTaskDialog({ children }: NewTaskDialogProps) {
                       value={formData.category_id}
                       onValueChange={(value) => setFormData(prev => ({ ...prev, category_id: value }))}
                     >
-                      <SelectTrigger className="h-9 text-sm">
+                      <SelectTrigger className="h-10 px-3 text-sm bg-gray-50 border border-gray-300 rounded-md focus:bg-white focus:border-primary transition-all">
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                       <SelectContent>
@@ -280,7 +302,7 @@ export function NewTaskDialog({ children }: NewTaskDialogProps) {
                         placeholder="Category name"
                         value={newCategoryName}
                         onChange={(e) => setNewCategoryName(e.target.value)}
-                        className="h-9 text-sm"
+                        className="h-10 px-3 text-sm bg-gray-50 border border-gray-300 rounded-md focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
                             e.preventDefault()
@@ -297,7 +319,7 @@ export function NewTaskDialog({ children }: NewTaskDialogProps) {
                         size="sm"
                         onClick={handleCreateCategory}
                         disabled={!newCategoryName.trim()}
-                        className="h-9 px-3"
+                        className="h-10 px-3"
                       >
                         Add
                       </Button>
@@ -315,7 +337,7 @@ export function NewTaskDialog({ children }: NewTaskDialogProps) {
                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                   placeholder="Add details about this task..."
                   rows={3}
-                  className="text-sm resize-none"
+                  className="px-3 py-2 text-sm bg-gray-50 border border-gray-300 rounded-md focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all resize-none"
                 />
               </div>
 
