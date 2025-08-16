@@ -208,4 +208,4 @@ const EnhancedTaskCard = memo(function EnhancedTaskCard({ task, onComplete, onDe
   )
 })
 
-export { EnhancedTaskCard }
+export default EnhancedTaskCard
