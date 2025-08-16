@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Task } from '@/hooks/useTasks'
 import { cn } from '@/lib/utils'
+import { memo, useCallback } from 'react'
 
 interface EnhancedTaskCardProps {
   task: Task
@@ -19,7 +20,7 @@ interface EnhancedTaskCardProps {
   onClick?: (task: Task) => void
 }
 
-export function EnhancedTaskCard({ task, onComplete, onDelete, onEdit, onClick }: EnhancedTaskCardProps) {
+const EnhancedTaskCard = memo(function EnhancedTaskCard({ task, onComplete, onDelete, onEdit, onClick }: EnhancedTaskCardProps) {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'high': return 'border-l-red-500'
@@ -60,28 +61,32 @@ export function EnhancedTaskCard({ task, onComplete, onDelete, onEdit, onClick }
     return 'text-muted-foreground bg-muted'
   }
 
-  const handleCardClick = (e: React.MouseEvent) => {
+  // Use useCallback to prevent unnecessary re-renders
+  const handleCardClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
     onClick?.(task)
-  }
+  }, [onClick, task])
 
-  const handleComplete = (e: React.MouseEvent) => {
+  const handleComplete = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
+    console.log('EnhancedTaskCard - calling onComplete for task:', task.id)
     onComplete(task.id)
-  }
+  }, [onComplete, task.id])
 
-  const handleAction = (action: string, e: React.MouseEvent) => {
+  const handleAction = useCallback((action: string, e: React.MouseEvent) => {
     e.stopPropagation()
     
+    console.log('EnhancedTaskCard - action:', action, 'for task:', task.id)
     switch (action) {
       case 'edit':
         onEdit(task)
         break
       case 'delete':
+        console.log('EnhancedTaskCard - calling onDelete for task:', task.id)
         onDelete(task.id)
         break
     }
-  }
+  }, [onEdit, onDelete, task])
 
   const isCompleted = task.status === 'completed'
 
@@ -192,4 +197,15 @@ export function EnhancedTaskCard({ task, onComplete, onDelete, onEdit, onClick }
       )}
     </Card>
   )
-}
+}, (prevProps, nextProps) => {
+  // Only re-render if task properties that affect display have changed
+  return (
+    prevProps.task.id === nextProps.task.id &&
+    prevProps.task.status === nextProps.task.status &&
+    prevProps.task.title === nextProps.task.title &&
+    prevProps.task.updated_at === nextProps.task.updated_at &&
+    prevProps.task.priority === nextProps.task.priority
+  )
+})
+
+export { EnhancedTaskCard }

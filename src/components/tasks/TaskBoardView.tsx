@@ -58,27 +58,30 @@ export function TaskBoardView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit,
     return filteredTasks
   }
 
-  const handleTaskClick = (task: Task) => {
+  // Use useCallback for event handlers to prevent unnecessary re-renders
+  const handleTaskClick = useCallback((task: Task) => {
+    console.log('TaskBoardView - task clicked:', task.id)
     setSelectedTask(task)
     setIsPanelOpen(true)
-  }
+  }, [])
 
-  const handlePanelClose = () => {
+  const handlePanelClose = useCallback(() => {
     setIsPanelOpen(false)
     setSelectedTask(null)
-  }
+  }, [])
 
-  const handleTaskUpdate = (updatedTask: Task) => {
+  const handleTaskUpdate = useCallback((updatedTask: Task) => {
+    console.log('TaskBoardView - task updated:', updatedTask.id)
     onTaskEdit(updatedTask)
     setSelectedTask(updatedTask)
-  }
+  }, [onTaskEdit])
 
-  const toggleColumnExpansion = (columnId: string) => {
+  const toggleColumnExpansion = useCallback((columnId: string) => {
     setExpandedColumns(prev => ({
       ...prev,
       [columnId]: !prev[columnId]
     }))
-  }
+  }, [])
 
   if (loading || statusesLoading) {
     return (
@@ -160,10 +163,10 @@ export function TaskBoardView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit,
                   </Button>
                 </NewTaskDialog>
                 
-                {/* Tasks */}
+                {/* Tasks - Enhanced key for proper re-rendering */}
                 {visibleTasks.map(task => (
                   <EnhancedTaskCard
-                    key={task.id}
+                    key={`${task.id}-${task.updated_at}-${task.status}`}
                     task={task}
                     onComplete={onTaskComplete}
                     onDelete={onTaskDelete}
