@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Task } from '@/hooks/useTasks'
+import { useTaskStatuses } from '@/hooks/useTaskStatuses'
 import { cn } from '@/lib/utils'
 import { toast } from '@/hooks/use-toast'
 
@@ -22,6 +23,7 @@ export function TaskDetailPanel({ task, isOpen, onClose, onUpdate, onDelete }: T
   const [editedTask, setEditedTask] = useState<Task | null>(null)
   const [hasChanges, setHasChanges] = useState(false)
   const [isAutoSaving, setIsAutoSaving] = useState(false)
+  const { statuses } = useTaskStatuses()
 
   // Auto-save functionality
   const autoSave = useCallback(async (taskToSave: Task) => {
@@ -185,9 +187,33 @@ export function TaskDetailPanel({ task, isOpen, onClose, onUpdate, onDelete }: T
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-white border-2 border-gray-200 shadow-lg">
-                  <SelectItem value="pending" className="text-gray-900">📋 To Do</SelectItem>
-                  <SelectItem value="in_progress" className="text-gray-900">⚡ In Progress</SelectItem>
-                  <SelectItem value="completed" className="text-gray-900">✅ Done</SelectItem>
+                  {statuses.length > 0 ? (
+                    statuses.map(status => {
+                      const statusValue = status.name.toLowerCase().replace(/\s+/g, '_')
+                      // Map to legacy status values
+                      let mappedValue = statusValue
+                      if (statusValue === 'to_do') mappedValue = 'pending'
+                      if (statusValue === 'done') mappedValue = 'completed'
+                      
+                      return (
+                        <SelectItem key={status.id} value={mappedValue} className="text-gray-900">
+                          <div className="flex items-center gap-2">
+                            <div 
+                              className="w-3 h-3 rounded-full" 
+                              style={{ backgroundColor: status.color }}
+                            />
+                            {status.name}
+                          </div>
+                        </SelectItem>
+                      )
+                    })
+                  ) : (
+                    <>
+                      <SelectItem value="pending" className="text-gray-900">📋 To Do</SelectItem>
+                      <SelectItem value="in_progress" className="text-gray-900">⚡ In Progress</SelectItem>
+                      <SelectItem value="completed" className="text-gray-900">✅ Done</SelectItem>
+                    </>
+                  )}
                 </SelectContent>
               </Select>
             </div>
