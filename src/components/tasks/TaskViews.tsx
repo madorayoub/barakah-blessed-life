@@ -20,7 +20,7 @@ export type TaskViewType = 'list' | 'board' | 'calendar'
 
 export function TaskViews({ tasks, onTaskComplete, onTaskDelete, onTaskEdit, loading }: TaskViewsProps) {
   const navigate = useNavigate()
-  const [currentView, setCurrentView] = useState<TaskViewType>('board')
+  const [currentView, setCurrentView] = useState<TaskViewType>('board') // Default to board view
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState<'all' | 'my-tasks' | 'today' | 'this-week' | 'overdue'>('all')
 
