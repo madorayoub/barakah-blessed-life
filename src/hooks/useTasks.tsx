@@ -412,6 +412,22 @@ export function useTasks() {
     const completed_at = new Date().toISOString()
     const task = tasks.find(t => t.id === taskId)
     
+    // OPTIMISTIC UPDATE: Mark as completed immediately for instant UI feedback
+    setTasks(prev => prev.map(t => {
+      if (t.id === taskId) {
+        return { ...t, status: 'completed' as Task['status'], completed_at }
+      }
+      // Also update subtasks
+      return {
+        ...t,
+        subtasks: (t.subtasks || []).map(subtask => 
+          subtask.id === taskId 
+            ? { ...subtask, status: 'completed' as Task['status'], completed_at }
+            : subtask
+        )
+      }
+    }))
+
     const result = await updateTask(taskId, { 
       status: 'completed',
       completed_at
