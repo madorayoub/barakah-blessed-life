@@ -76,6 +76,11 @@ export function ModernDatePicker({
     setSelectedDate(date)
     const dateString = date.toISOString().split('T')[0]
     onChange(dateString)
+    
+    // Force immediate UI update by updating current month/year if needed
+    setCurrentMonth(date.getMonth())
+    setCurrentYear(date.getFullYear())
+    
     if (!showTime) {
       setIsOpen(false)
     }
@@ -108,8 +113,15 @@ export function ModernDatePicker({
     if (e.key === 'Escape') {
       setIsOpen(false)
     }
-    // Add more keyboard navigation later if needed
-    // Arrow keys, Enter for selection, etc.
+    if (e.key === 'Enter' || e.key === ' ') {
+      setIsOpen(true)
+    }
+  }
+
+  const handleInputClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsOpen(true)
   }
 
   const isToday = (date: Date) => {
@@ -150,32 +162,42 @@ export function ModernDatePicker({
   const calendarDays = generateCalendarDays(currentMonth, currentYear)
 
   return (
-    <div className={cn("space-y-2 max-w-80", className)}>
+    <div className={cn("space-y-2 w-full max-w-80", className)}>
       {label && (
-        <Label className="text-sm font-medium text-foreground">{label}</Label>
+        <Label className="text-sm font-medium text-gray-700 block">{label}</Label>
       )}
       
       <div className="flex gap-2">
-        {/* Date Picker */}
+        {/* Date Picker with Large Click Target */}
         <Popover open={isOpen} onOpenChange={setIsOpen}>
           <PopoverTrigger asChild>
-            <Button
-              variant="outline"
+            <div 
+              onClick={handleInputClick}
+              onKeyDown={handleKeyDown}
               className={cn(
-                "w-full justify-start text-left font-normal h-10 border-2 border-border hover:border-primary transition-colors max-w-64",
-                !selectedDate && "text-muted-foreground"
+                "w-full min-h-[48px] cursor-pointer border-2 border-gray-200 rounded-lg px-4 py-3 flex items-center justify-between hover:border-primary focus:border-primary transition-colors bg-white focus:outline-none focus:ring-2 focus:ring-primary/20",
+                !selectedDate && "text-gray-500"
               )}
+              role="button"
+              aria-label="Open date picker"
+              tabIndex={0}
             >
-              <Calendar className="mr-2 h-4 w-4 text-primary" />
-              {formatDisplayDate(selectedDate)}
-            </Button>
+              <span className="text-gray-900 font-medium flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-primary" />
+                {formatDisplayDate(selectedDate)}
+              </span>
+              <div className="h-5 w-5 text-gray-400">
+                {isOpen ? "📅" : "▼"}
+              </div>
+            </div>
           </PopoverTrigger>
           <PopoverContent 
-            className="w-auto p-0 bg-white shadow-xl border-2 border-border max-w-80" 
+            className="w-auto p-0 border border-gray-200 shadow-xl rounded-xl max-w-80 bg-white" 
             align="start"
             onKeyDown={handleKeyDown}
+            sideOffset={4}
           >
-            <Card>
+            <Card className="border-0 shadow-none">
               <CardContent className="p-4">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-4">
@@ -183,12 +205,12 @@ export function ModernDatePicker({
                     variant="ghost"
                     size="icon"
                     onClick={goToPreviousMonth}
-                    className="h-8 w-8 hover:bg-primary/10 text-primary"
+                    className="h-9 w-9 hover:bg-gray-100 text-gray-600 hover:text-primary rounded-lg"
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
                   
-                  <div className="text-sm font-semibold text-foreground">
+                  <div className="text-base font-semibold text-gray-900">
                     {MONTHS[currentMonth]} {currentYear}
                   </div>
                   
@@ -196,7 +218,7 @@ export function ModernDatePicker({
                     variant="ghost"
                     size="icon"
                     onClick={goToNextMonth}
-                    className="h-8 w-8 hover:bg-primary/10 text-primary"
+                    className="h-9 w-9 hover:bg-gray-100 text-gray-600 hover:text-primary rounded-lg"
                   >
                     <ChevronRight className="h-4 w-4" />
                   </Button>
@@ -208,7 +230,7 @@ export function ModernDatePicker({
                     variant="outline"
                     size="sm"
                     onClick={handleToday}
-                    className="w-full border-primary/30 text-primary hover:bg-primary hover:text-white transition-colors"
+                    className="w-full border border-primary/30 text-primary hover:bg-primary hover:text-white transition-colors rounded-lg font-medium"
                   >
                     Today
                   </Button>
@@ -219,7 +241,7 @@ export function ModernDatePicker({
                   {DAYS.map(day => (
                     <div 
                       key={day} 
-                      className="h-10 flex items-center justify-center text-xs font-medium text-muted-foreground"
+                      className="h-10 flex items-center justify-center text-xs font-semibold text-gray-600"
                     >
                       {day}
                     </div>
@@ -229,22 +251,22 @@ export function ModernDatePicker({
                 {/* Calendar Grid */}
                 <div className="grid grid-cols-7 gap-1">
                   {calendarDays.map((date, index) => (
-                    <Button
+                    <button
                       key={index}
-                      variant="ghost"
-                      size="icon"
                       onClick={() => date && handleDateSelect(date)}
                       disabled={!date}
                       className={cn(
-                        "h-11 w-11 p-0 font-normal text-sm transition-all duration-200",
-                        date && isToday(date) && "ring-2 ring-primary ring-offset-2",
-                        date && isSelected(date) && "bg-primary text-white hover:bg-primary/90",
-                        date && !isSelected(date) && "hover:bg-primary/10 hover:text-primary",
-                        !date && "invisible"
+                        "h-10 w-10 flex items-center justify-center rounded-lg font-medium text-sm transition-all duration-200 cursor-pointer",
+                        date && isToday(date) && "border-2 border-primary font-bold text-primary",
+                        date && isSelected(date) && "bg-primary text-white hover:bg-primary/90 shadow-md",
+                        date && !isSelected(date) && !isToday(date) && "hover:bg-gray-100 text-gray-700",
+                        date && !isSelected(date) && isToday(date) && "hover:bg-primary/10",
+                        !date && "invisible cursor-default"
                       )}
+                      type="button"
                     >
                       {date?.getDate()}
-                    </Button>
+                    </button>
                   ))}
                 </div>
               </CardContent>
@@ -261,7 +283,7 @@ export function ModernDatePicker({
                 type="time"
                 value={timeValue || ''}
                 onChange={(e) => onTimeChange?.(e.target.value)}
-                className="pl-10 h-10 w-32 border-2 border-border focus:border-primary"
+                className="pl-10 h-12 w-32 border-2 border-gray-200 focus:border-primary rounded-lg bg-white text-gray-900"
               />
             </div>
           </div>
