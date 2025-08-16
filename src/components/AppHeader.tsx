@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
 import { cn } from '@/lib/utils'
+import { useAuth } from '@/hooks/useAuth'
 
 interface AppHeaderProps {
   title: string
@@ -8,6 +9,7 @@ interface AppHeaderProps {
 
 export function AppHeader({ title, subtitle }: AppHeaderProps) {
   const location = useLocation()
+  const { user } = useAuth()
   
   const isCurrentPath = (path: string) => location.pathname === path
 
@@ -104,17 +106,20 @@ export function AppHeader({ title, subtitle }: AppHeaderProps) {
               >
                 Settings
               </Link>
-              <Link 
-                to="/pricing" 
-                className={cn(
-                  "px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200",
-                  isCurrentPath('/pricing') 
-                    ? "bg-white dark:bg-gray-700 text-emerald-600 shadow-sm" 
-                    : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-gray-700/50"
-                )}
-              >
-                Pricing
-              </Link>
+              {/* Only show pricing for non-logged-in users */}
+              {!user && (
+                <Link 
+                  to="/pricing" 
+                  className={cn(
+                    "px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200",
+                    isCurrentPath('/pricing') 
+                      ? "bg-white dark:bg-gray-700 text-emerald-600 shadow-sm" 
+                      : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-gray-700/50"
+                  )}
+                >
+                  Pricing
+                </Link>
+              )}
             </div>
           </nav>
         </div>
