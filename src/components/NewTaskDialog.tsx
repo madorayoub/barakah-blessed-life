@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, Calendar, Clock, Flag, BookOpen, Heart, Star, Gift, GraduationCap, Phone, Users, Sun, Moon } from 'lucide-react'
+import { Plus, Calendar, Clock, Flag, BookOpen, Heart, Star, Gift, GraduationCap, Phone, Users, Sun, Moon, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { useTasks, TaskTemplate } from '@/hooks/useTasks'
+import { AdvancedTaskDialog } from './AdvancedTaskDialog'
 
 const iconMap: Record<string, any> = {
   'sun': Sun,
@@ -31,6 +32,7 @@ interface NewTaskDialogProps {
 export function NewTaskDialog({ children }: NewTaskDialogProps) {
   const { createTask, createTaskFromTemplate, createCategory, categories, templates } = useTasks()
   const [open, setOpen] = useState(false)
+  const [taskMode, setTaskMode] = useState<'basic' | 'advanced'>('basic')
   const [isTemplate, setIsTemplate] = useState(false)
   const [showNewCategory, setShowNewCategory] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState('')
@@ -107,6 +109,12 @@ export function NewTaskDialog({ children }: NewTaskDialogProps) {
     }
   }
 
+  // If advanced mode is selected, render the AdvancedTaskDialog instead
+  const handleAdvancedMode = () => {
+    setOpen(false) // Close current dialog
+    // The AdvancedTaskDialog will be triggered separately
+  }
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -121,8 +129,35 @@ export function NewTaskDialog({ children }: NewTaskDialogProps) {
         </DialogHeader>
 
         <div className="space-y-6">
+          {/* Mode Selection */}
+          <div className="flex items-center justify-center">
+            <div className="flex bg-muted rounded-lg p-1">
+              <Button
+                type="button"
+                variant={taskMode === 'basic' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setTaskMode('basic')}
+                className="h-8"
+              >
+                <Plus className="h-3 w-3 mr-1" />
+                Quick Task
+              </Button>
+              <AdvancedTaskDialog>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-8"
+                >
+                  <Settings className="h-3 w-3 mr-1" />
+                  Advanced
+                </Button>
+              </AdvancedTaskDialog>
+            </div>
+          </div>
+
           {/* Template or Custom Toggle */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 justify-center">
             <Button
               type="button"
               variant={!isTemplate ? "default" : "outline"}

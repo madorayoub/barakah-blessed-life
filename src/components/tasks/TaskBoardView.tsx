@@ -24,7 +24,10 @@ interface TaskBoardViewProps {
 export function TaskBoardView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit, onTaskCreate, loading }: TaskBoardViewProps) {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [isPanelOpen, setIsPanelOpen] = useState(false)
+  const [expandedColumns, setExpandedColumns] = useState<Record<string, boolean>>({})
   const { statuses, loading: statusesLoading } = useTaskStatuses()
+  
+  const INITIAL_TASK_LIMIT = 10
 
   // Map custom statuses to columns, with fallback to default columns
   const columns = statuses.length > 0 ? statuses.map(status => ({
@@ -62,6 +65,13 @@ export function TaskBoardView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit,
   const handleTaskUpdate = (updatedTask: Task) => {
     onTaskEdit(updatedTask)
     setSelectedTask(updatedTask)
+  }
+
+  const toggleColumnExpansion = (columnId: string) => {
+    setExpandedColumns(prev => ({
+      ...prev,
+      [columnId]: !prev[columnId]
+    }))
   }
 
   if (loading || statusesLoading) {
@@ -108,6 +118,9 @@ export function TaskBoardView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit,
       <div className="flex gap-6 overflow-x-auto pb-6">
         {columns.map(column => {
           const columnTasks = getTasksByStatus(column.status)
+          const isExpanded = expandedColumns[column.id] || false
+          const visibleTasks = isExpanded ? columnTasks : columnTasks.slice(0, INITIAL_TASK_LIMIT)
+          const hasMoreTasks = columnTasks.length > INITIAL_TASK_LIMIT
           
           return (
             <Card key={column.id} className={`flex-shrink-0 w-80 min-h-96 ${column.color}`}>
@@ -133,7 +146,7 @@ export function TaskBoardView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit,
                 <QuickAddTask groupId={column.id} columnStatus={column.status} />
                 
                 {/* Tasks */}
-                {columnTasks.map(task => (
+                {visibleTasks.map(task => (
                   <EnhancedTaskCard
                     key={task.id}
                     task={task}
@@ -143,6 +156,29 @@ export function TaskBoardView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit,
                     onClick={handleTaskClick}
                   />
                 ))}
+                
+                {/* Show More Button */}
+                {hasMoreTasks && !isExpanded && (
+                  <Button
+                    variant="ghost"
+                    onClick={() => toggleColumnExpansion(column.id)}
+                    className="w-full py-3 mt-2 text-sm text-muted-foreground hover:text-foreground border-2 border-dashed border-primary/30 hover:border-primary/50 hover:bg-primary/5 rounded-lg transition-all"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Show More ({columnTasks.length - INITIAL_TASK_LIMIT} more tasks)
+                  </Button>
+                )}
+                
+                {/* Show Less Button */}
+                {hasMoreTasks && isExpanded && (
+                  <Button
+                    variant="ghost"
+                    onClick={() => toggleColumnExpansion(column.id)}
+                    className="w-full py-2 mt-2 text-sm text-muted-foreground hover:text-foreground border border-gray-300 hover:bg-gray-50 rounded-lg"
+                  >
+                    Show Less
+                  </Button>
+                )}
                 
                 {columnTasks.length === 0 && (
                   <div className="text-center py-8 text-muted-foreground">
