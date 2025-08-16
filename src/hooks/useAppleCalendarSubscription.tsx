@@ -15,13 +15,24 @@ export function useAppleCalendarSubscription() {
   const { toast } = useToast()
 
   const generateSubscriptionUrl = async () => {
-    if (!user || !prayerTimes) return
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to generate calendar subscription.",
+        variant: "destructive",
+      })
+      return
+    }
 
     try {
       setIsGenerating(true)
       
       // Generate ICS calendar data
       const icsData = generateICSCalendar()
+      
+      if (!icsData || icsData.length < 100) {
+        throw new Error("No calendar data available")
+      }
       
       // In a real implementation, you'd upload this to a public URL
       // For demo, we'll create a blob URL
@@ -37,9 +48,10 @@ export function useAppleCalendarSubscription() {
         description: "Your Apple Calendar subscription URL has been generated.",
       })
     } catch (error) {
+      console.error('Apple Calendar subscription error:', error)
       toast({
         title: "Generation Failed",
-        description: "Could not generate calendar subscription. Please try again.",
+        description: `Could not generate calendar subscription: ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: "destructive",
       })
     } finally {
@@ -50,10 +62,10 @@ export function useAppleCalendarSubscription() {
   const generateICSCalendar = () => {
     const events = []
     
-    // Add prayer times for next 365 days
-    for (let i = 0; i < 365; i++) {
+    // Add prayer times for next 30 days (instead of 365 for better performance)
+    for (let i = 0; i < 30; i++) {
       const date = addDays(new Date(), i)
-      if (prayerTimes) {
+      if (prayerTimes && prayerTimes.prayers) {
         prayerTimes.prayers.forEach(prayer => {
           const startTime = new Date(date)
           // prayer.time is already a Date object
@@ -63,10 +75,10 @@ export function useAppleCalendarSubscription() {
           
           events.push({
             uid: `prayer-${prayer.name}-${format(date, 'yyyy-MM-dd')}@barakah.app`,
-            summary: `${prayer.name} Prayer`,
+            summary: `${prayer.displayName || prayer.name} Prayer`,
             start: startTime,
             end: endTime,
-            description: `Daily ${prayer.name} prayer reminder from Barakah Tasks`,
+            description: `Daily ${prayer.displayName || prayer.name} prayer reminder from Barakah Tasks`,
             categories: ['Prayer', 'Barakah Tasks']
           })
         })
@@ -74,17 +86,19 @@ export function useAppleCalendarSubscription() {
     }
     
     // Add tasks with due dates
-    tasks.filter(task => task.due_date).forEach(task => {
-      const dueDate = new Date(task.due_date!)
-      events.push({
-        uid: `task-${task.id}@barakah.app`,
-        summary: task.title,
-        start: dueDate,
-        end: new Date(dueDate.getTime() + 60 * 60000), // 1 hour
-        description: `Task from Barakah Tasks: ${task.description || ''}`,
-        categories: ['Task', 'Barakah Tasks']
+    if (tasks && Array.isArray(tasks)) {
+      tasks.filter(task => task.due_date).forEach(task => {
+        const dueDate = new Date(task.due_date!)
+        events.push({
+          uid: `task-${task.id}@barakah.app`,
+          summary: task.title,
+          start: dueDate,
+          end: new Date(dueDate.getTime() + 60 * 60000), // 1 hour
+          description: `Task from Barakah Tasks: ${task.description || ''}`,
+          categories: ['Task', 'Barakah Tasks']
+        })
       })
-    })
+    }
 
     // Generate ICS format
     const formatDate = (date: Date) => {
