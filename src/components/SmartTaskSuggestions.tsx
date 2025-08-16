@@ -42,12 +42,16 @@ export function SmartTaskSuggestions({ onTaskSuggested }: SmartTaskSuggestionsPr
     const currentHour = now.getHours()
     const newSuggestions = []
 
+    // Get current completed and pending tasks
+    const currentTodayCompleted = tasks.filter(task => task.completed_at?.startsWith(today))
+    const currentPendingTasks = tasks.filter(task => task.status === 'pending')
+
     // Morning suggestions (5 AM - 11 AM)
     if (currentHour >= 5 && currentHour < 11) {
-      const hasFajr = todayCompleted.some(task => 
+      const hasFajr = currentTodayCompleted.some(task => 
         task.title.toLowerCase().includes('fajr')
       )
-      const hasMorningDhikr = todayCompleted.some(task => 
+      const hasMorningDhikr = currentTodayCompleted.some(task => 
         task.title.toLowerCase().includes('morning dhikr')
       )
       
@@ -83,7 +87,7 @@ export function SmartTaskSuggestions({ onTaskSuggested }: SmartTaskSuggestionsPr
 
     // Afternoon suggestions (12 PM - 4 PM)
     if (currentHour >= 12 && currentHour < 16) {
-      const hasDhuhr = todayCompleted.some(task => 
+      const hasDhuhr = currentTodayCompleted.some(task => 
         task.title.toLowerCase().includes('dhuhr')
       )
       
@@ -101,10 +105,10 @@ export function SmartTaskSuggestions({ onTaskSuggested }: SmartTaskSuggestionsPr
 
     // Evening suggestions (5 PM - 8 PM)
     if (currentHour >= 17 && currentHour < 20) {
-      const hasAsr = todayCompleted.some(task => 
+      const hasAsr = currentTodayCompleted.some(task => 
         task.title.toLowerCase().includes('asr')
       )
-      const hasMaghrib = todayCompleted.some(task => 
+      const hasMaghrib = currentTodayCompleted.some(task => 
         task.title.toLowerCase().includes('maghrib')
       )
       
@@ -131,10 +135,10 @@ export function SmartTaskSuggestions({ onTaskSuggested }: SmartTaskSuggestionsPr
 
     // Night suggestions (8 PM - 11 PM)
     if (currentHour >= 20 && currentHour < 23) {
-      const hasIsha = todayCompleted.some(task => 
+      const hasIsha = currentTodayCompleted.some(task => 
         task.title.toLowerCase().includes('isha')
       )
-      const hasEveningDhikr = todayCompleted.some(task => 
+      const hasEveningDhikr = currentTodayCompleted.some(task => 
         task.title.toLowerCase().includes('evening dhikr')
       )
       
@@ -172,7 +176,7 @@ export function SmartTaskSuggestions({ onTaskSuggested }: SmartTaskSuggestionsPr
     }
 
     // Add productivity suggestions based on incomplete tasks
-    const incompleteTasks = pendingTasks.filter(task => 
+    const incompleteTasks = currentPendingTasks.filter(task => 
       task.due_date === today && !task.title.toLowerCase().includes('prayer')
     )
     
@@ -193,17 +197,20 @@ export function SmartTaskSuggestions({ onTaskSuggested }: SmartTaskSuggestionsPr
 
     setSuggestions(newSuggestions.slice(0, 3)) // Show max 3 suggestions
     setLastGeneratedTime(currentTime)
-  }, [todayCompleted, pendingTasks, today, lastGeneratedTime])
+  }, [tasks, today, lastGeneratedTime])
 
-  // Use interval instead of dependency on tasks to prevent infinite loops
+  // Initialize suggestions once and use interval for updates
   useEffect(() => {
+    // Initial generation
     generateSmartSuggestions()
     
     // Update suggestions every 10 minutes
-    const interval = setInterval(generateSmartSuggestions, 10 * 60 * 1000)
+    const interval = setInterval(() => {
+      generateSmartSuggestions()
+    }, 10 * 60 * 1000)
     
     return () => clearInterval(interval)
-  }, []) // Remove dependency to prevent infinite loops
+  }, [generateSmartSuggestions])
 
   const handleCreateSuggestion = async (suggestion: any) => {
     if (suggestion.action === 'existing_task') {

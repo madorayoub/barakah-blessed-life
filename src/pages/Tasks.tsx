@@ -1,6 +1,5 @@
 import { TaskViews } from '@/components/tasks/TaskViews'
 import { TaskDetailSidebar } from '@/components/TaskDetailSidebar'
-import { SmartTaskSuggestions } from '@/components/SmartTaskSuggestions'
 import { TaskCompletionReward } from '@/components/TaskCompletionReward'
 import { RecurringTaskManager } from '@/components/RecurringTaskManager'
 import { useTasks } from '@/hooks/useTasks'
@@ -54,10 +53,7 @@ const Tasks = () => {
     <div className="min-h-screen bg-background">
       <RecurringTaskManager />
       
-      {/* Smart Suggestions */}
-      <div className="container mx-auto px-4 pt-6">
-        <SmartTaskSuggestions onTaskSuggested={handleTaskSuggested} />
-      </div>
+      {/* Smart Suggestions temporarily disabled due to infinite loop */}
 
       {/* Main Task Views */}
       <TaskViews
