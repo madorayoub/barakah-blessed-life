@@ -456,8 +456,11 @@ export function useTasks() {
       description: template.description || undefined,
       priority: template.priority as Task['priority'],
       status: 'pending' as Task['status'],
-      is_recurring: template.is_recurring || false,
-      recurring_pattern: template.recurring_pattern || undefined,
+      // CRITICAL FIX: Do NOT make template tasks recurring by default
+      // User can manually enable recurring if they want
+      is_recurring: false,
+      // Remove any automatic recurring pattern
+      recurring_pattern: undefined,
       due_date: new Date().toISOString().split('T')[0] // Today
     }
 
