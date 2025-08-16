@@ -1,8 +1,11 @@
 import { useState } from 'react'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { BarChart3, Target, Trophy, Download } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Progress } from '@/components/ui/progress'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Flame, Calendar, TrendingUp, ChevronDown, ChevronUp, Trophy, BookOpen, Target, Download, Eye } from 'lucide-react'
 import { useAnalytics } from '@/hooks/useAnalytics'
 import { PrayerAnalytics } from '@/components/analytics/PrayerAnalytics'
 import { TaskAnalytics } from '@/components/analytics/TaskAnalytics'
@@ -19,6 +22,19 @@ export default function Analytics() {
     getQuranVerse 
   } = useAnalytics()
 
+  const [expandedSections, setExpandedSections] = useState({
+    prayers: false,
+    spiritual: false,
+    tasks: false
+  })
+
+  const toggleSection = (section: keyof typeof expandedSections) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }))
+  }
+
   if (loading) {
     return (
       <div className="container mx-auto p-6">
@@ -32,92 +48,225 @@ export default function Analytics() {
     )
   }
 
+  const todayPrayers = prayerStats?.weeklyData?.[6]?.completed || 0
+  const totalDailyPrayers = 5
+  const currentStreak = prayerStats?.currentStreak || 0
+  const weeklyCompletion = prayerStats?.weeklyData?.reduce((acc, day) => acc + day.completed, 0) || 0
+  const totalWeeklyPrayers = 35
+  const weeklyProgress = (weeklyCompletion / totalWeeklyPrayers) * 100
+
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold">Progress Analytics</h1>
-        <p className="text-muted-foreground">Track your spiritual journey and productivity growth</p>
+    <div className="container mx-auto p-6 space-y-8">
+      {/* Hero Section */}
+      <div className="text-center space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Your Spiritual Journey</h1>
+          <p className="text-muted-foreground">Track your progress and stay motivated</p>
+        </div>
+
+        {/* Daily Progress Circle */}
+        <div className="relative w-32 h-32 mx-auto">
+          <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 100 100">
+            <circle
+              cx="50"
+              cy="50"
+              r="45"
+              stroke="hsl(var(--muted))"
+              strokeWidth="8"
+              fill="none"
+            />
+            <circle
+              cx="50"
+              cy="50"
+              r="45"
+              stroke="hsl(var(--primary))"
+              strokeWidth="8"
+              fill="none"
+              strokeDasharray={`${(todayPrayers / totalDailyPrayers) * 283} 283`}
+              strokeLinecap="round"
+            />
+          </svg>
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <div className="text-2xl font-bold">{todayPrayers}/{totalDailyPrayers}</div>
+            <div className="text-sm text-muted-foreground">Today's Prayers</div>
+          </div>
+        </div>
+
+        {/* Key Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
+          <Card className="text-center">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Flame className="h-5 w-5 text-orange-500" />
+                <span className="text-2xl font-bold">{currentStreak}</span>
+              </div>
+              <p className="text-sm text-muted-foreground">Day Streak</p>
+            </CardContent>
+          </Card>
+
+          <Card className="text-center">
+            <CardContent className="p-4">
+              <div className="mb-2">
+                <span className="text-2xl font-bold">{weeklyProgress.toFixed(0)}%</span>
+              </div>
+              <p className="text-sm text-muted-foreground">This Week</p>
+              <Progress value={weeklyProgress} className="h-2 mt-2" />
+            </CardContent>
+          </Card>
+
+          <Card className="text-center">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Trophy className="h-5 w-5 text-amber-500" />
+                <span className="text-2xl font-bold">{achievements.filter(a => a.earned).length}</span>
+              </div>
+              <p className="text-sm text-muted-foreground">Achievements</p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
-      {/* Quick Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <BarChart3 className="h-8 w-8 text-emerald-600" />
-              <div>
-                <div className="text-2xl font-bold text-emerald-700">
-                  {prayerStats?.completionRate?.toFixed(0) || 0}%
+      {/* Main Insights - 3 Expandable Cards */}
+      <div className="space-y-6">
+        {/* Prayer Patterns Card */}
+        <Card>
+          <Collapsible open={expandedSections.prayers} onOpenChange={() => toggleSection('prayers')}>
+            <CollapsibleTrigger asChild>
+              <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Calendar className="h-6 w-6 text-emerald-600" />
+                    <div>
+                      <CardTitle>Prayer Patterns</CardTitle>
+                      <CardDescription>
+                        {prayerStats?.completionRate?.toFixed(0) || 0}% completion rate this week
+                      </CardDescription>
+                    </div>
+                  </div>
+                  {expandedSections.prayers ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
                 </div>
-                <div className="text-sm text-emerald-600">Prayer Completion</div>
-              </div>
-            </div>
-          </CardContent>
+              </CardHeader>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <CardContent>
+                {prayerStats && <PrayerAnalytics stats={prayerStats} />}
+              </CardContent>
+            </CollapsibleContent>
+          </Collapsible>
         </Card>
 
-        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <Target className="h-8 w-8 text-blue-600" />
-              <div>
-                <div className="text-2xl font-bold text-blue-700">
-                  {taskStats?.completionRate?.toFixed(0) || 0}%
+        {/* Spiritual Growth Card */}
+        <Card>
+          <Collapsible open={expandedSections.spiritual} onOpenChange={() => toggleSection('spiritual')}>
+            <CollapsibleTrigger asChild>
+              <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <BookOpen className="h-6 w-6 text-blue-600" />
+                    <div>
+                      <CardTitle>Spiritual Growth</CardTitle>
+                      <CardDescription>
+                        Track your Islamic practices and habits
+                      </CardDescription>
+                    </div>
+                  </div>
+                  {expandedSections.spiritual ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
                 </div>
-                <div className="text-sm text-blue-600">Task Success</div>
-              </div>
-            </div>
-          </CardContent>
+              </CardHeader>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <CardContent>
+                <Achievements 
+                  achievements={achievements}
+                  motivationalMessage={getMotivationalMessage()}
+                  quranVerse={getQuranVerse()}
+                />
+              </CardContent>
+            </CollapsibleContent>
+          </Collapsible>
         </Card>
 
-        <Card className="bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <Trophy className="h-8 w-8 text-amber-600" />
-              <div>
-                <div className="text-2xl font-bold text-amber-700">
-                  {achievements.filter(a => a.earned).length}
+        {/* Task Productivity Card */}
+        <Card>
+          <Collapsible open={expandedSections.tasks} onOpenChange={() => toggleSection('tasks')}>
+            <CollapsibleTrigger asChild>
+              <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <TrendingUp className="h-6 w-6 text-purple-600" />
+                    <div>
+                      <CardTitle>Task Productivity</CardTitle>
+                      <CardDescription>
+                        {taskStats?.completionRate?.toFixed(0) || 0}% task completion rate
+                      </CardDescription>
+                    </div>
+                  </div>
+                  {expandedSections.tasks ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
                 </div>
-                <div className="text-sm text-amber-600">Achievements</div>
-              </div>
-            </div>
-          </CardContent>
+              </CardHeader>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <CardContent>
+                {taskStats && <TaskAnalytics stats={taskStats} />}
+              </CardContent>
+            </CollapsibleContent>
+          </Collapsible>
         </Card>
       </div>
 
-      {/* Main Analytics Tabs */}
-      <Tabs defaultValue="prayers" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="prayers">Prayer Analytics</TabsTrigger>
-          <TabsTrigger value="tasks">Task Analytics</TabsTrigger>
-          <TabsTrigger value="achievements">Achievements</TabsTrigger>
-          <TabsTrigger value="export">Reports</TabsTrigger>
-        </TabsList>
+      {/* Actions Section */}
+      <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline" className="flex items-center gap-2">
+              <Eye className="h-4 w-4" />
+              View Detailed Reports
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Detailed Analytics Report</DialogTitle>
+              <DialogDescription>
+                Comprehensive view of your spiritual journey and productivity
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-6">
+              {prayerStats && <PrayerAnalytics stats={prayerStats} />}
+              {taskStats && <TaskAnalytics stats={taskStats} />}
+            </div>
+          </DialogContent>
+        </Dialog>
 
-        <TabsContent value="prayers">
-          {prayerStats && <PrayerAnalytics stats={prayerStats} />}
-        </TabsContent>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button className="flex items-center gap-2">
+              <Download className="h-4 w-4" />
+              Export Progress Report
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Export Progress Report</DialogTitle>
+              <DialogDescription>
+                Generate and download your spiritual journey report
+              </DialogDescription>
+            </DialogHeader>
+            <ExportReport 
+              prayerStats={prayerStats}
+              taskStats={taskStats}
+              achievements={achievements}
+            />
+          </DialogContent>
+        </Dialog>
+      </div>
 
-        <TabsContent value="tasks">
-          {taskStats && <TaskAnalytics stats={taskStats} />}
-        </TabsContent>
-
-        <TabsContent value="achievements">
-          <Achievements 
-            achievements={achievements}
-            motivationalMessage={getMotivationalMessage()}
-            quranVerse={getQuranVerse()}
-          />
-        </TabsContent>
-
-        <TabsContent value="export">
-          <ExportReport 
-            prayerStats={prayerStats}
-            taskStats={taskStats}
-            achievements={achievements}
-          />
-        </TabsContent>
-      </Tabs>
+      {/* Motivational Footer */}
+      <Card className="bg-gradient-to-r from-emerald-50 to-blue-50 border-emerald-200">
+        <CardContent className="p-6 text-center">
+          <h3 className="text-lg font-semibold mb-2">{getMotivationalMessage()}</h3>
+          <p className="text-muted-foreground italic">"{getQuranVerse()}"</p>
+        </CardContent>
+      </Card>
     </div>
   )
 }
