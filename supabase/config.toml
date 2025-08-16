@@ -1,1 +1,19 @@
 project_id = "blsecepdbtdbkpptqrxe"
+
+[auth]
+enabled = true
+
+[auth.external.google]
+enabled = true
+client_id = "env(GOOGLE_OAUTH_CLIENT_ID)"
+secret = "env(GOOGLE_OAUTH_CLIENT_SECRET)"
+redirect_uri = "env(GOOGLE_OAUTH_REDIRECT_URI)"
+
+[storage]
+enabled = true
+
+[functions]
+enabled = true
+
+[functions.caldav-proxy]
+verify_jwt = false

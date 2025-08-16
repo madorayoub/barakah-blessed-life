@@ -155,12 +155,12 @@ export function CalDAVIntegration() {
           </TabsContent>
 
           <TabsContent value="setup" className="space-y-6">
-            {/* Important CORS Warning */}
-            <Alert className="border-amber-200 bg-amber-50">
-              <AlertTriangle className="h-4 w-4 text-amber-600" />
-              <AlertDescription className="text-amber-800">
-                <strong>Technical Limitation:</strong> CalDAV from web browsers faces CORS restrictions. 
-                This demo shows the interface and workflow, but production would require a backend proxy service.
+            {/* Success Notice */}
+            <Alert className="border-green-200 bg-green-50">
+              <CheckCircle2 className="h-4 w-4 text-green-600" />
+              <AlertDescription className="text-green-800">
+                <strong>Real CalDAV Integration:</strong> This uses a backend proxy service to enable 
+                full CalDAV connectivity with iCloud, Google Calendar, and other providers.
               </AlertDescription>
             </Alert>
 

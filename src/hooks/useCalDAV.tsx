@@ -3,6 +3,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { usePrayerTimes } from '@/hooks/usePrayerTimes'
 import { useTasks } from '@/hooks/useTasks'
 import { useToast } from '@/hooks/use-toast'
+import { supabase } from '@/integrations/supabase/client'
 
 // CalDAV endpoints for major providers
 const CALDAV_PROVIDERS = {
@@ -49,40 +50,88 @@ export function useCalDAV() {
     }
   }, [user])
 
-  const discoverCalDAVEndpoint = async (serverUrl: string, username: string) => {
-    // IMPORTANT: This is a simulation due to CORS limitations
-    // Real CalDAV discovery would require a backend proxy
-    
+  const discoverCalDAVEndpoint = async (serverUrl: string, username: string, password: string) => {
     try {
       setIsDiscovering(true)
       
-      // Simulate CalDAV discovery process
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      // Discover principal URL using PROPFIND
+      const principalResponse = await makeCalDAVRequest({
+        method: 'PROPFIND',
+        url: serverUrl,
+        credentials: { username, password },
+        headers: { 'Depth': '0' },
+        body: `<?xml version="1.0" encoding="utf-8" ?>
+<D:propfind xmlns:D="DAV:">
+  <D:prop>
+    <D:current-user-principal />
+  </D:prop>
+</D:propfind>`
+      })
+
+      if (!principalResponse.ok) {
+        throw new Error('Failed to discover CalDAV principal')
+      }
+
+      // Parse principal URL from response
+      const principalUrl = parsePrincipalUrl(principalResponse.body)
       
-      // In a real implementation, this would:
-      // 1. Send OPTIONS request to discover CalDAV support
-      // 2. Send PROPFIND to get principal URL
-      // 3. Send PROPFIND to get calendar home set
-      // 4. List available calendars
+      // Discover calendar home set
+      const calendarHomeResponse = await makeCalDAVRequest({
+        method: 'PROPFIND',
+        url: `${serverUrl}${principalUrl}`,
+        credentials: { username, password },
+        headers: { 'Depth': '0' },
+        body: `<?xml version="1.0" encoding="utf-8" ?>
+<D:propfind xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav">
+  <D:prop>
+    <C:calendar-home-set />
+  </D:prop>
+</D:propfind>`
+      })
+
+      const calendarHomeSet = parseCalendarHomeSet(calendarHomeResponse.body)
       
       return {
-        principalUrl: `/${username}/principal/`,
-        calendarHomeSet: `/${username}/calendars/`,
+        principalUrl,
+        calendarHomeSet,
         supportedFeatures: ['calendar-access', 'calendar-schedule'],
-        calendars: [
-          {
-            url: `/${username}/calendars/personal/`,
-            displayName: 'Personal',
-            description: 'Personal Calendar',
-            supportedComponents: ['VEVENT', 'VTODO']
-          }
-        ]
+        calendars: []
       }
     } catch (error) {
-      throw new Error('CalDAV discovery failed: CORS or network error')
+      throw new Error(`CalDAV discovery failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setIsDiscovering(false)
     }
+  }
+
+  const makeCalDAVRequest = async (request: {
+    method: string
+    url: string
+    credentials: { username: string; password: string }
+    headers?: Record<string, string>
+    body?: string
+  }) => {
+    const { data, error } = await supabase.functions.invoke('caldav-proxy', {
+      body: request
+    })
+
+    if (error) {
+      throw new Error(`CalDAV request failed: ${error.message}`)
+    }
+
+    return data
+  }
+
+  const parsePrincipalUrl = (xmlResponse: string): string => {
+    // Simple XML parsing for principal URL
+    const match = xmlResponse.match(/<D:href[^>]*>([^<]+)<\/D:href>/)
+    return match ? match[1] : '/principal/'
+  }
+
+  const parseCalendarHomeSet = (xmlResponse: string): string => {
+    // Simple XML parsing for calendar home set
+    const match = xmlResponse.match(/<D:href[^>]*>([^<]+)<\/D:href>/)
+    return match ? match[1] : '/calendars/'
   }
 
   const testCalDAVConnection = async (config: {
@@ -92,18 +141,27 @@ export function useCalDAV() {
     password: string
   }) => {
     try {
-      // IMPORTANT: This is a simulation
-      // Real CalDAV authentication would face CORS issues from browsers
-      
       setIsConnecting(true)
       
-      // Simulate authentication test
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      // Test connection with a simple PROPFIND request
+      const testResponse = await makeCalDAVRequest({
+        method: 'PROPFIND',
+        url: config.serverUrl,
+        credentials: { username: config.username, password: config.password },
+        headers: { 'Depth': '0' },
+        body: `<?xml version="1.0" encoding="utf-8" ?>
+<D:propfind xmlns:D="DAV:">
+  <D:prop>
+    <D:current-user-principal />
+  </D:prop>
+</D:propfind>`
+      })
+
+      if (!testResponse.ok) {
+        throw new Error(`Authentication failed: ${testResponse.statusText}`)
+      }
       
-      // In reality, this would send an authenticated PROPFIND request
-      // to verify credentials and discover calendars
-      
-      const discovery = await discoverCalDAVEndpoint(config.serverUrl, config.username)
+      const discovery = await discoverCalDAVEndpoint(config.serverUrl, config.username, config.password)
       
       return {
         success: true,
@@ -118,6 +176,8 @@ export function useCalDAV() {
         success: false,
         error: error instanceof Error ? error.message : 'Connection failed'
       }
+    } finally {
+      setIsConnecting(false)
     }
   }
 
@@ -191,13 +251,32 @@ export function useCalDAV() {
   }
 
   const createBarakahTasksCalendar = async (config: any) => {
-    // Simulate creating a new calendar via CalDAV MKCALENDAR
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    const provider = CALDAV_PROVIDERS[config.provider as keyof typeof CALDAV_PROVIDERS]
+    const calendarUrl = `${provider.serverUrl}${provider.calendarHomeSet.replace('{{username}}', config.username)}barakah-tasks-${Date.now()}/`
     
-    const calendarUrl = `/calendars/${config.username}/barakah-tasks-${Date.now()}/`
-    
-    // In real implementation, this would send:
-    // MKCALENDAR request with calendar properties
+    // Create calendar using MKCALENDAR
+    const createResponse = await makeCalDAVRequest({
+      method: 'MKCALENDAR',
+      url: calendarUrl,
+      credentials: { username: config.username, password: config.password },
+      body: `<?xml version="1.0" encoding="utf-8" ?>
+<C:mkcalendar xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav">
+  <D:set>
+    <D:prop>
+      <D:displayname>${config.calendarName || 'Barakah Tasks'}</D:displayname>
+      <C:calendar-description>Prayer times and Islamic tasks from Barakah Tasks app</C:calendar-description>
+      <C:supported-calendar-component-set>
+        <C:comp name="VEVENT"/>
+        <C:comp name="VTODO"/>
+      </C:supported-calendar-component-set>
+    </D:prop>
+  </D:set>
+</C:mkcalendar>`
+    })
+
+    if (!createResponse.ok && createResponse.status !== 201) {
+      throw new Error(`Failed to create calendar: ${createResponse.statusText}`)
+    }
     
     return calendarUrl
   }
@@ -211,38 +290,72 @@ export function useCalDAV() {
     try {
       setIsConnecting(true)
       
-      // Simulate syncing prayer times and tasks
+      // Prepare events for sync
       const events = []
       
-      // Add prayer times
+      // Add prayer times as recurring events
       if (prayerTimes) {
         for (const prayer of prayerTimes.prayers) {
+          const startTime = new Date(prayer.time)
+          const endTime = new Date(startTime.getTime() + 30 * 60000)
+          
+          const icalEvent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Barakah Tasks//EN
+BEGIN:VEVENT
+UID:prayer-${prayer.name}-${new Date().toISOString().split('T')[0]}@barakah-tasks.app
+DTSTART:${formatICalDate(startTime)}
+DTEND:${formatICalDate(endTime)}
+RRULE:FREQ=DAILY
+SUMMARY:${prayer.displayName} Prayer
+DESCRIPTION:Time for ${prayer.displayName} prayer - Barakah Tasks
+CATEGORIES:Prayer,Barakah Tasks
+END:VEVENT
+END:VCALENDAR`
+
           events.push({
             uid: `prayer-${prayer.name}-${new Date().toISOString().split('T')[0]}`,
-            summary: `${prayer.displayName} Prayer`,
-            dtstart: prayer.time,
-            dtend: new Date(new Date(prayer.time).getTime() + 30 * 60000),
-            rrule: 'FREQ=DAILY',
-            categories: ['Prayer', 'Barakah Tasks'],
-            description: `Time for ${prayer.displayName} prayer`
+            icalData: icalEvent
           })
         }
       }
 
       // Add tasks with due dates
       tasks.filter(task => task.due_date).forEach(task => {
+        const dueDate = new Date(task.due_date + (task.due_time ? 'T' + task.due_time : 'T09:00:00'))
+        
+        const icalEvent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Barakah Tasks//EN
+BEGIN:VEVENT
+UID:task-${task.id}@barakah-tasks.app
+DTSTART:${formatICalDate(dueDate)}
+DTEND:${formatICalDate(new Date(dueDate.getTime() + 60 * 60000))}
+SUMMARY:${task.title}
+DESCRIPTION:${task.description || ''}
+CATEGORIES:Task,Barakah Tasks
+PRIORITY:${task.priority === 'urgent' ? '1' : task.priority === 'high' ? '2' : '3'}
+END:VEVENT
+END:VCALENDAR`
+
         events.push({
           uid: `task-${task.id}`,
-          summary: task.title,
-          dtstart: task.due_date + (task.due_time ? 'T' + task.due_time : ''),
-          description: task.description || '',
-          categories: ['Task', 'Barakah Tasks'],
-          priority: task.priority === 'urgent' ? 1 : task.priority === 'high' ? 2 : 3
+          icalData: icalEvent
         })
       })
 
-      // Simulate PUT requests to CalDAV server for each event
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      // Sync events to CalDAV server
+      for (const event of events) {
+        const eventUrl = `${connection.calendarUrl}${event.uid}.ics`
+        
+        await makeCalDAVRequest({
+          method: 'PUT',
+          url: eventUrl,
+          credentials: { username: connection.username, password: connection.password },
+          headers: { 'Content-Type': 'text/calendar; charset=utf-8' },
+          body: event.icalData
+        })
+      }
       
       // Update last sync time
       const updatedConnection = {
@@ -293,6 +406,10 @@ export function useCalDAV() {
       title: "CalDAV Disconnected",
       description: "Calendar connection has been removed",
     })
+  }
+
+  const formatICalDate = (date: Date): string => {
+    return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
   }
 
   return {
