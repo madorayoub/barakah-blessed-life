@@ -14,8 +14,15 @@ export function RecurringTaskManager() {
       const today = new Date()
       const todayStr = today.toISOString().split('T')[0]
       
-      // Get all recurring tasks
-      const recurringTasks = tasks.filter(task => task.is_recurring)
+      // Get all recurring tasks directly from database to avoid infinite loops
+      const { data: recurringTasks } = await supabase
+        .from('tasks')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('is_recurring', true)
+        .is('parent_task_id', null)
+      
+      if (!recurringTasks) return
       
       for (const recurringTask of recurringTasks) {
         const pattern = recurringTask.recurring_pattern
@@ -33,16 +40,18 @@ export function RecurringTaskManager() {
     const interval = setInterval(checkAndCreateRecurringTasks, 60 * 60 * 1000)
     
     return () => clearInterval(interval)
-  }, [user, tasks])
+  }, [user]) // Removed tasks dependency to prevent infinite loops
 
   const checkDailyRecurrence = async (parentTask: any, todayStr: string) => {
-    // Check if task already exists for today
-    const existsToday = tasks.some(task => 
-      task.parent_task_id === parentTask.id && 
-      task.due_date === todayStr
-    )
+    // Check if task already exists for today using database query
+    const { data: existingTasks } = await supabase
+      .from('tasks')
+      .select('id')
+      .eq('parent_task_id', parentTask.id)
+      .eq('due_date', todayStr)
+      .limit(1)
 
-    if (!existsToday) {
+    if (!existingTasks || existingTasks.length === 0) {
       await createTask({
         title: parentTask.title,
         description: parentTask.description,
@@ -61,12 +70,15 @@ export function RecurringTaskManager() {
     
     // For Islamic tasks like Jummah, check if it's Friday (5)
     if (parentTask.title.toLowerCase().includes('jummah') && dayOfWeek === 5) {
-      const existsToday = tasks.some(task => 
-        task.parent_task_id === parentTask.id && 
-        task.due_date === todayStr
-      )
+      // Check if task already exists for today using database query
+      const { data: existingTasks } = await supabase
+        .from('tasks')
+        .select('id')
+        .eq('parent_task_id', parentTask.id)
+        .eq('due_date', todayStr)
+        .limit(1)
 
-      if (!existsToday) {
+      if (!existingTasks || existingTasks.length === 0) {
         await createTask({
           title: parentTask.title,
           description: parentTask.description,
