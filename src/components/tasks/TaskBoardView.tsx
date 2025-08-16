@@ -26,6 +26,9 @@ export function TaskBoardView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit,
   const [expandedColumns, setExpandedColumns] = useState<Record<string, boolean>>({})
   const { statuses, loading: statusesLoading } = useTaskStatuses()
   
+  // DEBUG: Track task rendering in board view
+  console.log('TaskBoardView render - tasks received:', tasks.length)
+  
   const INITIAL_TASK_LIMIT = 10
 
   // Map custom statuses to columns, with fallback to default columns
@@ -42,13 +45,17 @@ export function TaskBoardView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit,
   ]
 
   const getTasksByStatus = (statusId: string) => {
-    return tasks.filter(task => {
+    const filteredTasks = tasks.filter(task => {
       // Handle legacy status mapping
       if (statusId === 'to_do' && task.status === 'pending') return true
       if (statusId === 'in_progress' && task.status === 'in_progress') return true
       if (statusId === 'done' && task.status === 'completed') return true
       return task.status === statusId
     })
+    
+    // DEBUG: Log task filtering
+    console.log(`Column ${statusId}: ${filteredTasks.length} tasks`)
+    return filteredTasks
   }
 
   const handleTaskClick = (task: Task) => {

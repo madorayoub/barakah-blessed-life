@@ -8,6 +8,9 @@ import { AppHeader } from '@/components/AppHeader'
 
 const Tasks = () => {
   const { tasks, updateTask, completeTask, deleteTask, createTask, loading, calculateTaskStreak } = useTasks()
+  
+  // DEBUG: Log task count changes to track UI updates
+  console.log('Tasks.tsx render - tasks count:', tasks.length)
   const [selectedTask, setSelectedTask] = useState<any>(null)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [showReward, setShowReward] = useState(false)
@@ -61,8 +64,9 @@ const Tasks = () => {
       
       {/* Smart Suggestions temporarily disabled due to infinite loop */}
 
-      {/* Main Task Views */}
+      {/* Main Task Views - Force re-render when tasks change */}
       <TaskViews
+        key={`tasks-${tasks.length}-${tasks.map(t => t.id).join(',')}`}
         tasks={tasks}
         onTaskComplete={handleTaskComplete}
         onTaskDelete={deleteTask}

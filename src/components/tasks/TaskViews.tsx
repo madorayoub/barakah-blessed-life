@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { List, Columns, Calendar, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -22,6 +22,13 @@ export function TaskViews({ tasks, onTaskComplete, onTaskDelete, onTaskEdit, onT
   const [currentView, setCurrentView] = useState<TaskViewType>('board')
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState<'all' | 'my-tasks' | 'today' | 'this-week' | 'overdue'>('all')
+  const [forceRender, setForceRender] = useState(0)
+
+  // Force re-render when tasks array changes
+  useEffect(() => {
+    console.log('TaskViews useEffect - tasks changed, forcing re-render')
+    setForceRender(prev => prev + 1)
+  }, [tasks.length, tasks.map(t => t.id).join(',')])
 
   // Smart filtering logic
   const getFilteredTasks = () => {
@@ -60,6 +67,9 @@ export function TaskViews({ tasks, onTaskComplete, onTaskDelete, onTaskEdit, onT
   }
 
   const filteredTasks = getFilteredTasks()
+  
+  // DEBUG: Log task counts to identify UI update issues
+  console.log('TaskViews render - Raw tasks:', tasks.length, 'Filtered tasks:', filteredTasks.length)
 
   const renderCurrentView = () => {
     const props = {
