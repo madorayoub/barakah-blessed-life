@@ -16,22 +16,22 @@ export function AppHeader({ title, subtitle, showBackButton = false }: AppHeader
   const isCurrentPath = (path: string) => location.pathname === path
 
   return (
-    <header className="bg-white border-b">
+    <header className="bg-white dark:bg-gray-950 border-b border-border shadow-sm">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold">{title}</h1>
+            <h1 className="text-xl font-semibold text-foreground">{title}</h1>
             {subtitle && (
-              <p className="text-muted-foreground">{subtitle}</p>
+              <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
             )}
           </div>
           <div className="flex items-center gap-4">
-            <div className="hidden md:flex items-center gap-6">
+            <nav className="hidden md:flex items-center gap-6">
               <Link 
                 to="/dashboard" 
                 className={cn(
-                  "hover:text-foreground transition-colors",
-                  isCurrentPath('/dashboard') ? "text-primary font-medium" : "text-muted-foreground"
+                  "text-sm font-medium hover:text-foreground transition-colors",
+                  isCurrentPath('/dashboard') ? "text-primary" : "text-muted-foreground"
                 )}
               >
                 Dashboard
@@ -39,8 +39,8 @@ export function AppHeader({ title, subtitle, showBackButton = false }: AppHeader
               <Link 
                 to="/tasks" 
                 className={cn(
-                  "hover:text-foreground transition-colors",
-                  isCurrentPath('/tasks') ? "text-primary font-medium" : "text-muted-foreground"
+                  "text-sm font-medium hover:text-foreground transition-colors",
+                  isCurrentPath('/tasks') ? "text-primary" : "text-muted-foreground"
                 )}
               >
                 Tasks
@@ -48,8 +48,8 @@ export function AppHeader({ title, subtitle, showBackButton = false }: AppHeader
               <Link 
                 to="/prayers" 
                 className={cn(
-                  "hover:text-foreground transition-colors",
-                  isCurrentPath('/prayers') ? "text-primary font-medium" : "text-muted-foreground"
+                  "text-sm font-medium hover:text-foreground transition-colors",
+                  isCurrentPath('/prayers') ? "text-primary" : "text-muted-foreground"
                 )}
               >
                 Prayers
@@ -57,8 +57,8 @@ export function AppHeader({ title, subtitle, showBackButton = false }: AppHeader
               <Link 
                 to="/quran" 
                 className={cn(
-                  "hover:text-foreground transition-colors",
-                  isCurrentPath('/quran') ? "text-primary font-medium" : "text-muted-foreground"
+                  "text-sm font-medium hover:text-foreground transition-colors",
+                  isCurrentPath('/quran') ? "text-primary" : "text-muted-foreground"
                 )}
               >
                 Qur'an
@@ -66,8 +66,8 @@ export function AppHeader({ title, subtitle, showBackButton = false }: AppHeader
               <Link 
                 to="/calendar" 
                 className={cn(
-                  "hover:text-foreground transition-colors",
-                  isCurrentPath('/calendar') ? "text-primary font-medium" : "text-muted-foreground"
+                  "text-sm font-medium hover:text-foreground transition-colors",
+                  isCurrentPath('/calendar') ? "text-primary" : "text-muted-foreground"
                 )}
               >
                 Calendar
@@ -75,8 +75,8 @@ export function AppHeader({ title, subtitle, showBackButton = false }: AppHeader
               <Link 
                 to="/analytics" 
                 className={cn(
-                  "hover:text-foreground transition-colors",
-                  isCurrentPath('/analytics') ? "text-primary font-medium" : "text-muted-foreground"
+                  "text-sm font-medium hover:text-foreground transition-colors",
+                  isCurrentPath('/analytics') ? "text-primary" : "text-muted-foreground"
                 )}
               >
                 Analytics
@@ -84,13 +84,13 @@ export function AppHeader({ title, subtitle, showBackButton = false }: AppHeader
               <Link 
                 to="/settings" 
                 className={cn(
-                  "hover:text-foreground transition-colors",
-                  isCurrentPath('/settings') ? "text-primary font-medium" : "text-muted-foreground"
+                  "text-sm font-medium hover:text-foreground transition-colors",
+                  isCurrentPath('/settings') ? "text-primary" : "text-muted-foreground"
                 )}
               >
                 Settings
               </Link>
-            </div>
+            </nav>
             <Button onClick={signOut} variant="outline" size="sm">
               Sign Out
             </Button>
