@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react'
 import { ChevronLeft, ChevronRight, Calendar, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -163,13 +164,13 @@ export function ModernDatePicker({
   const calendarDays = generateCalendarDays(currentMonth, currentYear)
 
   return (
-    <div className={cn("space-y-2 w-full max-w-80", className)}>
+    <div className={cn("space-y-2 w-full max-w-64", className)}>
       {label && (
         <Label className="text-sm font-medium text-gray-700 block">{label}</Label>
       )}
       
       <div className="flex gap-2">
-        {/* Date Picker with Large Click Target */}
+        {/* Date Picker with Smaller Click Target */}
         <Popover open={isOpen} onOpenChange={setIsOpen}>
           <PopoverTrigger asChild>
             <Button
@@ -177,7 +178,7 @@ export function ModernDatePicker({
               onClick={handleInputClick}
               onKeyDown={handleKeyDown}
               className={cn(
-                "w-full min-h-[48px] justify-between text-left font-normal border-2 border-gray-200 rounded-lg px-4 py-3 hover:border-primary focus:border-primary transition-colors bg-white focus:outline-none focus:ring-2 focus:ring-primary/20",
+                "w-full min-h-[40px] justify-between text-left font-normal border-2 border-gray-200 rounded-lg px-3 py-2 hover:border-primary focus:border-primary transition-colors bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm",
                 !selectedDate && "text-gray-500"
               )}
               role="combobox"
@@ -188,31 +189,31 @@ export function ModernDatePicker({
                 <Calendar className="h-4 w-4 text-primary" />
                 {formatDisplayDate(selectedDate)}
               </span>
-              <div className="h-5 w-5 text-gray-400">
+              <div className="h-4 w-4 text-gray-400">
                 {isOpen ? "📅" : "▼"}
               </div>
             </Button>
           </PopoverTrigger>
           <PopoverContent 
-            className="w-auto p-0 border border-gray-200 shadow-xl rounded-xl max-w-80 bg-white" 
+            className="w-auto p-0 border border-gray-200 shadow-xl rounded-xl max-w-72 bg-white" 
             align="start"
             onKeyDown={handleKeyDown}
             sideOffset={4}
           >
             <Card className="border-0 shadow-none">
-              <CardContent className="p-4">
+              <CardContent className="p-3">
                 {/* Header */}
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-3">
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={goToPreviousMonth}
-                    className="h-9 w-9 hover:bg-gray-100 text-gray-600 hover:text-primary rounded-lg"
+                    className="h-8 w-8 hover:bg-gray-100 text-gray-600 hover:text-primary rounded-lg"
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
                   
-                  <div className="text-base font-semibold text-gray-900">
+                  <div className="text-sm font-semibold text-gray-900">
                     {MONTHS[currentMonth]} {currentYear}
                   </div>
                   
@@ -220,19 +221,19 @@ export function ModernDatePicker({
                     variant="ghost"
                     size="icon"
                     onClick={goToNextMonth}
-                    className="h-9 w-9 hover:bg-gray-100 text-gray-600 hover:text-primary rounded-lg"
+                    className="h-8 w-8 hover:bg-gray-100 text-gray-600 hover:text-primary rounded-lg"
                   >
                     <ChevronRight className="h-4 w-4" />
                   </Button>
                 </div>
 
                 {/* Today Button */}
-                <div className="mb-4">
+                <div className="mb-3">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={handleToday}
-                    className="w-full border border-primary/30 text-primary hover:bg-primary hover:text-white transition-colors rounded-lg font-medium"
+                    className="w-full border border-primary/30 text-primary hover:bg-primary hover:text-white transition-colors rounded-lg font-medium text-xs"
                   >
                     Today
                   </Button>
@@ -243,7 +244,7 @@ export function ModernDatePicker({
                   {DAYS.map(day => (
                     <div 
                       key={day} 
-                      className="h-10 flex items-center justify-center text-xs font-semibold text-gray-600"
+                      className="h-8 flex items-center justify-center text-xs font-semibold text-gray-600"
                     >
                       {day}
                     </div>
@@ -258,7 +259,7 @@ export function ModernDatePicker({
                       onClick={() => date && handleDateSelect(date)}
                       disabled={!date}
                       className={cn(
-                        "h-10 w-10 flex items-center justify-center rounded-lg font-medium text-sm transition-all duration-200 cursor-pointer",
+                        "h-8 w-8 flex items-center justify-center rounded-lg font-medium text-xs transition-all duration-200 cursor-pointer",
                         date && isToday(date) && "border-2 border-primary font-bold text-primary",
                         date && isSelected(date) && "bg-primary text-white hover:bg-primary/90 shadow-md",
                         date && !isSelected(date) && !isToday(date) && "hover:bg-gray-100 text-gray-700",
@@ -276,16 +277,30 @@ export function ModernDatePicker({
           </PopoverContent>
         </Popover>
 
-        {/* Time Picker (if enabled) */}
+        {/* Time Picker (if enabled) - Fixed with better styling */}
         {showTime && (
           <div className="flex-shrink-0">
             <div className="relative">
-              <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-primary" />
+              <Button
+                variant="outline"
+                className="min-h-[40px] w-28 border-2 border-gray-200 focus:border-primary rounded-lg bg-white text-gray-900 px-3 py-2 text-sm font-normal justify-start hover:border-primary transition-colors"
+                onClick={() => {
+                  // Focus the hidden input when button is clicked
+                  const timeInput = document.querySelector('input[type="time"]') as HTMLInputElement
+                  timeInput?.showPicker?.() || timeInput?.focus()
+                }}
+              >
+                <Clock className="h-4 w-4 text-primary mr-2" />
+                <span className="text-gray-900">
+                  {timeValue || 'Time'}
+                </span>
+              </Button>
               <Input
                 type="time"
                 value={timeValue || ''}
                 onChange={(e) => onTimeChange?.(e.target.value)}
-                className="pl-10 h-12 w-32 border-2 border-gray-200 focus:border-primary rounded-lg bg-white text-gray-900"
+                className="absolute inset-0 opacity-0 cursor-pointer"
+                tabIndex={-1}
               />
             </div>
           </div>
