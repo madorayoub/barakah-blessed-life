@@ -287,7 +287,11 @@ export function ModernDatePicker({
                 onClick={() => {
                   // Focus the hidden input when button is clicked
                   const timeInput = document.querySelector('input[type="time"]') as HTMLInputElement
-                  timeInput?.showPicker?.() || timeInput?.focus()
+                  if (timeInput?.showPicker) {
+                    timeInput.showPicker()
+                  } else {
+                    timeInput?.focus()
+                  }
                 }}
               >
                 <Clock className="h-4 w-4 text-primary mr-2" />
