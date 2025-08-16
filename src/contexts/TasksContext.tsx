@@ -114,6 +114,8 @@ export function TasksProvider({ children }: { children: ReactNode }) {
 
         setTasks(formattedTasks)
         console.log('🔄 CONTEXT: Loaded tasks from database:', formattedTasks.length)
+        console.log('🔄 CONTEXT: Task IDs loaded:', formattedTasks.map(t => t.id))
+        console.log('🔄 CONTEXT: Raw database response:', data)
       } catch (error) {
         console.error('Error loading tasks:', error)
       }
