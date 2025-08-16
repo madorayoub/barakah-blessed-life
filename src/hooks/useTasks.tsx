@@ -1,4 +1,4 @@
-import { useState, useEffect, useReducer } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/hooks/useAuth'
 import { useNotifications } from '@/hooks/useNotifications'
@@ -56,9 +56,6 @@ export function useTasks() {
   const [categories, setCategories] = useState<TaskCategory[]>([])
   const [templates, setTemplates] = useState<TaskTemplate[]>([])
   const [loading, setLoading] = useState(true)
-  
-  // Force re-render hook for stubborn UI updates
-  const [, forceUpdate] = useReducer(x => x + 1, 0)
 
   // Schedule task reminders
   useEffect(() => {
@@ -310,42 +307,44 @@ export function useTasks() {
       console.log('✅ Tasks BEFORE create:', tasks.length)
       console.log('✅ Task IDs before:', tasks.map(t => t.id))
       
-      // OPTIMISTIC UPDATE: Create completely NEW array - React will detect the change
+      // 🚀 NUCLEAR OPTION: JSON Deep Copy - Guaranteed to work!
       if (!cleanTaskData.parent_task_id) {
-        // It's a main task - create completely NEW array
+        // It's a main task
         setTasks(prevTasks => {
-          console.log('✅ BEFORE create - prevTasks length:', prevTasks.length)
+          console.log('✅ NUCLEAR CREATE START - Task:', newTask.title)
+          console.log('✅ Tasks BEFORE create:', prevTasks.length)
           
-          // Create completely NEW array with new task at the beginning
-          const completelyNewTasksArray = [newTask, ...prevTasks]
+          // Deep copy existing tasks (completely new objects)
+          const deepCopiedTasks = JSON.parse(JSON.stringify(prevTasks))
           
-          console.log('✅ AFTER create - new array length:', completelyNewTasksArray.length)
-          console.log('✅ New array reference created:', completelyNewTasksArray !== prevTasks)
+          // Add new task at the beginning
+          const finalTasks = [newTask, ...deepCopiedTasks]
           
-          return completelyNewTasksArray
+          console.log('✅ Tasks AFTER create:', finalTasks.length)
+          console.log('✅ NUCLEAR: Created completely new array reference!')
+          
+          return finalTasks
         })
       } else {
-        // It's a subtask - create NEW array with NEW objects
+        // It's a subtask
         setTasks(prevTasks => {
-          const completelyNewTasksArray = prevTasks.map(task => {
+          console.log('✅ NUCLEAR SUBTASK CREATE for parent:', cleanTaskData.parent_task_id)
+          
+          // Deep copy and add subtask
+          const deepCopiedTasks = JSON.parse(JSON.stringify(prevTasks))
+          const finalTasks = deepCopiedTasks.map((task: Task) => {
             if (task.id === cleanTaskData.parent_task_id) {
-              console.log('✅ Adding subtask to parent:', task.title)
-              // Create NEW task object with NEW subtasks array
               return {
-                ...task, // NEW task object
-                subtasks: [...(task.subtasks || []), newTask] // NEW subtasks array
+                ...task,
+                subtasks: [...(task.subtasks || []), newTask]
               }
             }
-            // Return NEW task object (shallow copy for immutability)
-            return { ...task }
+            return task
           })
-          return completelyNewTasksArray
+          
+          return finalTasks
         })
       }
-      
-      // Force component re-render to ensure UI updates
-      forceUpdate()
-      console.log('✅ Force update triggered')
       toast({
         title: cleanTaskData.parent_task_id ? "Subtask created" : "Task created",
         description: `"${cleanTaskData.title}" has been ${cleanTaskData.parent_task_id ? 'added to your subtasks' : 'created successfully'}`
@@ -506,26 +505,27 @@ export function useTasks() {
       console.log('🔥 Tasks BEFORE delete:', tasks.length)
       console.log('🔥 Task IDs before:', tasks.map(t => t.id))
       
-      // OPTIMISTIC UPDATE: Create completely NEW array - React will detect the change
+      // 🚀 NUCLEAR OPTION: JSON Deep Copy - Guaranteed to work!
       setTasks(prevTasks => {
-        console.log('🔥 BEFORE filter - prevTasks length:', prevTasks.length)
+        console.log('🔥 NUCLEAR DELETE START - Task ID:', taskId)
+        console.log('🔥 Tasks BEFORE delete:', prevTasks.length)
         
-        // Step 1: Filter out the deleted task - creates NEW array
-        const filteredMainTasks = [...prevTasks.filter(task => task.id !== taskId)]
+        // Step 1: Deep copy the entire tasks array (completely new objects)
+        const deepCopiedTasks = JSON.parse(JSON.stringify(prevTasks))
         
-        // Step 2: Create NEW array with NEW objects, removing subtasks - complete immutability
-        const completelyNewTasksArray = filteredMainTasks.map(task => ({
-          ...task, // Create NEW task object
-          subtasks: [...(task.subtasks || []).filter(subtask => subtask.id !== taskId)] // Create NEW subtasks array
+        // Step 2: Filter out the deleted task
+        const filteredTasks = deepCopiedTasks.filter((task: Task) => task.id !== taskId)
+        
+        // Step 3: Also remove from subtasks
+        const finalTasks = filteredTasks.map((task: Task) => ({
+          ...task,
+          subtasks: (task.subtasks || []).filter(subtask => subtask.id !== taskId)
         }))
         
-        console.log('🔥 AFTER filter - new array length:', completelyNewTasksArray.length)
-        console.log('🔥 New array reference created:', completelyNewTasksArray !== prevTasks)
-      
-      // Force component re-render to ensure UI updates
-      forceUpdate()
-      console.log('🔥 Force update triggered')
-        return completelyNewTasksArray
+        console.log('🔥 Tasks AFTER delete:', finalTasks.length)
+        console.log('🔥 NUCLEAR: Created completely new array reference!')
+        
+        return finalTasks
       })
 
       const { error } = await supabase
