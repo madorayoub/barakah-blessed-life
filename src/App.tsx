@@ -27,6 +27,9 @@ import Prayers from "./pages/Prayers";
 import CalendarView from "./pages/CalendarView";
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
+import About from "./pages/About";
+import Privacy from "./pages/Privacy";
+import Help from "./pages/Help";
 import DesignSystem from "./pages/DesignSystem";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
@@ -93,6 +96,11 @@ const App = () => {
           <Route path="/calendar" element={<ProtectedRoute><CalendarView /></ProtectedRoute>} />
           <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+          
+          {/* Info Pages */}
+          <Route path="/about" element={<About />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/help" element={<Help />} />
           
           {/* Design System */}
           <Route path="/design-system" element={<DesignSystem />} />

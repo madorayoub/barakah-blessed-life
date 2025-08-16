@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Settings as SettingsIcon, MapPin, Clock, Bell, User, Compass, Moon, Sun, ArrowLeft } from 'lucide-react'
+import { Settings as SettingsIcon, MapPin, Clock, Bell, User, Compass, Moon, Sun, ArrowLeft, BookOpen, Heart, Shield, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -577,6 +577,94 @@ const Settings = () => {
 
           {/* Calendar Integration */}
           <CalendarExport />
+
+          {/* Help & Support */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BookOpen className="h-5 w-5" />
+                Help & Support
+              </CardTitle>
+              <CardDescription>
+                Get help and provide feedback to improve Barakah Tasks
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => navigate('/help')}
+                  className="flex items-center gap-2 justify-start"
+                >
+                  <BookOpen className="h-4 w-4" />
+                  Help & FAQ
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => navigate('/about')}
+                  className="flex items-center gap-2 justify-start"
+                >
+                  <Heart className="h-4 w-4" />
+                  About App
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => navigate('/privacy')}
+                  className="flex items-center gap-2 justify-start"
+                >
+                  <Shield className="h-4 w-4" />
+                  Privacy Policy
+                </Button>
+              </div>
+              
+              {/* Feedback Section */}
+              <div className="bg-gradient-to-r from-emerald-50 to-blue-50 p-4 rounded-lg border border-emerald-200">
+                <h4 className="font-semibold mb-2 flex items-center gap-2">
+                  <Heart className="h-4 w-4 text-emerald-600" />
+                  Share Your Feedback
+                </h4>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Help us improve Barakah Tasks by sharing your thoughts, suggestions, or reporting issues.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Button 
+                    size="sm" 
+                    className="bg-emerald-600 hover:bg-emerald-700"
+                    onClick={() => window.open('mailto:feedback@barakahtasks.com?subject=Barakah Tasks Feedback', '_blank')}
+                  >
+                    Send Feedback
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => window.open('mailto:support@barakahtasks.com?subject=Barakah Tasks Support Request', '_blank')}
+                  >
+                    Get Support
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* App Information */}
+          <Card className="bg-muted/30">
+            <CardContent className="p-6">
+              <div className="text-center space-y-2">
+                <div className="flex items-center justify-center gap-2 mb-3">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-600 to-emerald-700 flex items-center justify-center">
+                    <Star className="h-4 w-4 text-white" fill="currentColor" />
+                  </div>
+                  <h3 className="font-bold text-lg">Barakah Tasks</h3>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Version 1.0.0 • Built with love for the Muslim community
+                </p>
+                <p className="text-xs text-muted-foreground italic">
+                  "And whoever relies upon Allah - then He is sufficient for him." - Quran 65:3
+                </p>
+              </div>
+            </CardContent>
+          </Card>
 
         </div>
       </main>
