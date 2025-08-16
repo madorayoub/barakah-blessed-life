@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Lightbulb, Clock, BookOpen, Heart, Sun, Moon, Star } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -14,24 +14,32 @@ export function SmartTaskSuggestions({ onTaskSuggested }: SmartTaskSuggestionsPr
   const { tasks, createTask } = useTasks()
   const { prayerTimes } = usePrayerTimes()
   const [suggestions, setSuggestions] = useState<any[]>([])
+  const [lastGeneratedTime, setLastGeneratedTime] = useState<number>(0)
 
-  useEffect(() => {
-    generateSmartSuggestions()
-  }, [tasks, prayerTimes])
-
-  const generateSmartSuggestions = () => {
+  // Memoize today's date to prevent unnecessary recalculations
+  const today = useMemo(() => new Date().toISOString().split('T')[0], [])
+  
+  // Get today's completed tasks
+  const todayCompleted = useMemo(() => 
+    tasks.filter(task => task.completed_at?.startsWith(today)),
+    [tasks, today]
+  )
+  
+  // Get pending tasks
+  const pendingTasks = useMemo(() => 
+    tasks.filter(task => task.status === 'pending'),
+    [tasks]
+  )
+  const generateSmartSuggestions = useCallback(() => {
     const now = new Date()
+    const currentTime = now.getTime()
+    
+    // Only generate suggestions once every 5 minutes to prevent loops
+    if (currentTime - lastGeneratedTime < 5 * 60 * 1000) {
+      return
+    }
+    
     const currentHour = now.getHours()
-    const today = now.toISOString().split('T')[0]
-    
-    // Get today's completed tasks
-    const todayCompleted = tasks.filter(task => 
-      task.completed_at?.startsWith(today)
-    )
-    
-    // Get pending tasks
-    const pendingTasks = tasks.filter(task => task.status === 'pending')
-    
     const newSuggestions = []
 
     // Morning suggestions (5 AM - 11 AM)
@@ -184,7 +192,18 @@ export function SmartTaskSuggestions({ onTaskSuggested }: SmartTaskSuggestionsPr
     }
 
     setSuggestions(newSuggestions.slice(0, 3)) // Show max 3 suggestions
-  }
+    setLastGeneratedTime(currentTime)
+  }, [todayCompleted, pendingTasks, today, lastGeneratedTime])
+
+  // Use interval instead of dependency on tasks to prevent infinite loops
+  useEffect(() => {
+    generateSmartSuggestions()
+    
+    // Update suggestions every 10 minutes
+    const interval = setInterval(generateSmartSuggestions, 10 * 60 * 1000)
+    
+    return () => clearInterval(interval)
+  }, [generateSmartSuggestions])
 
   const handleCreateSuggestion = async (suggestion: any) => {
     if (suggestion.action === 'existing_task') {
@@ -192,16 +211,25 @@ export function SmartTaskSuggestions({ onTaskSuggested }: SmartTaskSuggestionsPr
       return
     }
 
-    await createTask({
-      title: suggestion.title,
-      description: `Smart suggestion: ${suggestion.reason}`,
-      priority: suggestion.priority as any,
-      status: 'pending',
-      due_date: new Date().toISOString().split('T')[0],
-      is_recurring: suggestion.isIslamic
-    })
-    
-    onTaskSuggested(suggestion.title)
+    try {
+      await createTask({
+        title: suggestion.title,
+        description: `Smart suggestion: ${suggestion.reason}`,
+        priority: suggestion.priority as any,
+        status: 'pending',
+        due_date: today,
+        is_recurring: suggestion.isIslamic
+      })
+      
+      onTaskSuggested(suggestion.title)
+      
+      // Remove the created suggestion from current suggestions
+      setSuggestions(prev => prev.filter((_, index) => 
+        suggestions.findIndex(s => s.title === suggestion.title) !== index
+      ))
+    } catch (error) {
+      console.error('Failed to create suggested task:', error)
+    }
   }
 
   const getPriorityColor = (priority: string) => {
