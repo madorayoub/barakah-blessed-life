@@ -303,20 +303,24 @@ export function useTasks() {
         subtasks: Array.isArray(data.subtasks) ? data.subtasks : []
       } as Task
 
+      console.log('✅ CREATE START - Task:', newTask.title)
+      console.log('✅ Tasks BEFORE create:', tasks.length)
+      console.log('✅ Task IDs before:', tasks.map(t => t.id))
+      
       // OPTIMISTIC UPDATE: Add to state immediately for instant UI feedback
-      console.log('Creating task optimistically:', newTask.title)
       if (!cleanTaskData.parent_task_id) {
         // It's a main task
         setTasks(prev => {
           const updatedTasks = [newTask, ...prev]
-          console.log('Tasks after create:', updatedTasks.length, 'tasks total')
+          console.log('✅ Tasks AFTER create:', updatedTasks.length)
+          console.log('✅ Task IDs after:', updatedTasks.map(t => t.id))
           return updatedTasks
         })
       } else {
         // It's a subtask - add to parent's subtasks
         setTasks(prev => prev.map(task => {
           if (task.id === cleanTaskData.parent_task_id) {
-            console.log('Adding subtask to parent:', task.title)
+            console.log('✅ Adding subtask to parent:', task.title)
             return {
               ...task,
               subtasks: [...(task.subtasks || []), newTask]
@@ -331,7 +335,7 @@ export function useTasks() {
         description: `"${cleanTaskData.title}" has been ${cleanTaskData.parent_task_id ? 'added to your subtasks' : 'created successfully'}`
       })
 
-      return newTask
+      console.log('✅ CREATE COMPLETE - Database operation successful')
     } catch (error) {
       console.error('Error creating task:', error)
       toast({
@@ -482,8 +486,11 @@ export function useTasks() {
     if (!user) return
 
     try {
+      console.log('🔥 DELETE START - Task ID:', taskId)
+      console.log('🔥 Tasks BEFORE delete:', tasks.length)
+      console.log('🔥 Task IDs before:', tasks.map(t => t.id))
+      
       // OPTIMISTIC UPDATE: Remove from state immediately for instant UI feedback
-      console.log('Deleting task optimistically:', taskId)
       setTasks(prev => {
         const filteredTasks = prev.filter(task => task.id !== taskId)
         // Also remove from subtasks of any parent tasks
@@ -491,7 +498,9 @@ export function useTasks() {
           ...task,
           subtasks: (task.subtasks || []).filter(subtask => subtask.id !== taskId)
         }))
-        console.log('Tasks after delete:', updatedTasks.length, 'tasks remaining')
+        
+        console.log('🔥 Tasks AFTER delete:', updatedTasks.length)
+        console.log('🔥 Task IDs after:', updatedTasks.map(t => t.id))
         return updatedTasks
       })
 
@@ -536,6 +545,8 @@ export function useTasks() {
         })
         return
       }
+      
+      console.log('🔥 DELETE COMPLETE - Database operation successful')
 
       toast({
         title: "Task deleted",

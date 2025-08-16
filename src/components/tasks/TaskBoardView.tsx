@@ -27,7 +27,9 @@ export function TaskBoardView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit,
   const { statuses, loading: statusesLoading } = useTaskStatuses()
   
   // DEBUG: Track task rendering in board view
-  console.log('TaskBoardView render - tasks received:', tasks.length)
+  console.log('🏛️ TASKBOARDVIEW RENDER - Tasks received:', tasks.length)
+  console.log('🏛️ TASKBOARDVIEW RENDER - Task IDs received:', tasks.map(t => t.id))
+  console.log('🏛️ TaskBoardView component re-rendered at:', new Date().toISOString())
   
   const INITIAL_TASK_LIMIT = 10
 

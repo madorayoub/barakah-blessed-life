@@ -62,7 +62,10 @@ export function TaskViews({ tasks, onTaskComplete, onTaskDelete, onTaskEdit, onT
   const filteredTasks = getFilteredTasks()
   
   // DEBUG: Log task counts to identify UI update issues
-  console.log('TaskViews render - Raw tasks:', tasks.length, 'Filtered tasks:', filteredTasks.length)
+  console.log('👁️ TASKVIEWS RENDER - Received tasks:', tasks.length)
+  console.log('👁️ TASKVIEWS RENDER - Filtered tasks:', filteredTasks.length)
+  console.log('👁️ TASKVIEWS RENDER - First few received task IDs:', tasks.slice(0, 3).map(t => t.id))
+  console.log('👁️ TaskViews component re-rendered at:', new Date().toISOString())
 
   const renderCurrentView = () => {
     const props = {

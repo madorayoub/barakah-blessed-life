@@ -10,7 +10,9 @@ const Tasks = () => {
   const { tasks, updateTask, completeTask, deleteTask, createTask, loading, calculateTaskStreak } = useTasks()
   
   // DEBUG: Log task count changes to track UI updates
-  console.log('Tasks.tsx render - tasks count:', tasks.length)
+  console.log('📋 TASKS COMPONENT RENDER - Tasks count:', tasks.length)
+  console.log('📋 First few task IDs:', tasks.slice(0, 3).map(t => t.id))
+  console.log('📋 Tasks component re-rendered at:', new Date().toISOString())
   const [selectedTask, setSelectedTask] = useState<any>(null)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [showReward, setShowReward] = useState(false)
