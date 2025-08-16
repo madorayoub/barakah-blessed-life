@@ -24,6 +24,7 @@ import { PrayerAnalytics } from '@/components/analytics/PrayerAnalytics'
 import { TaskAnalytics } from '@/components/analytics/TaskAnalytics'
 import { Achievements } from '@/components/analytics/Achievements'
 import { ExportReport } from '@/components/analytics/ExportReport'
+import { FairTrackingProgress } from '@/components/analytics/FairTrackingProgress'
 import { getFairTrackingMessage, getFairTrackingStatus, isFairTrackingActive } from '@/lib/fairTracking'
 
 export default function Analytics() {
@@ -165,6 +166,17 @@ export default function Analytics() {
           </Card>
         </div>
       </div>
+
+      {/* Fair Tracking Progress Section */}
+      {prayerStats && (
+        <FairTrackingProgress 
+          daysSinceJoining={daysSinceJoining}
+          fairProgress={prayerStats.fairProgress}
+          currentStreak={currentStreak}
+          barakahScore={prayerStats.barakahScore}
+          islamicMetrics={prayerStats.islamicMetrics}
+        />
+      )}
 
       {/* Main Insights - 3 Expandable Cards */}
       <div className="space-y-4 md:space-y-6">

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/hooks/useAuth'
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, format, isToday, subDays, eachDayOfInterval } from 'date-fns'
+import { FairTrackingSystem, calculateIslamicMetrics, calculateBarakahScore, getIslamicMotivationalMessage } from '@/utils/fairTrackingSystem'
 
 interface PrayerStats {
   totalPrayers: number
@@ -12,6 +13,15 @@ interface PrayerStats {
   missedByPrayer: Record<string, number>
   weeklyData: { date: string; completed: number; total: number }[]
   monthlyHeatmap: { date: string; count: number }[]
+  fairProgress: number
+  barakahScore: number
+  islamicMetrics: {
+    prayerConsistency: number
+    prayersOnTime: number
+    dhikrFrequency: number
+    quranEngagement: number
+    overallSpirituality: number
+  }
 }
 
 interface TaskStats {
@@ -20,6 +30,8 @@ interface TaskStats {
   completionRate: number
   byCategory: { category: string; completed: number; total: number }[]
   weeklyTrend: { week: string; completed: number }[]
+  fairProgress: number
+  productivityScore: number
 }
 
 interface Achievement {
@@ -46,12 +58,11 @@ export function useAnalytics() {
     const now = new Date()
     const userCreatedAt = new Date(user.created_at)
     
-    // Use user registration date as the starting point, not calendar periods
-    const trackingStartDate = userCreatedAt > startOfMonth(now) ? userCreatedAt : startOfMonth(now)
+    // Use user registration date as the starting point (FAIR TRACKING)
+    const trackingStartDate = userCreatedAt
     const weekTrackingStart = userCreatedAt > startOfWeek(now, { weekStartsOn: 1 }) ? userCreatedAt : startOfWeek(now, { weekStartsOn: 1 })
     
     const weekEnd = endOfWeek(now, { weekStartsOn: 1 })
-    const monthEnd = endOfMonth(now)
 
     // Get prayer completions from user registration date forward
     const { data: completions, error } = await supabase
@@ -59,19 +70,53 @@ export function useAnalytics() {
       .select('*')
       .eq('user_id', user.id)
       .gte('prayer_date', format(trackingStartDate, 'yyyy-MM-dd'))
-      .lte('prayer_date', format(monthEnd, 'yyyy-MM-dd'))
 
     if (error) {
       console.error('Error fetching prayer completions:', error)
       return
     }
 
-    // Calculate fair stats based on days since registration
+    // Calculate fair stats using centralized system
     const prayers = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha']
     const daysTracked = eachDayOfInterval({ start: trackingStartDate, end: now })
     const totalPossiblePrayers = daysTracked.length * prayers.length
     const completedPrayers = completions?.length || 0
-    const completionRate = totalPossiblePrayers > 0 ? (completedPrayers / totalPossiblePrayers) * 100 : 0
+
+    // Use Fair Tracking System for progress calculation
+    const activities = completions?.map(completion => ({
+      date: completion.prayer_date,
+      completed: true,
+      activityType: 'prayer' as const
+    })) || []
+
+    const fairProgress = FairTrackingSystem.calculateFairProgress({
+      userRegistrationDate: userCreatedAt,
+      currentDate: now,
+      activities
+    })
+
+    // Calculate Islamic metrics (simplified for now - will enhance when DB supports timing)
+    const islamicMetrics = {
+      prayerConsistency: totalPossiblePrayers > 0 ? (completedPrayers / totalPossiblePrayers) * 100 : 0,
+      prayersOnTime: 85, // Default assumption - can be enhanced later
+      dhikrFrequency: 0, // To be implemented
+      quranEngagement: 0, // To be implemented
+      overallSpirituality: totalPossiblePrayers > 0 ? (completedPrayers / totalPossiblePrayers) * 85 : 0
+    }
+
+    // Calculate Barakah score
+    const prayerData = completions?.map(c => ({ 
+      completed: true, 
+      onTime: true // Default assumption for now
+    })) || []
+    
+    const barakahScore = calculateBarakahScore(
+      prayerData,
+      [], // task data (calculated in task stats)
+      [], // dhikr data
+      [], // quran data
+      fairProgress.streakCount
+    )
 
     // Calculate missed prayers by type (fair calculation from registration date)
     const missedByPrayer: Record<string, number> = {}
@@ -79,20 +124,6 @@ export function useAnalytics() {
       const prayerCompletions = completions?.filter(c => c.prayer_name === prayer).length || 0
       missedByPrayer[prayer] = daysTracked.length - prayerCompletions
     })
-
-    // Calculate current streak
-    let currentStreak = 0
-    for (let i = 0; i < 30; i++) {
-      const date = subDays(now, i)
-      const dateStr = format(date, 'yyyy-MM-dd')
-      const dayCompletions = completions?.filter(c => c.prayer_date === dateStr).length || 0
-      
-      if (dayCompletions === 5) {
-        currentStreak++
-      } else {
-        break
-      }
-    }
 
     // Calculate weekly data for chart (fair calculation from user join date)
     const weeklyData = eachDayOfInterval({ start: weekTrackingStart, end: weekEnd }).map(date => {
@@ -118,12 +149,21 @@ export function useAnalytics() {
     setPrayerStats({
       totalPrayers: totalPossiblePrayers,
       completedPrayers,
-      completionRate,
-      currentStreak,
-      longestStreak: currentStreak, // Simplified for now
+      completionRate: fairProgress.fairPercentage,
+      currentStreak: fairProgress.streakCount,
+      longestStreak: fairProgress.streakCount, // Can be enhanced later
       missedByPrayer,
       weeklyData,
-      monthlyHeatmap
+      monthlyHeatmap,
+      fairProgress: fairProgress.fairPercentage,
+      barakahScore: barakahScore.totalBarakah,
+      islamicMetrics: {
+        prayerConsistency: islamicMetrics.prayerConsistency,
+        prayersOnTime: islamicMetrics.prayersOnTime,
+        dhikrFrequency: islamicMetrics.dhikrFrequency,
+        quranEngagement: islamicMetrics.quranEngagement,
+        overallSpirituality: islamicMetrics.overallSpirituality
+      }
     })
   }
 
@@ -131,9 +171,9 @@ export function useAnalytics() {
     if (!user) return
 
     const now = new Date()
-    const monthStart = startOfMonth(now)
+    const userCreatedAt = new Date(user.created_at)
 
-    // Get tasks for the current month
+    // Use fair tracking - get tasks from registration date forward
     const { data: tasks, error: tasksError } = await supabase
       .from('tasks')
       .select(`
@@ -141,7 +181,7 @@ export function useAnalytics() {
         task_categories(name, color)
       `)
       .eq('user_id', user.id)
-      .gte('created_at', monthStart.toISOString())
+      .gte('created_at', userCreatedAt.toISOString())
 
     if (tasksError) {
       console.error('Error fetching tasks:', tasksError)
@@ -150,7 +190,19 @@ export function useAnalytics() {
 
     const totalTasks = tasks?.length || 0
     const completedTasks = tasks?.filter(t => t.status === 'completed').length || 0
-    const completionRate = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0
+    
+    // Use fair tracking for completion rate
+    const activities = tasks?.map(task => ({
+      date: format(new Date(task.created_at), 'yyyy-MM-dd'),
+      completed: task.status === 'completed',
+      activityType: 'task' as const
+    })) || []
+
+    const fairProgress = FairTrackingSystem.calculateFairProgress({
+      userRegistrationDate: userCreatedAt,
+      currentDate: now,
+      activities
+    })
 
     // Group by category
     const categoryMap = new Map()
@@ -172,12 +224,19 @@ export function useAnalytics() {
       total: stats.total
     }))
 
+    // Calculate productivity score
+    const daysSinceJoining = Math.floor((Date.now() - userCreatedAt.getTime()) / (1000 * 60 * 60 * 24)) + 1
+    const tasksPerDay = totalTasks / daysSinceJoining
+    const productivityScore = Math.min((tasksPerDay * completedTasks * fairProgress.consistency) * 10, 100)
+
     setTaskStats({
       totalTasks,
       completedTasks,
-      completionRate,
+      completionRate: fairProgress.fairPercentage,
       byCategory,
-      weeklyTrend: [] // Simplified for now
+      weeklyTrend: [], // Can be enhanced later
+      fairProgress: fairProgress.fairPercentage,
+      productivityScore
     })
   }
 
@@ -242,27 +301,33 @@ export function useAnalytics() {
   }, [prayerStats, taskStats])
 
   const getMotivationalMessage = () => {
-    if (!prayerStats || !user) return "Keep up your spiritual journey!"
+    if (!prayerStats || !taskStats || !user) return "Keep up your spiritual journey!"
 
     const userCreatedAt = new Date(user.created_at)
-    const daysSinceJoining = Math.floor((Date.now() - userCreatedAt.getTime()) / (1000 * 60 * 60 * 24))
+    const daysSinceJoining = Math.floor((Date.now() - userCreatedAt.getTime()) / (1000 * 60 * 60 * 24)) + 1
     
-    // Special messaging for new users
-    if (daysSinceJoining === 0) {
-      return "Welcome to Barakah Tasks! Start your spiritual journey today - every prayer is a step closer to Allah."
-    } else if (daysSinceJoining <= 3) {
-      return `Day ${daysSinceJoining + 1} of your journey! You're building a beautiful foundation of worship.`
+    // Use the research-backed Islamic motivational system
+    const fairProgress = {
+      daysSinceRegistration: daysSinceJoining,
+      streakCount: prayerStats.currentStreak,
+      fairPercentage: prayerStats.fairProgress,
+      isFairTrackingActive: daysSinceJoining <= 7,
+      consistency: prayerStats.completionRate / 100,
+      totalPossibleDays: daysSinceJoining,
+      totalCompletedDays: Math.floor((prayerStats.completionRate / 100) * daysSinceJoining),
+      completedActivities: prayerStats.completedPrayers
+    }
+    
+    const barakahScore = {
+      level: 'Committed' as const, // Simplified for now
+      totalBarakah: prayerStats.barakahScore,
+      spiritualActivities: prayerStats.completedPrayers,
+      productiveActivities: taskStats.completedTasks,
+      consistencyBonus: prayerStats.currentStreak * 2,
+      timelyPrayers: prayerStats.islamicMetrics.prayersOnTime / 100
     }
 
-    if (prayerStats.currentStreak >= 7) {
-      return "Masha'Allah! Your dedication to prayer is inspiring. May Allah accept your efforts."
-    } else if (prayerStats.currentStreak >= 3) {
-      return "Excellent consistency! You're building a beautiful habit of worship."
-    } else if (prayerStats.completionRate >= 80) {
-      return "Great progress on your prayers! Keep striving for consistency."
-    } else {
-      return "Every prayer counts. Start fresh today and build your connection with Allah."
-    }
+    return getIslamicMotivationalMessage(fairProgress, barakahScore, prayerStats.islamicMetrics)
   }
 
   const getQuranVerse = () => {
