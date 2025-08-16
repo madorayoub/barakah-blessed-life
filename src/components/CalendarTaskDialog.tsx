@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import { ModernDatePicker } from '@/components/ui/modern-date-picker'
 import { useTasks } from '@/hooks/useTasks'
 
 interface CalendarTaskDialogProps {
@@ -238,26 +239,17 @@ export function CalendarTaskDialog({
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="due_date">Due Date</Label>
-              <Input
-                id="due_date"
-                type="date"
-                value={formData.due_date}
-                onChange={(e) => setFormData(prev => ({ ...prev, due_date: e.target.value }))}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="due_time">Due Time</Label>
-              <Input
-                id="due_time"
-                type="time"
-                value={formData.due_time}
-                onChange={(e) => setFormData(prev => ({ ...prev, due_time: e.target.value }))}
-              />
-            </div>
+          <div className="space-y-4">
+            <ModernDatePicker
+              label="Due Date & Time"
+              value={formData.due_date}
+              onChange={(date) => setFormData(prev => ({ ...prev, due_date: date }))}
+              showTime={true}
+              timeValue={formData.due_time}
+              onTimeChange={(time) => setFormData(prev => ({ ...prev, due_time: time }))}
+              placeholder="Set due date (optional)"
+              className="w-full"
+            />
           </div>
 
           <div className="flex justify-end gap-2 pt-4">

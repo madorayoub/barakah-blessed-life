@@ -121,20 +121,36 @@ export function ModernDatePicker({
     return selectedDate && date.toDateString() === selectedDate.toDateString()
   }
 
+  const getSmartDateLabel = (date: Date) => {
+    const today = new Date()
+    const tomorrow = new Date(today)
+    tomorrow.setDate(today.getDate() + 1)
+    const yesterday = new Date(today)
+    yesterday.setDate(today.getDate() - 1)
+    
+    if (date.toDateString() === today.toDateString()) return "Today"
+    if (date.toDateString() === tomorrow.toDateString()) return "Tomorrow" 
+    if (date.toDateString() === yesterday.toDateString()) return "Yesterday"
+    
+    // Show weekday if within current week
+    const daysDiff = Math.abs(date.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+    if (daysDiff < 7) {
+      return date.toLocaleDateString('en-US', { weekday: 'long' })
+    }
+    
+    // Show full date for distant dates
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  }
+
   const formatDisplayDate = (date: Date | null) => {
     if (!date) return placeholder
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'short',
-      month: 'short', 
-      day: 'numeric',
-      year: 'numeric'
-    })
+    return getSmartDateLabel(date)
   }
 
   const calendarDays = generateCalendarDays(currentMonth, currentYear)
 
   return (
-    <div className={cn("space-y-2", className)}>
+    <div className={cn("space-y-2 max-w-80", className)}>
       {label && (
         <Label className="text-sm font-medium text-foreground">{label}</Label>
       )}
@@ -146,7 +162,7 @@ export function ModernDatePicker({
             <Button
               variant="outline"
               className={cn(
-                "w-full justify-start text-left font-normal h-10 border-2 border-border hover:border-primary transition-colors",
+                "w-full justify-start text-left font-normal h-10 border-2 border-border hover:border-primary transition-colors max-w-64",
                 !selectedDate && "text-muted-foreground"
               )}
             >
@@ -155,7 +171,7 @@ export function ModernDatePicker({
             </Button>
           </PopoverTrigger>
           <PopoverContent 
-            className="w-auto p-0 bg-white shadow-xl border-2 border-border" 
+            className="w-auto p-0 bg-white shadow-xl border-2 border-border max-w-80" 
             align="start"
             onKeyDown={handleKeyDown}
           >
