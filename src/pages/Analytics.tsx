@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -15,7 +16,8 @@ import {
   BookOpen, 
   Target, 
   Download, 
-  Eye 
+  Eye,
+  ArrowLeft 
 } from 'lucide-react'
 import { useAnalytics } from '@/hooks/useAnalytics'
 import { PrayerAnalytics } from '@/components/analytics/PrayerAnalytics'
@@ -24,6 +26,7 @@ import { Achievements } from '@/components/analytics/Achievements'
 import { ExportReport } from '@/components/analytics/ExportReport'
 
 export default function Analytics() {
+  const navigate = useNavigate()
   const { 
     prayerStats, 
     taskStats, 
@@ -67,17 +70,35 @@ export default function Analytics() {
   const weeklyProgress = (weeklyCompletion / totalWeeklyPrayers) * 100
 
   return (
-    <div className="container mx-auto p-6 space-y-8">
-      {/* Hero Section */}
-      <div className="text-center space-y-6">
+    <div className="container mx-auto p-4 md:p-6 space-y-6 md:space-y-8">
+      {/* Header with Back Navigation */}
+      <div className="flex items-center gap-4 mb-6">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={() => navigate('/dashboard')}
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Dashboard
+        </Button>
+        <div className="h-4 w-px bg-border" />
         <div>
-          <h1 className="text-3xl font-bold mb-2">Your Spiritual Journey</h1>
-          <p className="text-muted-foreground">Track your progress and stay motivated</p>
+          <h1 className="text-2xl md:text-3xl font-bold">Analytics</h1>
+          <p className="text-sm text-muted-foreground">Track your spiritual progress</p>
+        </div>
+      </div>
+
+      {/* Hero Section */}
+      <div className="text-center space-y-4 md:space-y-6">
+        <div>
+          <h2 className="text-xl md:text-2xl font-semibold mb-2">Your Spiritual Journey</h2>
+          <p className="text-muted-foreground">Stay motivated with insights and progress tracking</p>
         </div>
 
         {/* Daily Progress Circle */}
-        <div className="relative w-32 h-32 mx-auto">
-          <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 100 100">
+        <div className="relative w-24 h-24 md:w-32 md:h-32 mx-auto">
+          <svg className="w-24 h-24 md:w-32 md:h-32 transform -rotate-90" viewBox="0 0 100 100">
             <circle
               cx="50"
               cy="50"
@@ -98,63 +119,63 @@ export default function Analytics() {
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <div className="text-2xl font-bold">{todayPrayers}/{totalDailyPrayers}</div>
-            <div className="text-sm text-muted-foreground">Today's Prayers</div>
+            <div className="text-xl md:text-2xl font-bold">{todayPrayers}/{totalDailyPrayers}</div>
+            <div className="text-xs md:text-sm text-muted-foreground">Today's Prayers</div>
           </div>
         </div>
 
         {/* Key Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
+        <div className="grid grid-cols-3 gap-2 md:gap-4 max-w-2xl mx-auto">
           <Card className="text-center">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <Flame className="h-5 w-5 text-orange-500" />
-                <span className="text-2xl font-bold">{currentStreak}</span>
+            <CardContent className="p-3 md:p-4">
+              <div className="flex items-center justify-center gap-1 md:gap-2 mb-1 md:mb-2">
+                <Flame className="h-4 w-4 md:h-5 md:w-5 text-orange-500" />
+                <span className="text-lg md:text-2xl font-bold">{currentStreak}</span>
               </div>
-              <p className="text-sm text-muted-foreground">Day Streak</p>
+              <p className="text-xs md:text-sm text-muted-foreground">Day Streak</p>
             </CardContent>
           </Card>
 
           <Card className="text-center">
-            <CardContent className="p-4">
-              <div className="mb-2">
-                <span className="text-2xl font-bold">{weeklyProgress.toFixed(0)}%</span>
+            <CardContent className="p-3 md:p-4">
+              <div className="mb-1 md:mb-2">
+                <span className="text-lg md:text-2xl font-bold">{weeklyProgress.toFixed(0)}%</span>
               </div>
-              <p className="text-sm text-muted-foreground">This Week</p>
-              <Progress value={weeklyProgress} className="h-2 mt-2" />
+              <p className="text-xs md:text-sm text-muted-foreground">This Week</p>
+              <Progress value={weeklyProgress} className="h-1.5 md:h-2 mt-1 md:mt-2" />
             </CardContent>
           </Card>
 
           <Card className="text-center">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <Trophy className="h-5 w-5 text-amber-500" />
-                <span className="text-2xl font-bold">{achievements.filter(a => a.earned).length}</span>
+            <CardContent className="p-3 md:p-4">
+              <div className="flex items-center justify-center gap-1 md:gap-2 mb-1 md:mb-2">
+                <Trophy className="h-4 w-4 md:h-5 md:w-5 text-amber-500" />
+                <span className="text-lg md:text-2xl font-bold">{achievements.filter(a => a.earned).length}</span>
               </div>
-              <p className="text-sm text-muted-foreground">Achievements</p>
+              <p className="text-xs md:text-sm text-muted-foreground">Achievements</p>
             </CardContent>
           </Card>
         </div>
       </div>
 
       {/* Main Insights - 3 Expandable Cards */}
-      <div className="space-y-6">
+      <div className="space-y-4 md:space-y-6">
         {/* Prayer Patterns Card */}
         <Card>
           <Collapsible open={expandedSections.prayers} onOpenChange={() => toggleSection('prayers')}>
             <CollapsibleTrigger asChild>
-              <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+              <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors p-4 md:p-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Calendar className="h-6 w-6 text-emerald-600" />
+                    <Calendar className="h-5 w-5 md:h-6 md:w-6 text-emerald-600" />
                     <div>
-                      <CardTitle>Prayer Patterns</CardTitle>
-                      <CardDescription>
+                      <CardTitle className="text-base md:text-lg">Prayer Patterns</CardTitle>
+                      <CardDescription className="text-sm">
                         {prayerStats?.completionRate?.toFixed(0) || 0}% completion rate this week
                       </CardDescription>
                     </div>
                   </div>
-                  {expandedSections.prayers ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                  {expandedSections.prayers ? <ChevronUp className="h-4 w-4 md:h-5 md:w-5" /> : <ChevronDown className="h-4 w-4 md:h-5 md:w-5" />}
                 </div>
               </CardHeader>
             </CollapsibleTrigger>
@@ -170,18 +191,18 @@ export default function Analytics() {
         <Card>
           <Collapsible open={expandedSections.spiritual} onOpenChange={() => toggleSection('spiritual')}>
             <CollapsibleTrigger asChild>
-              <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+              <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors p-4 md:p-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <BookOpen className="h-6 w-6 text-blue-600" />
+                    <BookOpen className="h-5 w-5 md:h-6 md:w-6 text-blue-600" />
                     <div>
-                      <CardTitle>Spiritual Growth</CardTitle>
-                      <CardDescription>
+                      <CardTitle className="text-base md:text-lg">Spiritual Growth</CardTitle>
+                      <CardDescription className="text-sm">
                         Track your Islamic practices and habits
                       </CardDescription>
                     </div>
                   </div>
-                  {expandedSections.spiritual ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                  {expandedSections.spiritual ? <ChevronUp className="h-4 w-4 md:h-5 md:w-5" /> : <ChevronDown className="h-4 w-4 md:h-5 md:w-5" />}
                 </div>
               </CardHeader>
             </CollapsibleTrigger>
@@ -201,18 +222,18 @@ export default function Analytics() {
         <Card>
           <Collapsible open={expandedSections.tasks} onOpenChange={() => toggleSection('tasks')}>
             <CollapsibleTrigger asChild>
-              <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+              <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors p-4 md:p-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <TrendingUp className="h-6 w-6 text-purple-600" />
+                    <TrendingUp className="h-5 w-5 md:h-6 md:w-6 text-purple-600" />
                     <div>
-                      <CardTitle>Task Productivity</CardTitle>
-                      <CardDescription>
+                      <CardTitle className="text-base md:text-lg">Task Productivity</CardTitle>
+                      <CardDescription className="text-sm">
                         {taskStats?.completionRate?.toFixed(0) || 0}% task completion rate
                       </CardDescription>
                     </div>
                   </div>
-                  {expandedSections.tasks ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                  {expandedSections.tasks ? <ChevronUp className="h-4 w-4 md:h-5 md:w-5" /> : <ChevronDown className="h-4 w-4 md:h-5 md:w-5" />}
                 </div>
               </CardHeader>
             </CollapsibleTrigger>
@@ -226,10 +247,10 @@ export default function Analytics() {
       </div>
 
       {/* Actions Section */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-center">
+      <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center">
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant="outline" className="flex items-center gap-2">
+            <Button variant="outline" className="flex items-center gap-2 text-sm">
               <Eye className="h-4 w-4" />
               View Detailed Reports
             </Button>
@@ -250,7 +271,7 @@ export default function Analytics() {
 
         <Dialog>
           <DialogTrigger asChild>
-            <Button className="flex items-center gap-2">
+            <Button className="flex items-center gap-2 text-sm">
               <Download className="h-4 w-4" />
               Export Progress Report
             </Button>
@@ -273,9 +294,9 @@ export default function Analytics() {
 
       {/* Motivational Footer */}
       <Card className="bg-gradient-to-r from-emerald-50 to-blue-50 border-emerald-200">
-        <CardContent className="p-6 text-center">
-          <h3 className="text-lg font-semibold mb-2">{getMotivationalMessage()}</h3>
-          <p className="text-muted-foreground italic">"{getQuranVerse()}"</p>
+        <CardContent className="p-4 md:p-6 text-center">
+          <h3 className="text-base md:text-lg font-semibold mb-2">{getMotivationalMessage()}</h3>
+          <p className="text-sm md:text-base text-muted-foreground italic">"{getQuranVerse()}"</p>
         </CardContent>
       </Card>
     </div>

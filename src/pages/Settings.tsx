@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Settings as SettingsIcon, MapPin, Clock, Bell, User, Compass, Moon, Sun } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { Settings as SettingsIcon, MapPin, Clock, Bell, User, Compass, Moon, Sun, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -37,6 +38,7 @@ interface PrayerSettings {
 }
 
 const Settings = () => {
+  const navigate = useNavigate()
   const { user, signOut } = useAuth()
   const { permission, preferences, requestPermission, updatePreferences } = useNotifications()
   const [profile, setProfile] = useState<UserProfile>({})
@@ -201,7 +203,17 @@ const Settings = () => {
     <div className="min-h-screen bg-background">
       <header className="bg-white border-b">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4 mb-4">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => navigate('/dashboard')}
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Button>
+            <div className="h-4 w-px bg-border" />
             <div>
               <h1 className="text-2xl font-bold flex items-center gap-2">
                 <SettingsIcon className="h-6 w-6" />
@@ -209,6 +221,8 @@ const Settings = () => {
               </h1>
               <p className="text-muted-foreground">Customize your Islamic productivity experience</p>
             </div>
+          </div>
+          <div className="flex items-center justify-between">
             <div className="flex gap-2">
               <Button onClick={saveSettings} disabled={saving}>
                 {saving ? "Saving..." : "Save Changes"}

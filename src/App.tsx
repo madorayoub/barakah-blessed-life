@@ -36,8 +36,16 @@ const App = () => {
   const [showOnboarding, setShowOnboarding] = useState(false)
 
   useEffect(() => {
+    // Only show onboarding for completely new users (not authenticated users)
     const onboardingCompleted = localStorage.getItem('onboarding-completed')
-    if (!onboardingCompleted) {
+    const hasSeenOnboarding = localStorage.getItem('has-seen-onboarding')
+    
+    // Don't show onboarding if:
+    // 1. It's already completed, OR
+    // 2. User has seen it before (even if they didn't complete it)
+    if (!onboardingCompleted && !hasSeenOnboarding) {
+      // Mark as seen immediately to prevent loops
+      localStorage.setItem('has-seen-onboarding', 'true')
       setShowOnboarding(true)
     }
   }, [])

@@ -1,12 +1,14 @@
-import { Plus, Filter, Search } from 'lucide-react'
+import { Plus, Filter, Search, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useTasks } from '@/hooks/useTasks'
 import { TaskCard } from '@/components/TaskCard'
 import { NewTaskDialog } from '@/components/NewTaskDialog'
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 const Tasks = () => {
+  const navigate = useNavigate()
   const { tasks, completeTask, deleteTask, loading } = useTasks()
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'completed'>('all')
@@ -21,11 +23,23 @@ const Tasks = () => {
     <div className="min-h-screen bg-background">
       <header className="bg-white border-b">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4 mb-2">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => navigate('/dashboard')}
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Button>
+            <div className="h-4 w-px bg-border" />
             <div>
               <h1 className="text-2xl font-bold">Tasks</h1>
               <p className="text-muted-foreground">Manage your daily tasks and goals</p>
             </div>
+          </div>
+          <div className="flex items-center justify-between">
             <NewTaskDialog>
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
