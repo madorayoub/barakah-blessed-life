@@ -3,6 +3,7 @@ import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { NewTaskDialog } from '@/components/NewTaskDialog'
 import { DraggableTaskCard } from './DraggableTaskCard'
 import { Task } from '@/contexts/TasksContext'
 
@@ -28,6 +29,7 @@ interface DroppableColumnProps {
   onTaskEdit: (task: Task) => void
   onCreateTask: (taskData: Omit<Task, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => void
   onToggleExpansion: () => void
+  columnStatus: string // Add column status for proper dialog initialization
 }
 
 export function DroppableColumn({
@@ -43,7 +45,8 @@ export function DroppableColumn({
   onTaskDelete,
   onTaskEdit,
   onCreateTask,
-  onToggleExpansion
+  onToggleExpansion,
+  columnStatus
 }: DroppableColumnProps) {
   const [{ isOver, canDrop }, drop] = useDrop({
     accept: 'task',
@@ -86,38 +89,23 @@ export function DroppableColumn({
       
       <CardContent className="space-y-3">
         {/* Column-Specific Create Task Button */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => {
-            // Map column status for dialog
-            const statusMapping: Record<string, 'pending' | 'in_progress' | 'completed'> = {
-              'pending': 'pending',
-              'to_do': 'pending',
-              'in_progress': 'in_progress', 
-              'completed': 'completed',
-              'done': 'completed'
-            }
-            const initialStatus = statusMapping[column.status] || 'pending'
-            
-            // Create task data with correct status
-            const taskData = {
-              title: `New ${column.title} Task`,
-              description: '',
-              priority: 'medium' as const,
-              status: initialStatus,
-              category_id: '',
-              due_date: '',
-              due_time: '',
-              is_recurring: false
-            }
-            onCreateTask(taskData)
-          }}
-          className="w-full justify-start text-muted-foreground hover:text-foreground h-8 mb-1 border-2 border-dashed border-primary/30 hover:border-primary/50 hover:bg-primary/5"
+        <NewTaskDialog 
+          onTaskCreate={onCreateTask}
+          initialStatus={
+            columnStatus === 'pending' || columnStatus === 'to_do' ? 'pending' :
+            columnStatus === 'in_progress' ? 'in_progress' : 
+            columnStatus === 'completed' || columnStatus === 'done' ? 'completed' : 'pending'
+          }
         >
-          <Plus className="h-4 w-4 mr-2" />
-          Add task to {column.title}
-        </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start text-muted-foreground hover:text-foreground h-8 mb-1 border-2 border-dashed border-primary/30 hover:border-primary/50 hover:bg-primary/5"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add task to {column.title}
+          </Button>
+        </NewTaskDialog>
         
         {/* Draggable Tasks */}
         {tasks.map(task => (
@@ -157,38 +145,25 @@ export function DroppableColumn({
         {/* Empty State */}
         {totalTasks === 0 && (
           <div className="text-center py-8 text-muted-foreground">
-            <Button 
-              variant="ghost" 
-              size="lg"
-              onClick={() => {
-                const statusMapping: Record<string, 'pending' | 'in_progress' | 'completed'> = {
-                  'pending': 'pending',
-                  'to_do': 'pending',
-                  'in_progress': 'in_progress', 
-                  'completed': 'completed',
-                  'done': 'completed'
-                }
-                const initialStatus = statusMapping[column.status] || 'pending'
-                
-                const taskData = {
-                  title: `First ${column.title} Task`,
-                  description: '',
-                  priority: 'medium' as const,
-                  status: initialStatus,
-                  category_id: '',
-                  due_date: '',
-                  due_time: '',
-                  is_recurring: false
-                }
-                onCreateTask(taskData)
-              }}
-              className="w-full h-20 border-2 border-dashed border-primary/30 hover:border-primary/50 hover:bg-primary/5 flex-col gap-2"
+            <NewTaskDialog 
+              onTaskCreate={onCreateTask}
+              initialStatus={
+                columnStatus === 'pending' || columnStatus === 'to_do' ? 'pending' :
+                columnStatus === 'in_progress' ? 'in_progress' : 
+                columnStatus === 'completed' || columnStatus === 'done' ? 'completed' : 'pending'
+              }
             >
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                <Plus className="h-4 w-4 text-primary" />
-              </div>
-              <span className="text-sm font-medium text-muted-foreground">Add first task</span>
-            </Button>
+              <Button 
+                variant="ghost" 
+                size="lg"
+                className="w-full h-20 border-2 border-dashed border-primary/30 hover:border-primary/50 hover:bg-primary/5 flex-col gap-2"
+              >
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Plus className="h-4 w-4 text-primary" />
+                </div>
+                <span className="text-sm font-medium text-muted-foreground">Add first task</span>
+              </Button>
+            </NewTaskDialog>
           </div>
         )}
 
