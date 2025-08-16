@@ -1,23 +1,132 @@
-import { useState } from "react"
-import { MapPin, Navigation, Loader2 } from "lucide-react"
+import { useState, useEffect } from "react"
+import { MapPin, Navigation, Loader2, AlertCircle } from "lucide-react"
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { useToast } from "@/hooks/use-toast"
 
 const LocationSetup = () => {
   const [location, setLocation] = useState("")
   const [isDetecting, setIsDetecting] = useState(false)
   const [detectedLocation, setDetectedLocation] = useState("")
+  const [locationError, setLocationError] = useState("")
+  const [suggestions, setSuggestions] = useState<string[]>([])
+  const [showSuggestions, setShowSuggestions] = useState(false)
+  const { toast } = useToast()
+
+  // Sample city data for autocomplete (in production, use a proper API)
+  const cityData = [
+    "Marrakech, Morocco", "Casablanca, Morocco", "Rabat, Morocco",
+    "London, UK", "Manchester, UK", "Birmingham, UK",
+    "New York, NY, USA", "Los Angeles, CA, USA", "Chicago, IL, USA",
+    "Dubai, UAE", "Abu Dhabi, UAE", "Sharjah, UAE",
+    "Istanbul, Turkey", "Ankara, Turkey", "Izmir, Turkey",
+    "Cairo, Egypt", "Alexandria, Egypt", "Giza, Egypt",
+    "Riyadh, Saudi Arabia", "Jeddah, Saudi Arabia", "Mecca, Saudi Arabia",
+    "Medina, Saudi Arabia", "Dammam, Saudi Arabia",
+    "Doha, Qatar", "Kuwait City, Kuwait", "Manama, Bahrain",
+    "Muscat, Oman", "Amman, Jordan", "Damascus, Syria",
+    "Beirut, Lebanon", "Baghdad, Iraq", "Tehran, Iran",
+    "Karachi, Pakistan", "Lahore, Pakistan", "Islamabad, Pakistan",
+    "Dhaka, Bangladesh", "Jakarta, Indonesia", "Kuala Lumpur, Malaysia"
+  ]
+
+  const handleLocationInput = (value: string) => {
+    setLocation(value)
+    if (value.length >= 2) {
+      const filtered = cityData.filter(city => 
+        city.toLowerCase().includes(value.toLowerCase())
+      ).slice(0, 5)
+      setSuggestions(filtered)
+      setShowSuggestions(true)
+    } else {
+      setShowSuggestions(false)
+    }
+  }
+
+  const selectSuggestion = (suggestion: string) => {
+    setLocation(suggestion)
+    setSuggestions([])
+    setShowSuggestions(false)
+  }
 
   const handleDetectLocation = async () => {
     setIsDetecting(true)
-    // Simulate location detection
-    setTimeout(() => {
-      setDetectedLocation("New York, NY, USA")
-      setLocation("New York, NY, USA")
+    setLocationError("")
+    
+    if (!navigator.geolocation) {
+      setLocationError("Geolocation is not supported by this browser")
       setIsDetecting(false)
-    }, 2000)
+      return
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords
+          
+          // Use reverse geocoding to get city name
+          // For now, we'll use a simple approximation
+          const response = await fetch(
+            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
+          )
+          
+          if (response.ok) {
+            const data = await response.json()
+            const cityName = `${data.city || data.locality}, ${data.countryName}`
+            setDetectedLocation(cityName)
+            setLocation(cityName)
+            toast({
+              title: "Location detected",
+              description: `Found your location: ${cityName}`,
+            })
+          } else {
+            throw new Error("Failed to get location name")
+          }
+        } catch (error) {
+          console.error("Reverse geocoding failed:", error)
+          setDetectedLocation("Location detected (coordinates only)")
+          setLocation("Location detected (coordinates only)")
+          toast({
+            title: "Location detected",
+            description: "Location found but couldn't determine city name. Please enter manually.",
+          })
+        } finally {
+          setIsDetecting(false)
+        }
+      },
+      (error) => {
+        let errorMessage = ""
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = "Location access denied. Please enable location services and try again."
+            break
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = "Location information is unavailable. Please enter your location manually."
+            break
+          case error.TIMEOUT:
+            errorMessage = "Location request timed out. Please try again or enter manually."
+            break
+          default:
+            errorMessage = "An unknown error occurred while detecting location."
+            break
+        }
+        setLocationError(errorMessage)
+        setIsDetecting(false)
+        toast({
+          title: "Location detection failed",
+          description: errorMessage,
+          variant: "destructive"
+        })
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000
+      }
+    )
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -80,14 +189,40 @@ const LocationSetup = () => {
                 <Input
                   id="location"
                   type="text"
-                  placeholder="e.g., London, UK"
+                  placeholder="e.g., Marrakech, Morocco"
                   className="pl-10"
                   value={location}
-                  onChange={(e) => setLocation(e.target.value)}
+                  onChange={(e) => handleLocationInput(e.target.value)}
+                  onFocus={() => location.length >= 2 && setShowSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                   required
                 />
+                
+                {/* Autocomplete suggestions */}
+                {showSuggestions && suggestions.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
+                    {suggestions.map((suggestion, index) => (
+                      <button
+                        key={index}
+                        type="button"
+                        className="w-full px-4 py-2 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none"
+                        onClick={() => selectSuggestion(suggestion)}
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
+
+            {/* Location Error Alert */}
+            {locationError && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{locationError}</AlertDescription>
+              </Alert>
+            )}
           </div>
 
           <Button type="submit" className="w-full" disabled={!location}>

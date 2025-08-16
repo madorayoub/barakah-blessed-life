@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox"
 import { Switch } from "@/components/ui/switch"
 
-const DesignSystem = () => {
+const AppInfo = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [switchValue, setSwitchValue] = useState(false)
@@ -33,7 +33,7 @@ const DesignSystem = () => {
                 Back to Dashboard
               </Link>
             </div>
-            <h1 className="text-2xl font-bold text-foreground">Barakah Tasks Design System</h1>
+            <h1 className="text-2xl font-bold text-foreground">App Information</h1>
             <div className="w-32" /> {/* Spacer */}
           </div>
         </div>
@@ -44,11 +44,146 @@ const DesignSystem = () => {
         
         {/* Introduction */}
         <section className="text-center space-y-4">
-          <h2 className="text-4xl font-bold text-foreground">Islamic Productivity Design System</h2>
+          <h2 className="text-4xl font-bold text-foreground">Barakah Tasks</h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            A comprehensive design system inspired by Islamic principles, featuring emerald greens, 
-            gold accents, and peaceful aesthetics that harmonize spiritual practices with modern productivity.
+            An Islamic productivity app that helps Muslims integrate spiritual practices with daily life. 
+            Track your prayers, manage tasks with Islamic principles, and maintain spiritual consistency.
           </p>
+        </section>
+
+        {/* App Information Cards */}
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="h-5 w-5 text-emerald-600" />
+                Version Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">App Version:</span>
+                <span className="font-medium">1.0.0</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Last Updated:</span>
+                <span className="font-medium">August 2025</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Platform:</span>
+                <span className="font-medium">Web Application</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Star className="h-5 w-5 text-amber-500" />
+                Core Features
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-green-600" />
+                  Accurate prayer times calculation
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-green-600" />
+                  Islamic task management
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-green-600" />
+                  Calendar integration
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-green-600" />
+                  Spiritual analytics
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-green-600" />
+                  Prayer notifications
+                </li>
+              </ul>
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* Technical Credits */}
+        <section className="space-y-6">
+          <div>
+            <h3 className="text-2xl font-bold text-foreground mb-4">Technical Credits</h3>
+            <p className="text-muted-foreground mb-6">
+              Barakah Tasks is built with modern web technologies and relies on Islamic calculation libraries.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Prayer Time Calculations</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Library:</span>
+                  <Badge variant="outline">Adhan.js v4.4.3</Badge>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Method:</span>
+                  <span className="text-sm">High-precision calculations</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Standards:</span>
+                  <span className="text-sm">ISNA, MWL, Karachi, Egypt</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Technology Stack</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Frontend:</span>
+                  <Badge variant="outline">React + TypeScript</Badge>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Styling:</span>
+                  <Badge variant="outline">Tailwind CSS</Badge>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Backend:</span>
+                  <Badge variant="outline">Supabase</Badge>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">UI Components:</span>
+                  <Badge variant="outline">shadcn/ui</Badge>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+
+        {/* Privacy & Data */}
+        <section className="space-y-6">
+          <div>
+            <h3 className="text-2xl font-bold text-foreground mb-4">Privacy & Data Handling</h3>
+          </div>
+
+          <Card className="border-blue-200 bg-blue-50">
+            <CardHeader>
+              <CardTitle className="text-blue-900">Your Data Privacy</CardTitle>
+            </CardHeader>
+            <CardContent className="text-blue-800 space-y-2">
+              <p>• Your location is only used for prayer time calculations</p>
+              <p>• Prayer completion data stays on your device and our secure servers</p>
+              <p>• No personal data is shared with third parties</p>
+              <p>• You can export or delete your data at any time</p>
+              <p>• All data transmission is encrypted using HTTPS</p>
+            </CardContent>
+          </Card>
         </section>
 
         {/* Color Palette */}
@@ -620,4 +755,4 @@ const TypographyExample = ({ size, label, text, arabicText }: {
   </div>
 )
 
-export default DesignSystem
+export default AppInfo

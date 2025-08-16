@@ -2,7 +2,9 @@ import { ArrowLeft, Calendar, Download, Clock, Bell, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CalendarExport } from '@/components/CalendarExport'
+import CalendarMonth from '@/components/CalendarMonth'
 import { useNavigate } from 'react-router-dom'
 
 const CalendarView = () => {
@@ -31,21 +33,40 @@ const CalendarView = () => {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="space-y-8">
-          
-          {/* Hero Section */}
-          <Card className="bg-gradient-to-r from-emerald-50 to-blue-50 border-emerald-200">
-            <CardHeader className="text-center">
-              <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-emerald-600 to-emerald-700 flex items-center justify-center mb-4">
-                <Calendar className="h-8 w-8 text-white" />
+      <main className="container mx-auto px-4 py-8 max-w-6xl">
+        <Tabs defaultValue="calendar" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="calendar">Calendar View</TabsTrigger>
+            <TabsTrigger value="export">Export & Sync</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="calendar" className="space-y-6">
+            {/* Calendar View */}
+            <div className="space-y-6">
+              <div className="text-center">
+                <h2 className="text-2xl font-bold mb-2">Prayer Times Calendar</h2>
+                <p className="text-muted-foreground">
+                  View your prayer times, Islamic events, and personal tasks in one place
+                </p>
               </div>
-              <CardTitle className="text-2xl">Never Miss a Prayer Again</CardTitle>
-              <CardDescription className="text-base">
-                Export your prayer schedule to Google Calendar, Apple Calendar, Outlook, and more
-              </CardDescription>
-            </CardHeader>
-          </Card>
+              
+              <CalendarMonth />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="export" className="space-y-8">
+            {/* Hero Section */}
+            <Card className="bg-gradient-to-r from-emerald-50 to-blue-50 border-emerald-200">
+              <CardHeader className="text-center">
+                <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-emerald-600 to-emerald-700 flex items-center justify-center mb-4">
+                  <Calendar className="h-8 w-8 text-white" />
+                </div>
+                <CardTitle className="text-2xl">Never Miss a Prayer Again</CardTitle>
+                <CardDescription className="text-base">
+                  Export your prayer schedule to Google Calendar, Apple Calendar, Outlook, and more
+                </CardDescription>
+              </CardHeader>
+            </Card>
 
           {/* Benefits */}
           <section>
@@ -180,7 +201,8 @@ const CalendarView = () => {
             </CardContent>
           </Card>
 
-        </div>
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   )

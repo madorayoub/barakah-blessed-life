@@ -30,7 +30,7 @@ import Settings from "./pages/Settings";
 import About from "./pages/About";
 import Privacy from "./pages/Privacy";
 import Help from "./pages/Help";
-import DesignSystem from "./pages/DesignSystem";
+import AppInfo from "./pages/AppInfo";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -103,7 +103,7 @@ const App = () => {
           <Route path="/help" element={<Help />} />
           
           {/* Design System */}
-          <Route path="/design-system" element={<DesignSystem />} />
+          <Route path="/app-info" element={<AppInfo />} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
