@@ -1,4 +1,4 @@
-import { LayoutDashboard, CheckSquare, Clock, Calendar, User, Check, X, BarChart3 } from "lucide-react"
+import { LayoutDashboard, CheckSquare, Clock, Calendar, User, Check, X, BarChart3, BookOpen } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { usePrayerTimes } from "@/hooks/usePrayerTimes"
 import { useTasks } from "@/hooks/useTasks"
@@ -18,7 +18,7 @@ const Dashboard = () => {
     <div className="min-h-screen bg-background">
       {/* Mobile Bottom Navigation (visible on mobile) */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t md:hidden">
-        <div className="flex items-center justify-around py-2">
+        <div className="flex items-center justify-around py-1">
           <Link to="/dashboard" className="flex flex-col items-center gap-1 p-2 text-primary">
             <LayoutDashboard className="h-5 w-5" />
             <span className="text-xs">Dashboard</span>
@@ -30,6 +30,10 @@ const Dashboard = () => {
           <Link to="/prayers" className="flex flex-col items-center gap-1 p-2 text-muted-foreground">
             <Clock className="h-5 w-5" />
             <span className="text-xs">Prayers</span>
+          </Link>
+          <Link to="/quran" className="flex flex-col items-center gap-1 p-2 text-muted-foreground">
+            <BookOpen className="h-5 w-5" />
+            <span className="text-xs">Qur'an</span>
           </Link>
           <Link to="/analytics" className="flex flex-col items-center gap-1 p-2 text-muted-foreground">
             <BarChart3 className="h-5 w-5" />
@@ -55,6 +59,7 @@ const Dashboard = () => {
                 <Link to="/dashboard" className="text-primary font-medium">Dashboard</Link>
                 <Link to="/tasks" className="text-muted-foreground hover:text-foreground">Tasks</Link>
                 <Link to="/prayers" className="text-muted-foreground hover:text-foreground">Prayers</Link>
+                <Link to="/quran" className="text-muted-foreground hover:text-foreground">Qur'an</Link>
                 <Link to="/calendar" className="text-muted-foreground hover:text-foreground">Calendar</Link>
                 <Link to="/analytics" className="text-muted-foreground hover:text-foreground">Analytics</Link>
                 <Link to="/settings" className="text-muted-foreground hover:text-foreground">Settings</Link>

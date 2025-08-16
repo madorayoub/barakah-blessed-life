@@ -102,7 +102,8 @@ export default {
 			},
 			fontFamily: {
 				sans: ['Inter', 'Noto Sans Arabic', '-apple-system', 'sans-serif'],
-				body: ['Inter', 'Noto Sans Arabic', '-apple-system', 'sans-serif']
+				body: ['Inter', 'Noto Sans Arabic', '-apple-system', 'sans-serif'],
+				arabic: ['Noto Sans Arabic', 'serif']
 			},
 			fontSize: {
 				'sm': ['14px', '20px'],
