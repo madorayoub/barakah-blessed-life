@@ -66,7 +66,7 @@ const Tasks = () => {
 
       {/* Main Task Views - Force re-render when tasks change */}
       <TaskViews
-        key={`tasks-${tasks.length}-${tasks.map(t => t.id).join(',')}`}
+        key={tasks.length} // Simple key to force re-render
         tasks={tasks}
         onTaskComplete={handleTaskComplete}
         onTaskDelete={deleteTask}
