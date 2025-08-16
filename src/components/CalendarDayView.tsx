@@ -29,7 +29,7 @@ interface CalendarEvent {
 
 const CalendarDayView = () => {
   const [currentDate, setCurrentDate] = useState(new Date())
-  const [currentTheme, setCurrentTheme] = useState<ThemeType>('agenda')
+  const [currentTheme, setCurrentTheme] = useState<ThemeType>('timeline')
   const [editingTask, setEditingTask] = useState<any>(null)
   const [editingPrayer, setEditingPrayer] = useState<any>(null)
   const { prayerTimes, settings, location, markPrayerComplete, isPrayerComplete } = usePrayerTimes()
@@ -164,7 +164,7 @@ const CalendarDayView = () => {
       case 'blocks':
         return <BlocksView {...props} />
       default:
-        return <AgendaView {...props} />
+        return <TimelineView {...props} />
     }
   }
 
