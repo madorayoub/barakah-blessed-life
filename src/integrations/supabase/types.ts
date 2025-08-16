@@ -134,6 +134,99 @@ export type Database = {
         }
         Relationships: []
       }
+      quran_bookmarks: {
+        Row: {
+          created_at: string
+          id: string
+          note: string | null
+          surah_number: number
+          updated_at: string
+          user_id: string
+          verse_number: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          surah_number: number
+          updated_at?: string
+          user_id: string
+          verse_number: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          surah_number?: number
+          updated_at?: string
+          user_id?: string
+          verse_number?: number
+        }
+        Relationships: []
+      }
+      quran_reading_progress: {
+        Row: {
+          created_at: string
+          id: string
+          last_read_at: string
+          reading_session_id: string | null
+          surah_number: number
+          updated_at: string
+          user_id: string
+          verse_number: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_read_at?: string
+          reading_session_id?: string | null
+          surah_number: number
+          updated_at?: string
+          user_id: string
+          verse_number: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_read_at?: string
+          reading_session_id?: string | null
+          surah_number?: number
+          updated_at?: string
+          user_id?: string
+          verse_number?: number
+        }
+        Relationships: []
+      }
+      quran_reading_sessions: {
+        Row: {
+          created_at: string
+          end_time: string | null
+          id: string
+          start_time: string
+          surahs_read: number[] | null
+          total_verses_read: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          end_time?: string | null
+          id?: string
+          start_time?: string
+          surahs_read?: number[] | null
+          total_verses_read?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          end_time?: string | null
+          id?: string
+          start_time?: string
+          surahs_read?: number[] | null
+          total_verses_read?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       task_categories: {
         Row: {
           color: string
