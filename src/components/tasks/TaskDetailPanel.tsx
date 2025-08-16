@@ -136,11 +136,15 @@ export function TaskDetailPanel({ task, isOpen, onClose, onUpdate, onDelete, onC
   }
 
   const handleUpdateSubtask = async (subtaskId: string, updates: Partial<Task>) => {
-    // Update the subtask directly in the database using the same update function
-    // This prevents the infinite loop and ensures proper state management
-    const updatedSubtask = await onUpdate({ id: subtaskId, ...updates } as Task)
-    
-    // The real-time subscription will handle updating the parent task's subtasks array
+    try {
+      // Update the subtask directly in the database using the same update function
+      // This prevents the infinite loop and ensures proper state management
+      const updatedSubtask = await onUpdate({ id: subtaskId, ...updates } as Task)
+      
+      // The real-time subscription will handle updating the parent task's subtasks array
+    } catch (error) {
+      console.error('Error updating subtask:', error)
+    }
   }
 
   const handleDeleteSubtask = (subtaskId: string) => {

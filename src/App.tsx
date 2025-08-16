@@ -73,7 +73,12 @@ const App = () => {
         <TaskAutoPopulator />
         <TooltipProvider>
           <Toaster />
-          <BrowserRouter>
+          <BrowserRouter 
+            future={{
+              v7_startTransition: true,
+              v7_relativeSplatPath: true
+            }}
+          >
         <Routes>
           {/* Landing and Demo */}
           <Route path="/" element={<Index />} />

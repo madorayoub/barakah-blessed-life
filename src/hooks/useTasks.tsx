@@ -255,11 +255,22 @@ export function useTasks() {
   const createTask = async (taskData: Omit<Task, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
     if (!user) return
 
+    // Clean and validate task data
+    const cleanTaskData = { ...taskData }
+    
+    // Remove undefined/null fields that shouldn't be sent to database
+    Object.keys(cleanTaskData).forEach(key => {
+      const value = cleanTaskData[key as keyof typeof cleanTaskData]
+      if (value === undefined || value === null || value === '') {
+        delete cleanTaskData[key as keyof typeof cleanTaskData]
+      }
+    })
+
     try {
       const { data, error } = await supabase
         .from('tasks')
         .insert({
-          ...taskData,
+          ...cleanTaskData,
           user_id: user.id
         })
         .select(`
@@ -282,8 +293,8 @@ export function useTasks() {
       // Real-time subscription will handle state updates automatically
 
       toast({
-        title: taskData.parent_task_id ? "Subtask created" : "Task created",
-        description: `"${taskData.title}" has been ${taskData.parent_task_id ? 'added to your subtasks' : 'created successfully'}`
+        title: cleanTaskData.parent_task_id ? "Subtask created" : "Task created",
+        description: `"${cleanTaskData.title}" has been ${cleanTaskData.parent_task_id ? 'added to your subtasks' : 'created successfully'}`
       })
 
       return {
@@ -442,14 +453,12 @@ export function useTasks() {
   const createTaskFromTemplate = async (template: TaskTemplate) => {
     const taskData: Omit<Task, 'id' | 'user_id' | 'created_at' | 'updated_at'> = {
       title: template.name,
-      description: template.description,
+      description: template.description || undefined,
       priority: template.priority as Task['priority'],
       status: 'pending' as Task['status'],
-      is_recurring: template.is_recurring,
-      recurring_pattern: template.recurring_pattern,
-      due_date: new Date().toISOString().split('T')[0], // Today
-      // Explicitly ensure no parent_task_id for template tasks
-      parent_task_id: undefined
+      is_recurring: template.is_recurring || false,
+      recurring_pattern: template.recurring_pattern || undefined,
+      due_date: new Date().toISOString().split('T')[0] // Today
     }
 
     return await createTask(taskData)
