@@ -286,7 +286,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_default_categories_for_existing_users: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      create_default_categories_for_user: {
+        Args: { user_id_param: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
