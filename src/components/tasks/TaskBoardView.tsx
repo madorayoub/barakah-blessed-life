@@ -129,7 +129,7 @@ export function TaskBoardView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit,
               
               <CardContent className="space-y-3">
                 {/* Quick Add */}
-                <QuickAddTask groupId={column.id} />
+                <QuickAddTask groupId={column.id} columnStatus={column.status} />
                 
                 {/* Tasks */}
                 {columnTasks.map(task => (

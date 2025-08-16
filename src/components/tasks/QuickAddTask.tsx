@@ -8,9 +8,10 @@ import { useTasks } from '@/hooks/useTasks'
 
 interface QuickAddTaskProps {
   groupId?: string
+  columnStatus?: string // New prop to specify the column's status
 }
 
-export function QuickAddTask({ groupId }: QuickAddTaskProps) {
+export function QuickAddTask({ groupId, columnStatus }: QuickAddTaskProps) {
   const { createTask } = useTasks()
   const [isAdding, setIsAdding] = useState(false)
   const [taskTitle, setTaskTitle] = useState('')
@@ -33,10 +34,35 @@ export function QuickAddTask({ groupId }: QuickAddTaskProps) {
       dueDate = tomorrow.toISOString().split('T')[0]
     }
 
+    // Determine status based on column
+    let taskStatus = 'pending' // default
+    if (columnStatus) {
+      // Map custom column status
+      taskStatus = columnStatus
+    } else if (groupId) {
+      // Map standard column IDs to status
+      switch (groupId) {
+        case 'pending':
+        case 'to_do':
+          taskStatus = 'pending'
+          break
+        case 'in_progress':
+          taskStatus = 'in_progress'  
+          break
+        case 'completed':
+        case 'done':
+          taskStatus = 'completed'
+          break
+        default:
+          // For custom columns, use the groupId as status
+          taskStatus = groupId
+      }
+    }
+
     await createTask({
       title: taskTitle,
       priority,
-      status: 'pending',
+      status: taskStatus as 'pending' | 'in_progress' | 'completed' | 'cancelled',
       due_date: dueDate,
       is_recurring: false
     })
