@@ -17,9 +17,10 @@ interface AgendaViewProps {
   date: Date
   events: CalendarEvent[]
   onPrayerComplete?: (prayerName: string) => void
+  onEventClick?: (event: CalendarEvent) => void
 }
 
-const AgendaView = ({ date, events, onPrayerComplete }: AgendaViewProps) => {
+const AgendaView = ({ date, events, onPrayerComplete, onEventClick }: AgendaViewProps) => {
   const prayers = events.filter(e => e.type === 'prayer')
   const tasks = events.filter(e => e.type === 'task')
   
@@ -143,7 +144,11 @@ const AgendaView = ({ date, events, onPrayerComplete }: AgendaViewProps) => {
           </CardHeader>
           <CardContent className="space-y-2">
             {upcomingPrayers.map(prayer => (
-              <div key={prayer.id} className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors">
+              <div 
+                key={prayer.id} 
+                className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors cursor-pointer"
+                onClick={() => onEventClick?.(prayer)}
+              >
                 <Clock className="h-4 w-4 text-muted-foreground" />
                 <div className="flex-1">
                   <div className="font-medium">🕌 {prayer.title} Prayer</div>
@@ -171,7 +176,11 @@ const AgendaView = ({ date, events, onPrayerComplete }: AgendaViewProps) => {
           </CardHeader>
           <CardContent className="space-y-2">
             {pendingTasks.map(task => (
-              <div key={task.id} className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors">
+              <div 
+                key={task.id} 
+                className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors cursor-pointer"
+                onClick={() => onEventClick?.(task)}
+              >
                 <Clock className="h-4 w-4 text-muted-foreground" />
                 <div className="flex-1">
                   <div className="font-medium">📋 {task.title}</div>

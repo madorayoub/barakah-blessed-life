@@ -16,9 +16,10 @@ interface CardsViewProps {
   date: Date
   events: CalendarEvent[]
   onPrayerComplete?: (prayerName: string) => void
+  onEventClick?: (event: CalendarEvent) => void
 }
 
-const CardsView = ({ date, events }: CardsViewProps) => {
+const CardsView = ({ date, events, onEventClick }: CardsViewProps) => {
   const prayers = events.filter(e => e.type === 'prayer')
   const tasks = events.filter(e => e.type === 'task')
 
@@ -86,6 +87,7 @@ const CardsView = ({ date, events }: CardsViewProps) => {
                       : 'bg-gradient-to-br from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100'
                   }
                 `}
+                onClick={() => onEventClick?.(prayer)}
               >
                 <CardContent className="p-6 text-center">
                   {/* Prayer Icon */}
@@ -160,6 +162,7 @@ const CardsView = ({ date, events }: CardsViewProps) => {
                     : 'bg-gradient-to-br from-orange-50 to-red-50 hover:from-orange-100 hover:to-red-100'
                   }
                 `}
+                onClick={() => onEventClick?.(task)}
               >
                 <CardContent className="p-6 text-center">
                   {/* Task Icon */}

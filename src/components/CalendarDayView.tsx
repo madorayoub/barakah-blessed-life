@@ -8,6 +8,8 @@ import { useTasks } from '@/hooks/useTasks'
 import { calculatePrayerTimes } from '@/lib/prayerTimes'
 import { GoogleCalendarConnect } from '@/components/GoogleCalendarConnect'
 import { AppleCalendarExport } from '@/components/AppleCalendarExport'
+import { EditTaskDialog } from '@/components/EditTaskDialog'
+import { EditPrayerDialog } from '@/components/EditPrayerDialog'
 import ThemeSelector, { ThemeType, getRecommendedTheme } from '@/components/calendar-themes/ThemeSelector'
 import TimelineView from '@/components/calendar-themes/TimelineView'
 import AgendaView from '@/components/calendar-themes/AgendaView'
@@ -22,11 +24,14 @@ interface CalendarEvent {
   time?: Date
   completed?: boolean
   isNext?: boolean
+  taskData?: any // Full task object for editing
 }
 
 const CalendarDayView = () => {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [currentTheme, setCurrentTheme] = useState<ThemeType>('agenda')
+  const [editingTask, setEditingTask] = useState<any>(null)
+  const [editingPrayer, setEditingPrayer] = useState<any>(null)
   const { prayerTimes, settings, location, markPrayerComplete, isPrayerComplete } = usePrayerTimes()
   const { tasks } = useTasks()
 
@@ -88,7 +93,8 @@ const CalendarDayView = () => {
         type: 'task',
         title: task.title,
         time: task.due_time ? new Date(`${task.due_date}T${task.due_time}`) : undefined,
-        completed: task.status === 'completed'
+        completed: task.status === 'completed',
+        taskData: task
       })
     })
     
@@ -128,13 +134,22 @@ const CalendarDayView = () => {
 
   const events = getEventsForDate(currentDate)
 
+  const handleEventClick = (event: CalendarEvent) => {
+    if (event.type === 'task' && event.taskData) {
+      setEditingTask(event.taskData)
+    } else if (event.type === 'prayer') {
+      setEditingPrayer(event)
+    }
+  }
+
   const renderThemeView = () => {
     const props = {
       date: currentDate,
       events,
       onPrayerComplete: (prayerName: string) => {
         markPrayerComplete(prayerName)
-      }
+      },
+      onEventClick: handleEventClick
     }
 
     switch (currentTheme) {
@@ -219,6 +234,20 @@ const CalendarDayView = () => {
         {/* Theme-based Content */}
         {renderThemeView()}
       </CardContent>
+
+      {/* Edit Dialogs */}
+      <EditTaskDialog
+        task={editingTask}
+        open={!!editingTask}
+        onOpenChange={(open) => !open && setEditingTask(null)}
+      />
+      
+      <EditPrayerDialog
+        prayer={editingPrayer}
+        open={!!editingPrayer}
+        onOpenChange={(open) => !open && setEditingPrayer(null)}
+        onPrayerComplete={markPrayerComplete}
+      />
     </Card>
   )
 }
