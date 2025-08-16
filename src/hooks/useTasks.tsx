@@ -304,12 +304,19 @@ export function useTasks() {
       } as Task
 
       // OPTIMISTIC UPDATE: Add to state immediately for instant UI feedback
+      console.log('Creating task optimistically:', newTask.title)
       if (!cleanTaskData.parent_task_id) {
-        setTasks(prev => [newTask, ...prev])
+        // It's a main task
+        setTasks(prev => {
+          const updatedTasks = [newTask, ...prev]
+          console.log('Tasks after create:', updatedTasks.length, 'tasks total')
+          return updatedTasks
+        })
       } else {
-        // Handle subtask creation
+        // It's a subtask - add to parent's subtasks
         setTasks(prev => prev.map(task => {
           if (task.id === cleanTaskData.parent_task_id) {
+            console.log('Adding subtask to parent:', task.title)
             return {
               ...task,
               subtasks: [...(task.subtasks || []), newTask]
@@ -476,14 +483,17 @@ export function useTasks() {
 
     try {
       // OPTIMISTIC UPDATE: Remove from state immediately for instant UI feedback
-      setTasks(prev => prev.map(task => {
-        if (task.id === taskId) return null // Will be filtered out
-        // Also remove from subtasks
-        return {
+      console.log('Deleting task optimistically:', taskId)
+      setTasks(prev => {
+        const filteredTasks = prev.filter(task => task.id !== taskId)
+        // Also remove from subtasks of any parent tasks
+        const updatedTasks = filteredTasks.map(task => ({
           ...task,
           subtasks: (task.subtasks || []).filter(subtask => subtask.id !== taskId)
-        }
-      }).filter(Boolean) as Task[])
+        }))
+        console.log('Tasks after delete:', updatedTasks.length, 'tasks remaining')
+        return updatedTasks
+      })
 
       const { error } = await supabase
         .from('tasks')
