@@ -19,7 +19,7 @@ export function useTaskStatuses() {
   const [statuses, setStatuses] = useState<TaskStatus[]>([])
   const [loading, setLoading] = useState(true)
 
-  // Load user's custom statuses
+  // Load user's custom statuses and set up real-time subscription
   useEffect(() => {
     async function loadStatuses() {
       if (!user) return
@@ -45,6 +45,42 @@ export function useTaskStatuses() {
     }
 
     loadStatuses()
+
+    // Set up real-time subscription
+    if (user) {
+      const channel = supabase
+        .channel('task_statuses_changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'task_statuses',
+            filter: `user_id=eq.${user.id}`
+          },
+          (payload) => {
+            console.log('Task status change:', payload)
+            
+            if (payload.eventType === 'INSERT') {
+              const newStatus = payload.new as TaskStatus
+              setStatuses(prev => [...prev, newStatus].sort((a, b) => a.position - b.position))
+            } else if (payload.eventType === 'UPDATE') {
+              const updatedStatus = payload.new as TaskStatus
+              setStatuses(prev => prev.map(status => 
+                status.id === updatedStatus.id ? updatedStatus : status
+              ).sort((a, b) => a.position - b.position))
+            } else if (payload.eventType === 'DELETE') {
+              const deletedStatus = payload.old as TaskStatus
+              setStatuses(prev => prev.filter(status => status.id !== deletedStatus.id))
+            }
+          }
+        )
+        .subscribe()
+
+      return () => {
+        supabase.removeChannel(channel)
+      }
+    }
   }, [user])
 
   const createStatus = async (name: string, color: string = '#6b7280') => {
@@ -75,7 +111,7 @@ export function useTaskStatuses() {
         return
       }
 
-      setStatuses(prev => [...prev, data as TaskStatus].sort((a, b) => a.position - b.position))
+      // Real-time subscription will handle state update
       toast({
         title: "Column created",
         description: `"${name}" column has been added`
@@ -114,11 +150,7 @@ export function useTaskStatuses() {
         return
       }
 
-      setStatuses(prev => prev.map(status => 
-        status.id === statusId 
-          ? { ...status, ...(data as TaskStatus) } 
-          : status
-      ))
+      // Real-time subscription will handle state update
       return data as TaskStatus
     } catch (error) {
       console.error('Error updating status:', error)
@@ -160,7 +192,7 @@ export function useTaskStatuses() {
         return
       }
 
-      setStatuses(prev => prev.filter(status => status.id !== statusId))
+      // Real-time subscription will handle state update
       toast({
         title: "Column deleted",
         description: "Column has been removed"

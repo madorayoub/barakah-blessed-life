@@ -84,7 +84,7 @@ export function useTasks() {
     scheduleTaskReminders()
   }, [tasks, sendTaskReminder])
 
-  // Load user's tasks
+  // Load user's tasks and set up real-time subscription
   useEffect(() => {
     async function loadTasks() {
       if (!user) return
@@ -124,6 +124,60 @@ export function useTasks() {
     }
 
     loadTasks()
+
+    // Set up real-time subscription for tasks
+    if (user) {
+      const channel = supabase
+        .channel('tasks_changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'tasks',
+            filter: `user_id=eq.${user.id}`
+          },
+          (payload) => {
+            console.log('Task change:', payload)
+            
+            if (payload.eventType === 'INSERT') {
+              const newTask = payload.new as any
+              // Only add if it's a parent task (not a subtask)
+              if (!newTask.parent_task_id) {
+                const formattedTask = {
+                  ...newTask,
+                  priority: newTask.priority as Task['priority'],
+                  status: newTask.status as Task['status'],
+                  subtasks: []
+                } as Task
+                setTasks(prev => [formattedTask, ...prev])
+              }
+            } else if (payload.eventType === 'UPDATE') {
+              const updatedTask = payload.new as any
+              setTasks(prev => prev.map(task => {
+                if (task.id === updatedTask.id) {
+                  return {
+                    ...task,
+                    ...updatedTask,
+                    priority: updatedTask.priority as Task['priority'],
+                    status: updatedTask.status as Task['status'],
+                    subtasks: task.subtasks || []
+                  } as Task
+                }
+                return task
+              }))
+            } else if (payload.eventType === 'DELETE') {
+              const deletedTask = payload.old as any
+              setTasks(prev => prev.filter(task => task.id !== deletedTask.id))
+            }
+          }
+        )
+        .subscribe()
+
+      return () => {
+        supabase.removeChannel(channel)
+      }
+    }
   }, [user])
 
   // Load user's categories
@@ -225,36 +279,7 @@ export function useTasks() {
         return
       }
 
-      // If it's a subtask, update the parent task's subtasks
-      if (taskData.parent_task_id) {
-        setTasks(prev => prev.map(task => {
-          if (task.id === taskData.parent_task_id) {
-            return {
-              ...task,
-                subtasks: [...(task.subtasks || []), {
-                ...data,
-                priority: data.priority as Task['priority'],
-                status: data.status as Task['status'],
-                subtasks: [] // Subtasks don't have their own subtasks
-              } as Task]
-            }
-          }
-          return task
-        }))
-      } else {
-        const newTask = {
-          ...data,
-          priority: data.priority as Task['priority'],
-          status: data.status as Task['status'],
-          subtasks: Array.isArray(data.subtasks) ? data.subtasks.map((sub: any) => ({
-            ...sub,
-            priority: sub.priority as Task['priority'],
-            status: sub.status as Task['status'],
-            subtasks: [] // Subtasks don't have their own subtasks
-          })) : []
-        } as Task
-        setTasks(prev => [newTask, ...prev])
-      }
+      // Real-time subscription will handle state updates automatically
 
       toast({
         title: taskData.parent_task_id ? "Subtask created" : "Task created",
@@ -314,34 +339,7 @@ export function useTasks() {
         return
       }
 
-      setTasks(prev => prev.map(task => {
-        if (task.id === taskId) {
-          return { 
-            ...task, 
-            ...data, 
-            priority: data.priority as Task['priority'],
-            status: data.status as Task['status'],
-            subtasks: Array.isArray(data.subtasks) ? data.subtasks.map((sub: any) => ({
-              ...sub,
-              priority: sub.priority as Task['priority'],
-              status: sub.status as Task['status'],
-              subtasks: [] // Subtasks don't have their own subtasks
-            })) : task.subtasks || []
-          } as Task
-        }
-        // Also update if this is a subtask of the current task
-        if (task.subtasks?.some(sub => sub.id === taskId)) {
-          return {
-            ...task,
-            subtasks: task.subtasks.map(sub => 
-              sub.id === taskId 
-                ? { ...sub, ...data, priority: data.priority as Task['priority'], status: data.status as Task['status'], subtasks: [] }
-                : sub
-            )
-          }
-        }
-        return task
-      }))
+      // Real-time subscription will handle state updates automatically
       return {
         ...data,
         priority: data.priority as Task['priority'],
@@ -425,19 +423,7 @@ export function useTasks() {
         return
       }
 
-      // Update tasks list - remove if parent task, or update parent's subtasks if subtask
-      setTasks(prev => prev.map(task => {
-        if (task.id === taskId) {
-          return null // Will be filtered out
-        }
-        if (task.subtasks?.some(sub => sub.id === taskId)) {
-          return {
-            ...task,
-            subtasks: task.subtasks.filter(sub => sub.id !== taskId)
-          }
-        }
-        return task
-      }).filter(Boolean) as Task[])
+      // Real-time subscription will handle state updates automatically
 
       toast({
         title: "Task deleted",
