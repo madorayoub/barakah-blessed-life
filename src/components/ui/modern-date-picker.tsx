@@ -277,36 +277,19 @@ export function ModernDatePicker({
           </PopoverContent>
         </Popover>
 
-        {/* Time Picker (if enabled) - Fixed with better styling */}
+        {/* Time Picker (if enabled) - Direct input approach */}
         {showTime && (
-          <div className="flex-shrink-0">
-            <div className="relative">
-              <Button
-                variant="outline"
-                className="min-h-[40px] w-28 border-2 border-gray-200 focus:border-primary rounded-lg bg-white text-gray-900 px-3 py-2 text-sm font-normal justify-start hover:border-primary transition-colors"
-                onClick={() => {
-                  // Focus the hidden input when button is clicked
-                  const timeInput = document.querySelector('input[type="time"]') as HTMLInputElement
-                  if (timeInput?.showPicker) {
-                    timeInput.showPicker()
-                  } else {
-                    timeInput?.focus()
-                  }
-                }}
-              >
-                <Clock className="h-4 w-4 text-primary mr-2" />
-                <span className="text-gray-900">
-                  {timeValue || 'Time'}
-                </span>
-              </Button>
-              <Input
-                type="time"
-                value={timeValue || ''}
-                onChange={(e) => onTimeChange?.(e.target.value)}
-                className="absolute inset-0 opacity-0 cursor-pointer"
-                tabIndex={-1}
-              />
-            </div>
+          <div className="flex-shrink-0 relative">
+            <Input
+              type="time"
+              value={timeValue || ''}
+              onChange={(e) => onTimeChange?.(e.target.value)}
+              className="min-h-[36px] w-24 pl-8 border-2 border-gray-200 focus:border-primary rounded-lg bg-white text-gray-900 text-sm hover:border-primary transition-colors cursor-pointer"
+              style={{
+                colorScheme: 'light'
+              }}
+            />
+            <Clock className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-primary pointer-events-none" />
           </div>
         )}
       </div>
