@@ -277,19 +277,22 @@ export function ModernDatePicker({
           </PopoverContent>
         </Popover>
 
-        {/* Time Picker (if enabled) - Direct input approach */}
+        {/* Time Picker (if enabled) - Simplified direct approach */}
         {showTime && (
-          <div className="flex-shrink-0 relative">
-            <Input
-              type="time"
-              value={timeValue || ''}
-              onChange={(e) => onTimeChange?.(e.target.value)}
-              className="min-h-[36px] w-24 pl-8 border-2 border-gray-200 focus:border-primary rounded-lg bg-white text-gray-900 text-sm hover:border-primary transition-colors cursor-pointer"
-              style={{
-                colorScheme: 'light'
-              }}
-            />
-            <Clock className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-primary pointer-events-none" />
+          <div className="flex-shrink-0">
+            <div className="space-y-1">
+              <Label className="text-sm font-medium text-gray-700">Time</Label>
+              <Input
+                type="time"
+                value={timeValue || ''}
+                onChange={(e) => {
+                  console.log('Time changed:', e.target.value);
+                  onTimeChange?.(e.target.value);
+                }}
+                className="min-h-[36px] w-24 border-2 border-gray-200 focus:border-primary rounded-lg bg-white text-gray-900 text-sm hover:border-primary transition-colors cursor-pointer"
+                onClick={() => console.log('Time input clicked')}
+              />
+            </div>
           </div>
         )}
       </div>
