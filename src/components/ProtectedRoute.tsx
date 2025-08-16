@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
+import { Onboarding } from '@/components/Onboarding'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -12,7 +13,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   useEffect(() => {
     if (!loading && !user) {
-      navigate('/auth/login')
+      navigate('/')
     }
   }, [user, loading, navigate])
 
@@ -26,6 +27,12 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   if (!user) {
     return null
+  }
+
+  // Check if user needs onboarding (after successful authentication)
+  const onboardingCompleted = localStorage.getItem('onboarding-completed')
+  if (!onboardingCompleted) {
+    return <Onboarding onComplete={() => localStorage.setItem('onboarding-completed', 'true')} />
   }
 
   return <>{children}</>

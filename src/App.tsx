@@ -37,35 +37,8 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 const queryClient = new QueryClient();
 
 const App = () => {
-  const [showOnboarding, setShowOnboarding] = useState(false)
-
-  useEffect(() => {
-    // Only show onboarding for completely new users (not authenticated users)
-    const onboardingCompleted = localStorage.getItem('onboarding-completed')
-    const hasSeenOnboarding = localStorage.getItem('has-seen-onboarding')
-    
-    // Don't show onboarding if:
-    // 1. It's already completed, OR
-    // 2. User has seen it before (even if they didn't complete it)
-    if (!onboardingCompleted && !hasSeenOnboarding) {
-      // Mark as seen immediately to prevent loops
-      localStorage.setItem('has-seen-onboarding', 'true')
-      setShowOnboarding(true)
-    }
-  }, [])
-
-  if (showOnboarding) {
-    return (
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Onboarding onComplete={() => setShowOnboarding(false)} />
-          </TooltipProvider>
-        </AuthProvider>
-      </QueryClientProvider>
-    )
-  }
+  // Remove the onboarding logic from App.tsx
+  // Onboarding will be handled in the AuthProvider/ProtectedRoute logic
 
   return (
     <QueryClientProvider client={queryClient}>

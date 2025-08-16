@@ -1,4 +1,4 @@
-import { Star, Clock, Book, Target, Heart, Compass, Calendar, TrendingUp, Play, ArrowRight, Check, Users } from "lucide-react"
+import { Star, Clock, Book, Target, Heart, Compass, Calendar, TrendingUp, Play, ArrowRight, Check, Users, BookOpen, Zap, Shield } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -8,130 +8,150 @@ const Index = () => {
   const features = [
     {
       icon: Clock,
-      title: "Never Miss a Prayer",
-      description: "Accurate prayer times calculated for your location and synced to your external calendars"
+      title: "Smart Prayer Integration",
+      description: "Never miss a prayer with accurate times that sync seamlessly with your existing calendar apps"
+    },
+    {
+      icon: BookOpen,
+      title: "Islamic Task Management",
+      description: "Organize daily tasks alongside spiritual goals like Quran reading, dhikr, and Islamic studies"
+    },
+    {
+      icon: Calendar,
+      title: "Unified Life Calendar",
+      description: "See your prayers, work meetings, and spiritual practices in one beautifully organized view"
     },
     {
       icon: TrendingUp,
       title: "Spiritual Growth Tracking",
-      description: "Track Quran reading, dhikr, and religious goals alongside your daily productivity tasks"
-    },
-    {
-      icon: Calendar,
-      title: "Seamless Calendar Integration",
-      description: "Your spiritual practices appear alongside work meetings and personal events in Google Calendar and Apple Calendar"
+      description: "Monitor your Islamic practices and build consistent habits with detailed progress insights"
     }
   ]
 
-  const testimonials = [
-    {
-      quote: "Finally, my prayer times appear right next to my work meetings. I never miss Dhuhr anymore!",
-      author: "Ahmad K.",
-      role: "Software Engineer",
-      location: "London, UK"
-    },
-    {
-      quote: "The spiritual growth tracking keeps me motivated. I can see my Quran reading progress alongside my fitness goals.",
-      author: "Fatima S.",
-      role: "Medical Student", 
-      location: "Toronto, Canada"
-    },
-    {
-      quote: "Having Islamic calendar events in my Google Calendar helps me prepare for Ramadan and Eid properly.",
-      author: "Omar R.",
-      role: "Business Owner",
-      location: "Dubai, UAE"
-    }
+  const benefits = [
+    "Automated prayer time calculations for any location",
+    "Seamless Google Calendar & Apple Calendar integration", 
+    "Islamic holiday and important date tracking",
+    "Customizable spiritual goal setting and tracking",
+    "Beautiful, distraction-free interface designed for focus",
+    "Offline support for prayers and Quran reading"
   ]
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
       
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-emerald-50 via-gray-50 to-emerald-100 min-h-screen flex items-center">
-        {/* Subtle Islamic Geometric Pattern */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `
-              radial-gradient(circle at 25px 25px, hsl(158, 64%, 52%) 2px, transparent 0),
-              radial-gradient(circle at 75px 75px, hsl(158, 64%, 52%) 1px, transparent 0)
-            `,
-            backgroundSize: '100px 100px'
-          }} />
-        </div>
-        
-        <div className="relative container mx-auto px-4 py-20">
-          <div className="max-w-4xl mx-auto text-center">
-            
-            {/* Main Headline */}
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 text-emerald-900 leading-tight">
-              Harmonize Your Spiritual 
-              <br />
-              <span className="bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
-                and Daily Life
-              </span>
-            </h1>
-            
-            {/* Subheadline */}
-            <p className="text-lg md:text-xl lg:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-              The Islamic productivity app that integrates prayer times, Quran reading, and spiritual goals 
-              with your existing <strong>Google Calendar</strong> and <strong>Apple Calendar</strong>
-            </p>
-            
-            {/* CTAs */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <Link to="/auth/signup">
-                <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 text-white text-lg px-8 py-4 h-auto shadow-lg hover:shadow-xl transition-all duration-300">
-                  <ArrowRight className="h-5 w-5 mr-2" />
-                  Start Your Spiritual Journey
-                </Button>
-              </Link>
-              <Link to="/demo">
-                <Button size="lg" variant="ghost" className="text-emerald-700 border-emerald-300 hover:bg-emerald-50 text-lg px-8 py-4 h-auto transition-all duration-300">
-                  <Play className="h-5 w-5 mr-2" />
-                  Watch Demo
-                </Button>
-              </Link>
+      {/* Header */}
+      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            {/* Logo */}
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-white font-bold text-xl">ب</span>
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Barakah Life</h1>
+                <p className="text-sm text-emerald-600 font-medium">Islamic Productivity</p>
+              </div>
             </div>
             
-            {/* Trust Indicator */}
-            <div className="flex items-center justify-center gap-3 text-sm text-emerald-700">
-              <Users className="h-4 w-4" />
-              <span className="font-medium">Trusted by Muslims worldwide</span>
-              <div className="flex -space-x-1">
-                {[1,2,3,4,5].map(i => (
-                  <Star key={i} className="h-4 w-4 text-amber-500" fill="currentColor" />
-                ))}
-              </div>
+            {/* Navigation */}
+            <nav className="hidden md:flex items-center gap-6">
+              <Link to="/demo" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">
+                Demo
+              </Link>
+              <Link to="/about" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">
+                About
+              </Link>
+              <Link to="/auth/login">
+                <Button variant="ghost" className="font-medium">
+                  Sign In
+                </Button>
+              </Link>
+              <Link to="/auth/signup">
+                <Button className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium shadow-lg">
+                  Get Started
+                </Button>
+              </Link>
+            </nav>
+          </div>
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <section className="py-20 px-6">
+        <div className="container mx-auto max-w-6xl text-center">
+          <Badge className="mb-6 bg-emerald-100 text-emerald-700 border-emerald-200 text-sm font-medium px-4 py-2">
+            ✨ Transform Your Spiritual Productivity
+          </Badge>
+          
+          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+            Integrate Your 
+            <span className="text-emerald-600"> Islamic Life</span>
+            <br />
+            With Modern Productivity
+          </h1>
+          
+          <p className="text-xl text-gray-600 mb-10 max-w-3xl mx-auto leading-relaxed">
+            Barakah Life seamlessly blends your prayers, spiritual goals, and daily tasks into one beautifully organized system. 
+            Stay connected to your faith while achieving your worldly goals.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+            <Link to="/auth/signup">
+              <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-6 text-lg font-semibold shadow-xl">
+                Start Your Journey
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+            <Link to="/demo">
+              <Button size="lg" variant="outline" className="px-8 py-6 text-lg font-semibold border-2">
+                <Play className="mr-2 h-5 w-5" />
+                Watch Demo
+              </Button>
+            </Link>
+          </div>
+          
+          {/* Trust Indicators */}
+          <div className="flex flex-wrap justify-center items-center gap-8 text-sm text-gray-500">
+            <div className="flex items-center gap-2">
+              <Shield className="h-4 w-4 text-emerald-600" />
+              Privacy-first design
+            </div>
+            <div className="flex items-center gap-2">
+              <Zap className="h-4 w-4 text-emerald-600" />
+              Works offline
+            </div>
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4 text-emerald-600" />
+              Trusted by Muslims worldwide
             </div>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4">
+      <section className="py-20 px-6 bg-white">
+        <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-16">
-            <Badge variant="secondary" className="mb-4 text-emerald-700 bg-emerald-100">
-              Core Features
-            </Badge>
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900">
-              Everything You Need for 
-              <span className="text-emerald-600"> Spiritual Success</span>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Everything You Need for Islamic Productivity
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Seamlessly blend Islamic practices with modern productivity tools
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Thoughtfully designed features that respect your faith while boosting your productivity
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
-              <Card key={index} className="text-center p-8 hover:shadow-lg transition-all duration-300 border-0 bg-gradient-to-br from-gray-50 to-emerald-50">
-                <CardContent className="p-0">
-                  <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-700 flex items-center justify-center shadow-lg">
-                    <feature.icon className="h-8 w-8 text-white" />
+              <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-shadow bg-gradient-to-br from-white to-gray-50">
+                <CardHeader className="text-center pb-4">
+                  <div className="w-16 h-16 bg-emerald-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <feature.icon className="h-8 w-8 text-emerald-600" />
                   </div>
-                  <h3 className="text-xl font-bold mb-4 text-gray-900">{feature.title}</h3>
+                  <CardTitle className="text-xl font-bold text-gray-900">{feature.title}</CardTitle>
+                </CardHeader>
+                <CardContent className="text-center">
                   <p className="text-gray-600 leading-relaxed">{feature.description}</p>
                 </CardContent>
               </Card>
@@ -140,170 +160,91 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Social Proof Section */}
-      <section className="py-20 bg-gradient-to-br from-emerald-50 to-gray-50">
-        <div className="container mx-auto px-4">
+      {/* Benefits Section */}
+      <section className="py-20 px-6 bg-emerald-50">
+        <div className="container mx-auto max-w-4xl">
           <div className="text-center mb-16">
-            <Badge variant="secondary" className="mb-4 text-emerald-700 bg-emerald-100">
-              Testimonials
-            </Badge>
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900">
-              Trusted by Muslims Worldwide
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Why Choose Barakah Life?
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              See how Barakah Tasks is transforming spiritual practice around the globe
+            <p className="text-xl text-gray-600">
+              Built specifically for Muslims who want to excel in both dunya and akhirah
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="p-6 bg-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-                <CardContent className="p-0">
-                  <div className="flex mb-4">
-                    {[1,2,3,4,5].map(i => (
-                      <Star key={i} className="h-4 w-4 text-amber-500" fill="currentColor" />
-                    ))}
-                  </div>
-                  <blockquote className="text-gray-700 mb-6 leading-relaxed italic">
-                    "{testimonial.quote}"
-                  </blockquote>
-                  <div className="flex items-center">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white font-bold mr-4">
-                      {testimonial.author.charAt(0)}
-                    </div>
-                    <div>
-                      <div className="font-semibold text-gray-900">{testimonial.author}</div>
-                      <div className="text-sm text-gray-600">{testimonial.role}</div>
-                      <div className="text-xs text-emerald-600">{testimonial.location}</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+          <div className="grid md:grid-cols-2 gap-6">
+            {benefits.map((benefit, index) => (
+              <div key={index} className="flex items-start gap-4 p-4">
+                <div className="w-6 h-6 bg-emerald-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                  <Check className="h-4 w-4 text-white" />
+                </div>
+                <p className="text-gray-700 font-medium">{benefit}</p>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Benefits Section */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-              <div>
-                <Badge variant="secondary" className="mb-4 text-emerald-700 bg-emerald-100">
-                  Calendar Integration
-                </Badge>
-                <h2 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900">
-                  Your Spiritual Life, 
-                  <span className="text-emerald-600"> Perfectly Organized</span>
-                </h2>
-                <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-                  No more switching between apps. See your prayer times, Islamic events, 
-                  and spiritual goals right alongside your work meetings and personal commitments.
-                </p>
-                
-                <div className="space-y-4">
-                  {[
-                    "Prayer times automatically appear in Google Calendar",
-                    "Islamic calendar events (Ramadan, Eid) sync seamlessly", 
-                    "Spiritual goals tracked alongside productivity metrics",
-                    "Never miss important Islamic dates again"
-                  ].map((benefit, index) => (
-                    <div key={index} className="flex items-center gap-3">
-                      <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center">
-                        <Check className="h-4 w-4 text-emerald-600" />
-                      </div>
-                      <span className="text-gray-700">{benefit}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="relative">
-                <Card className="p-6 bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200">
-                  <CardHeader className="p-0 mb-6">
-                    <CardTitle className="flex items-center gap-2 text-emerald-800">
-                      <Calendar className="h-5 w-5" />
-                      Today's Schedule
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-0 space-y-3">
-                    {[
-                      { time: "5:30 AM", event: "Fajr Prayer", type: "prayer" },
-                      { time: "9:00 AM", event: "Team Meeting", type: "work" },
-                      { time: "12:45 PM", event: "Dhuhr Prayer", type: "prayer" },
-                      { time: "2:00 PM", event: "Client Call", type: "work" },
-                      { time: "3:30 PM", event: "Asr Prayer", type: "prayer" },
-                      { time: "6:15 PM", event: "Maghrib Prayer", type: "prayer" }
-                    ].map((item, index) => (
-                      <div key={index} className="flex items-center gap-3 p-2 rounded-lg bg-white/70">
-                        <div className="text-sm font-mono text-gray-600 w-20">{item.time}</div>
-                        <div className={`w-2 h-2 rounded-full ${item.type === 'prayer' ? 'bg-emerald-500' : 'bg-gray-400'}`} />
-                        <div className="text-sm font-medium text-gray-800">{item.event}</div>
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Final CTA Section */}
-      <section className="py-20 bg-gradient-to-br from-emerald-600 to-emerald-800 text-white">
-        <div className="container mx-auto px-4 text-center">
-          <div className="max-w-3xl mx-auto">
-            <h2 className="text-3xl md:text-5xl font-bold mb-6">
-              Begin Your Spiritual Journey Today
-            </h2>
-            <p className="text-lg md:text-xl mb-8 opacity-90 leading-relaxed">
-              Join thousands of Muslims who have found the perfect balance between 
-              spiritual devotion and daily productivity
-            </p>
-            
+      {/* CTA Section */}
+      <section className="py-20 px-6 bg-gray-900 text-white">
+        <div className="container mx-auto max-w-4xl text-center">
+          <h2 className="text-4xl font-bold mb-6">
+            Start Your Islamic Productivity Journey Today
+          </h2>
+          <p className="text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
+            Join thousands of Muslims who have transformed their daily routine with Barakah Life. 
+            It's free to start, and your spiritual data stays private.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/auth/signup">
-              <Button size="lg" className="bg-white text-emerald-700 hover:bg-gray-100 text-lg px-10 py-4 h-auto font-semibold shadow-xl hover:shadow-2xl transition-all duration-300">
+              <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-6 text-lg font-semibold">
                 Create Free Account
-                <ArrowRight className="h-5 w-5 ml-2" />
+                <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
-            
-            <p className="text-sm mt-4 opacity-75">
-              Setup takes less than 2 minutes • Free forever
-            </p>
-            
-            <div className="flex items-center justify-center gap-6 mt-8 text-sm opacity-75">
-              <div className="flex items-center gap-2">
-                <Check className="h-4 w-4" />
-                <span>No credit card required</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Check className="h-4 w-4" />
-                <span>Works with all calendars</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Check className="h-4 w-4" />
-                <span>Privacy focused</span>
-              </div>
-            </div>
+            <Link to="/demo">
+              <Button size="lg" variant="outline" className="text-white border-white hover:bg-white hover:text-gray-900 px-8 py-6 text-lg font-semibold">
+                Explore Features
+              </Button>
+            </Link>
           </div>
+          
+          <p className="text-sm text-gray-400 mt-8">
+            "And it is He who created the heavens and earth in truth. And the day He says, 'Be,' and it is, His word is the truth." - Quran 6:73
+          </p>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-12 border-t bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center justify-between">
-            <div className="flex items-center gap-2 mb-4 md:mb-0">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-600 to-emerald-700 flex items-center justify-center">
-                <Star className="h-5 w-5 text-white" fill="currentColor" />
+      <footer className="bg-white border-t py-12 px-6">
+        <div className="container mx-auto max-w-6xl">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="flex items-center gap-3 mb-6 md:mb-0">
+              <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold">ب</span>
               </div>
-              <span className="font-bold text-lg text-gray-900">Barakah Tasks</span>
+              <div>
+                <h3 className="font-bold text-gray-900">Barakah Life</h3>
+                <p className="text-sm text-gray-500">Islamic Productivity</p>
+              </div>
             </div>
-            <p className="text-sm text-gray-600">
-              Developed with love and devotion for the Muslim community
-            </p>
+            
+            <div className="flex items-center gap-6 text-sm text-gray-600">
+              <Link to="/privacy" className="hover:text-gray-900 transition-colors">
+                Privacy Policy
+              </Link>
+              <Link to="/about" className="hover:text-gray-900 transition-colors">
+                About
+              </Link>
+              <Link to="/help" className="hover:text-gray-900 transition-colors">
+                Support
+              </Link>
+            </div>
+          </div>
+          
+          <div className="border-t mt-8 pt-8 text-center text-sm text-gray-500">
+            <p>© 2024 Barakah Life. Built with love for the Muslim community.</p>
           </div>
         </div>
       </footer>
