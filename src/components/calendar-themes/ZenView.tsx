@@ -1,5 +1,6 @@
-import { CheckCircle } from 'lucide-react'
+import { CheckCircle, Plus } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { formatPrayerTime } from '@/lib/prayerTimes'
 
 interface CalendarEvent {
@@ -9,6 +10,7 @@ interface CalendarEvent {
   time?: Date
   completed?: boolean
   isNext?: boolean
+  taskData?: any // Full task object for editing
 }
 
 interface ZenViewProps {
@@ -16,9 +18,10 @@ interface ZenViewProps {
   events: CalendarEvent[]
   onPrayerComplete?: (prayerName: string) => void
   onEventClick?: (event: CalendarEvent) => void
+  onAddTask?: () => void
 }
 
-const ZenView = ({ date, events, onEventClick }: ZenViewProps) => {
+const ZenView = ({ date, events, onEventClick, onAddTask }: ZenViewProps) => {
   const prayers = events.filter(e => e.type === 'prayer')
   const tasks = events.filter(e => e.type === 'task')
 
@@ -149,9 +152,20 @@ const ZenView = ({ date, events, onEventClick }: ZenViewProps) => {
       {tasks.length > 0 && (
         <Card className="bg-gradient-to-r from-gray-50 to-slate-50 border-gray-100 shadow-sm">
           <CardContent className="p-6">
-            <h3 className="text-lg font-light text-center mb-4 text-gray-800">
-              Tasks
-            </h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-light text-gray-800">
+                Tasks
+              </h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onAddTask}
+                className="text-gray-600 hover:text-gray-800"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add
+              </Button>
+            </div>
             <div className="space-y-2">
               {tasks.map(task => (
                 <div 

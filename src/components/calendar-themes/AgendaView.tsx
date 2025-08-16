@@ -1,4 +1,4 @@
-import { CheckCircle, Clock, Star } from 'lucide-react'
+import { CheckCircle, Clock, Star, Plus } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -11,6 +11,7 @@ interface CalendarEvent {
   time?: Date
   completed?: boolean
   isNext?: boolean
+  taskData?: any // Full task object for editing
 }
 
 interface AgendaViewProps {
@@ -18,9 +19,10 @@ interface AgendaViewProps {
   events: CalendarEvent[]
   onPrayerComplete?: (prayerName: string) => void
   onEventClick?: (event: CalendarEvent) => void
+  onAddTask?: () => void
 }
 
-const AgendaView = ({ date, events, onPrayerComplete, onEventClick }: AgendaViewProps) => {
+const AgendaView = ({ date, events, onPrayerComplete, onEventClick, onAddTask }: AgendaViewProps) => {
   const prayers = events.filter(e => e.type === 'prayer')
   const tasks = events.filter(e => e.type === 'task')
   
@@ -169,10 +171,21 @@ const AgendaView = ({ date, events, onPrayerComplete, onEventClick }: AgendaView
       {pendingTasks.length > 0 && (
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
-              📋 PENDING TASKS
-              <Badge variant="outline">{pendingTasks.length}</Badge>
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg flex items-center gap-2">
+                📋 PENDING TASKS
+                <Badge variant="outline">{pendingTasks.length}</Badge>
+              </CardTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onAddTask}
+                className="bg-primary/5 hover:bg-primary/10"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Task
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-2">
             {pendingTasks.map(task => (

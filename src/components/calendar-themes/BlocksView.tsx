@@ -1,6 +1,7 @@
-import { CheckCircle, Clock, Zap } from 'lucide-react'
+import { CheckCircle, Clock, Zap, Plus } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { formatPrayerTime } from '@/lib/prayerTimes'
 
 interface CalendarEvent {
@@ -10,6 +11,7 @@ interface CalendarEvent {
   time?: Date
   completed?: boolean
   isNext?: boolean
+  taskData?: any // Full task object for editing
 }
 
 interface BlocksViewProps {
@@ -17,9 +19,10 @@ interface BlocksViewProps {
   events: CalendarEvent[]
   onPrayerComplete?: (prayerName: string) => void
   onEventClick?: (event: CalendarEvent) => void
+  onAddTask?: (timeBlock?: string) => void
 }
 
-const BlocksView = ({ date, events, onEventClick }: BlocksViewProps) => {
+const BlocksView = ({ date, events, onEventClick, onAddTask }: BlocksViewProps) => {
   // Generate time blocks covering the full day
   const generateTimeBlocks = () => {
     const blocks = []
@@ -242,6 +245,14 @@ const BlocksView = ({ date, events, onEventClick }: BlocksViewProps) => {
                     <Badge variant="outline">
                       {block.events.length} item{block.events.length !== 1 ? 's' : ''}
                     </Badge>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onAddTask?.(block.period)}
+                      className="text-xs h-6 px-2"
+                    >
+                      <Plus className="h-3 w-3" />
+                    </Button>
                   </div>
                 </div>
               </CardHeader>

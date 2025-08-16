@@ -1,5 +1,6 @@
-import { Clock, CheckCircle } from 'lucide-react'
+import { Clock, CheckCircle, Plus } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { formatPrayerTime } from '@/lib/prayerTimes'
 
 interface CalendarEvent {
@@ -9,6 +10,7 @@ interface CalendarEvent {
   time?: Date
   completed?: boolean
   isNext?: boolean
+  taskData?: any // Full task object for editing
 }
 
 interface TimelineViewProps {
@@ -16,9 +18,10 @@ interface TimelineViewProps {
   events: CalendarEvent[]
   onPrayerComplete?: (prayerName: string) => void
   onEventClick?: (event: CalendarEvent) => void
+  onAddTask?: (hour: number) => void
 }
 
-const TimelineView = ({ date, events, onEventClick }: TimelineViewProps) => {
+const TimelineView = ({ date, events, onEventClick, onAddTask }: TimelineViewProps) => {
   // Generate hourly slots from 4 AM to 11 PM
   const hours = Array.from({ length: 19 }, (_, i) => i + 4)
   const now = new Date()
@@ -125,11 +128,26 @@ const TimelineView = ({ date, events, onEventClick }: TimelineViewProps) => {
                       </Card>
                     ))}
                   </div>
-                ) : isCurrentHour ? (
-                  <div className="text-xs text-muted-foreground italic py-2">
-                    Current hour
+                ) : (
+                  <div className="flex items-center justify-between py-2">
+                    {isCurrentHour ? (
+                      <div className="text-xs text-muted-foreground italic">
+                        Current hour
+                      </div>
+                    ) : (
+                      <div></div>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onAddTask?.(hour)}
+                      className="text-xs text-muted-foreground hover:text-foreground opacity-50 hover:opacity-100"
+                    >
+                      <Plus className="h-3 w-3 mr-1" />
+                      Add task
+                    </Button>
                   </div>
-                ) : null}
+                )}
               </div>
             </div>
           )

@@ -1,6 +1,7 @@
-import { CheckCircle, Clock, Star, Heart } from 'lucide-react'
+import { CheckCircle, Clock, Star, Heart, Plus } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { formatPrayerTime } from '@/lib/prayerTimes'
 
 interface CalendarEvent {
@@ -10,6 +11,7 @@ interface CalendarEvent {
   time?: Date
   completed?: boolean
   isNext?: boolean
+  taskData?: any // Full task object for editing
 }
 
 interface CardsViewProps {
@@ -17,9 +19,10 @@ interface CardsViewProps {
   events: CalendarEvent[]
   onPrayerComplete?: (prayerName: string) => void
   onEventClick?: (event: CalendarEvent) => void
+  onAddTask?: () => void
 }
 
-const CardsView = ({ date, events, onEventClick }: CardsViewProps) => {
+const CardsView = ({ date, events, onEventClick, onAddTask }: CardsViewProps) => {
   const prayers = events.filter(e => e.type === 'prayer')
   const tasks = events.filter(e => e.type === 'task')
 
@@ -148,9 +151,20 @@ const CardsView = ({ date, events, onEventClick }: CardsViewProps) => {
       {/* Task Cards */}
       {tasks.length > 0 && (
         <div>
-          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            📋 Tasks
-          </h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              📋 Tasks
+            </h3>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onAddTask}
+              className="bg-primary/5 hover:bg-primary/10"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Task
+            </Button>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {tasks.map(task => (
               <Card 

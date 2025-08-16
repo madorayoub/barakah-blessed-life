@@ -10,6 +10,7 @@ import { GoogleCalendarConnect } from '@/components/GoogleCalendarConnect'
 import { AppleCalendarExport } from '@/components/AppleCalendarExport'
 import { EditTaskDialog } from '@/components/EditTaskDialog'
 import { EditPrayerDialog } from '@/components/EditPrayerDialog'
+import { CalendarTaskDialog } from '@/components/CalendarTaskDialog'
 import ThemeSelector, { ThemeType, getRecommendedTheme } from '@/components/calendar-themes/ThemeSelector'
 import TimelineView from '@/components/calendar-themes/TimelineView'
 import AgendaView from '@/components/calendar-themes/AgendaView'
@@ -32,6 +33,8 @@ const CalendarDayView = () => {
   const [currentTheme, setCurrentTheme] = useState<ThemeType>('timeline')
   const [editingTask, setEditingTask] = useState<any>(null)
   const [editingPrayer, setEditingPrayer] = useState<any>(null)
+  const [showNewTaskDialog, setShowNewTaskDialog] = useState(false)
+  const [newTaskTime, setNewTaskTime] = useState<string | undefined>()
   const { prayerTimes, settings, location, markPrayerComplete, isPrayerComplete } = usePrayerTimes()
   const { tasks } = useTasks()
 
@@ -142,6 +145,16 @@ const CalendarDayView = () => {
     }
   }
 
+  const handleAddTask = (hour?: number, timeBlock?: string) => {
+    // Set default due time based on hour or time block
+    if (hour !== undefined) {
+      setNewTaskTime(`${hour.toString().padStart(2, '0')}:00`)
+    } else {
+      setNewTaskTime(undefined)
+    }
+    setShowNewTaskDialog(true)
+  }
+
   const renderThemeView = () => {
     const props = {
       date: currentDate,
@@ -149,7 +162,14 @@ const CalendarDayView = () => {
       onPrayerComplete: (prayerName: string) => {
         markPrayerComplete(prayerName)
       },
-      onEventClick: handleEventClick
+      onEventClick: handleEventClick,
+      onAddTask: (hourOrTimeBlock?: number | string) => {
+        if (typeof hourOrTimeBlock === 'number') {
+          handleAddTask(hourOrTimeBlock)
+        } else {
+          handleAddTask(undefined, hourOrTimeBlock)
+        }
+      }
     }
 
     switch (currentTheme) {
@@ -247,6 +267,13 @@ const CalendarDayView = () => {
         open={!!editingPrayer}
         onOpenChange={(open) => !open && setEditingPrayer(null)}
         onPrayerComplete={markPrayerComplete}
+      />
+
+      <CalendarTaskDialog
+        open={showNewTaskDialog}
+        onOpenChange={setShowNewTaskDialog}
+        defaultDueDate={currentDate.toISOString().split('T')[0]}
+        defaultDueTime={newTaskTime}
       />
     </Card>
   )
