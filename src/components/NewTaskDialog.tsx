@@ -18,7 +18,7 @@ const iconMap: Record<string, any> = {
   'heart': Heart,
   'star': Star,
   'gift': Gift,
-  'mosque': BookOpen, // Use BookOpen as fallback since Mosque isn't available
+  'mosque': BookOpen,
   'graduation-cap': GraduationCap,
   'phone': Phone,
   'users': Users,
@@ -80,7 +80,6 @@ export function NewTaskDialog({ children }: NewTaskDialogProps) {
   const handleCreateCategory = async () => {
     if (!newCategoryName.trim()) return
 
-    // Generate a random color for the new category
     const colors = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#84cc16', '#f97316']
     const randomColor = colors[Math.floor(Math.random() * colors.length)]
 
@@ -98,14 +97,16 @@ export function NewTaskDialog({ children }: NewTaskDialogProps) {
     }
   }
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'urgent': return 'text-red-600 bg-red-50 border-red-200'
-      case 'high': return 'text-orange-600 bg-orange-50 border-orange-200'
-      case 'medium': return 'text-blue-600 bg-blue-50 border-blue-200'
-      case 'low': return 'text-gray-600 bg-gray-50 border-gray-200'
-      default: return 'text-gray-600 bg-gray-50 border-gray-200'
-    }
+  const getTemplateColor = (index: number) => {
+    const colors = [
+      'bg-green-50 border-green-200 hover:bg-green-100',
+      'bg-blue-50 border-blue-200 hover:bg-blue-100', 
+      'bg-purple-50 border-purple-200 hover:bg-purple-100',
+      'bg-pink-50 border-pink-200 hover:bg-pink-100',
+      'bg-indigo-50 border-indigo-200 hover:bg-indigo-100',
+      'bg-teal-50 border-teal-200 hover:bg-teal-100'
+    ]
+    return colors[index % colors.length]
   }
 
   return (
@@ -113,327 +114,263 @@ export function NewTaskDialog({ children }: NewTaskDialogProps) {
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden p-0 bg-[#f8f9fa] border-0 shadow-xl">
+      <DialogContent className="max-w-[600px] p-0 bg-white border border-gray-200 shadow-lg">
         
-        {/* Header Section */}
-        <div className="bg-white border-b border-[#e9ecef] px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#1ca094] to-[#16a085] flex items-center justify-center">
-                <Plus className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold text-[#333] leading-none">Create New Task</h2>
-                <p className="text-sm text-[#666] mt-1">Build your Islamic productivity journey</p>
-              </div>
+        {/* Compact Header */}
+        <div className="px-6 py-4 border-b border-gray-100">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center">
+              <Plus className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">Create Task</h2>
+              <p className="text-sm text-gray-500">Add a new task to your list</p>
             </div>
           </div>
         </div>
 
-        <div className="overflow-y-auto max-h-[calc(90vh-120px)]">
-          <div className="p-8 space-y-8">
-            
-            {/* Template Toggle Section */}
-            <div className="flex items-center justify-center">
-              <div className="bg-white rounded-lg p-2 shadow-sm border border-[#e9ecef]">
-                <div className="flex gap-1">
-                  <Button
-                    type="button"
-                    variant={!isTemplate ? "default" : "ghost"}
-                    onClick={() => setIsTemplate(false)}
-                    className={`px-6 py-3 rounded-md font-medium transition-all ${
-                      !isTemplate 
-                        ? 'bg-gradient-to-r from-[#1ca094] to-[#16a085] text-white shadow-sm' 
-                        : 'text-[#666] hover:text-[#333] hover:bg-gray-50'
-                    }`}
-                  >
-                    Custom Task
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={isTemplate ? "default" : "ghost"}
-                    onClick={() => setIsTemplate(true)}
-                    className={`px-6 py-3 rounded-md font-medium transition-all ${
-                      isTemplate 
-                        ? 'bg-gradient-to-r from-[#FFD700] to-[#FFA500] text-white shadow-sm' 
-                        : 'text-[#666] hover:text-[#333] hover:bg-gray-50'
-                    }`}
-                  >
-                    ✨ Islamic Templates
-                  </Button>
-                </div>
-              </div>
+        <div className="p-6 space-y-4">
+          
+          {/* Template Toggle (Compact) */}
+          <div className="flex items-center justify-center mb-4">
+            <div className="flex bg-gray-100 rounded-lg p-1">
+              <Button
+                type="button"
+                variant={!isTemplate ? "default" : "ghost"}
+                onClick={() => setIsTemplate(false)}
+                className={`px-4 py-2 text-sm rounded-md transition-all ${
+                  !isTemplate 
+                    ? 'bg-white shadow-sm text-gray-900' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Custom Task
+              </Button>
+              <Button
+                type="button"
+                variant={isTemplate ? "default" : "ghost"}
+                onClick={() => setIsTemplate(true)}
+                className={`px-4 py-2 text-sm rounded-md transition-all ${
+                  isTemplate 
+                    ? 'bg-white shadow-sm text-gray-900' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Templates
+              </Button>
             </div>
+          </div>
 
-            {isTemplate ? (
-              /* Islamic Templates Section */
-              <div className="space-y-6">
-                <div className="text-center">
-                  <h3 className="text-lg font-semibold text-[#333] mb-2">Choose from Islamic Templates</h3>
-                  <p className="text-sm text-[#666]">Pre-designed tasks for your spiritual journey</p>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-96 overflow-y-auto pr-2">
-                  {templates.map((template) => {
-                    const IconComponent = iconMap[template.icon] || Plus
-                    
-                    return (
-                      <Card 
-                        key={template.id} 
-                        className="cursor-pointer bg-white border border-[#e9ecef] hover:shadow-lg transition-all duration-200 hover:border-[#FFD700] hover:-translate-y-1 relative overflow-hidden"
-                        onClick={() => handleTemplateSelect(template)}
-                      >
-                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[#FFD700] to-[#FFA500]"></div>
-                        <CardContent className="p-6">
-                          <div className="flex items-start gap-4">
-                            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-[#FFD700]/20 to-[#FFA500]/20 flex items-center justify-center border border-[#FFD700]/30">
-                              <IconComponent className="h-6 w-6 text-[#B8860B]" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h4 className="font-semibold text-[#333] text-base mb-2 truncate">{template.name}</h4>
-                              <p className="text-sm text-[#666] line-clamp-2 mb-3">
-                                {template.description}
-                              </p>
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <Badge className={`text-xs border ${getPriorityColor(template.priority)}`}>
-                                  {template.priority}
-                                </Badge>
-                                {template.estimated_duration && (
-                                  <Badge variant="outline" className="text-xs border-[#e9ecef] text-[#666]">
-                                    {template.estimated_duration}m
-                                  </Badge>
-                                )}
-                                {template.is_recurring && (
-                                  <Badge variant="outline" className="text-xs border-[#1ca094] text-[#1ca094]">
-                                    {template.recurring_pattern}
-                                  </Badge>
-                                )}
-                              </div>
-                            </div>
+          {isTemplate ? (
+            /* Compact Templates Section */
+            <div className="space-y-3">
+              <h3 className="text-sm font-medium text-gray-700 text-center">Islamic Templates</h3>
+              <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+                {templates.map((template, index) => {
+                  const IconComponent = iconMap[template.icon] || Plus
+                  
+                  return (
+                    <Card 
+                      key={template.id} 
+                      className={`cursor-pointer transition-all duration-200 border ${getTemplateColor(index)}`}
+                      onClick={() => handleTemplateSelect(template)}
+                    >
+                      <CardContent className="p-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded bg-white/50 flex items-center justify-center">
+                            <IconComponent className="h-3 w-3 text-gray-600" />
                           </div>
-                        </CardContent>
-                      </Card>
-                    )
-                  })}
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-sm font-medium text-gray-900 truncate">{template.name}</h4>
+                            <p className="text-xs text-gray-500 truncate">{template.description}</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )
+                })}
+              </div>
+            </div>
+          ) : (
+            /* Compact Custom Form */
+            <div className="space-y-4">
+              
+              {/* Top Row: Title and Date */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="title" className="text-sm font-medium text-gray-700">Task Title *</Label>
+                  <Input
+                    id="title"
+                    value={formData.title}
+                    onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                    placeholder="What needs to be done?"
+                    className="h-9 text-sm"
+                    required
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-sm font-medium text-gray-700">Due Date</Label>
+                  <ModernDatePicker
+                    value={formData.due_date}
+                    onChange={(date) => setFormData(prev => ({ ...prev, due_date: date }))}
+                    showTime={true}
+                    timeValue={formData.due_time}
+                    onTimeChange={(time) => setFormData(prev => ({ ...prev, due_time: time }))}
+                    placeholder="Set deadline"
+                    className="w-full"
+                  />
                 </div>
               </div>
-            ) : (
-              /* Custom Task Form */
-              <div className="space-y-8">
-                
-                {/* Task Details Section */}
-                <Card className="bg-white border border-[#e9ecef] shadow-sm">
-                  <CardHeader className="pb-4">
-                    <CardTitle className="text-lg font-semibold text-[#333] flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-[#1ca094]"></div>
-                      Task Details
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    {/* Task Title */}
-                    <div className="space-y-3">
-                      <Label htmlFor="title" className="text-sm font-semibold text-[#333]">Task Title *</Label>
-                      <Input
-                        id="title"
-                        value={formData.title}
-                        onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                        placeholder="What needs to be done?"
-                        className="h-12 px-4 text-base font-medium border border-[#e9ecef] rounded-lg focus:border-[#1ca094] focus:ring-2 focus:ring-[#1ca094]/20 transition-all"
-                        required
-                      />
-                    </div>
 
-                    {/* Description */}
-                    <div className="space-y-3">
-                      <Label htmlFor="description" className="text-sm font-semibold text-[#333]">Description</Label>
-                      <Textarea
-                        id="description"
-                        value={formData.description}
-                        onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                        placeholder="Add details about this task..."
-                        rows={3}
-                        className="px-4 py-3 border border-[#e9ecef] rounded-lg focus:border-[#1ca094] focus:ring-2 focus:ring-[#1ca094]/20 transition-all resize-none"
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
+              {/* Second Row: Priority and Category */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-sm font-medium text-gray-700">Priority</Label>
+                  <Select
+                    value={formData.priority}
+                    onValueChange={(value: 'low' | 'medium' | 'high' | 'urgent') => 
+                      setFormData(prev => ({ ...prev, priority: value }))
+                    }
+                  >
+                    <SelectTrigger className="h-9 text-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">🟢 Low</SelectItem>
+                      <SelectItem value="medium">🟡 Medium</SelectItem>
+                      <SelectItem value="high">🟠 High</SelectItem>
+                      <SelectItem value="urgent">🔴 Urgent</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-                {/* Task Properties Section */}
-                <Card className="bg-white border border-[#e9ecef] shadow-sm">
-                  <CardHeader className="pb-4">
-                    <CardTitle className="text-lg font-semibold text-[#333] flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-[#0066cc]"></div>
-                      Properties
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    {/* Priority and Category Row */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-3">
-                        <Label htmlFor="priority" className="text-sm font-semibold text-[#333]">Priority</Label>
-                        <Select
-                          value={formData.priority}
-                          onValueChange={(value: 'low' | 'medium' | 'high' | 'urgent') => 
-                            setFormData(prev => ({ ...prev, priority: value }))
-                          }
-                        >
-                          <SelectTrigger className="h-12 px-4 border border-[#e9ecef] rounded-lg focus:border-[#1ca094]">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent className="border border-[#e9ecef] shadow-lg">
-                            <SelectItem value="low" className="py-3">🟢 Low Priority</SelectItem>
-                            <SelectItem value="medium" className="py-3">🟡 Medium Priority</SelectItem>
-                            <SelectItem value="high" className="py-3">🟠 High Priority</SelectItem>
-                            <SelectItem value="urgent" className="py-3">🔴 Urgent</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-3">
-                        <Label htmlFor="category" className="text-sm font-semibold text-[#333]">Category</Label>
-                        <div className="space-y-3">
-                          <Select
-                            value={formData.category_id}
-                            onValueChange={(value) => setFormData(prev => ({ ...prev, category_id: value }))}
-                          >
-                            <SelectTrigger className="h-12 px-4 border border-[#e9ecef] rounded-lg focus:border-[#1ca094]">
-                              <SelectValue placeholder="Select category" />
-                            </SelectTrigger>
-                            <SelectContent className="border border-[#e9ecef] shadow-lg">
-                              {categories.map((category) => (
-                                <SelectItem key={category.id} value={category.id} className="py-3">
-                                  <div className="flex items-center gap-3">
-                                    <div 
-                                      className="w-3 h-3 rounded-full" 
-                                      style={{ backgroundColor: category.color }}
-                                    />
-                                    <span className="font-medium">{category.name}</span>
-                                  </div>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          
-                          {/* Add New Category */}
-                          {!showNewCategory ? (
-                            <Button
-                              type="button"
-                              variant="outline"
-                              onClick={() => setShowNewCategory(true)}
-                              className="w-full h-10 border border-[#e9ecef] text-[#666] hover:text-[#333] hover:border-[#1ca094] transition-all"
-                            >
-                              <Plus className="h-4 w-4 mr-2" />
-                              Add New Category
-                            </Button>
-                          ) : (
-                            <div className="flex gap-2">
-                              <Input
-                                placeholder="Category name"
-                                value={newCategoryName}
-                                onChange={(e) => setNewCategoryName(e.target.value)}
-                                className="h-10 border border-[#e9ecef] focus:border-[#1ca094]"
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter') {
-                                    e.preventDefault()
-                                    handleCreateCategory()
-                                  }
-                                  if (e.key === 'Escape') {
-                                    setShowNewCategory(false)
-                                    setNewCategoryName('')
-                                  }
-                                }}
+                <div className="space-y-1">
+                  <Label className="text-sm font-medium text-gray-700">Category</Label>
+                  {!showNewCategory ? (
+                    <Select
+                      value={formData.category_id}
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, category_id: value }))}
+                    >
+                      <SelectTrigger className="h-9 text-sm">
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map((category) => (
+                          <SelectItem key={category.id} value={category.id}>
+                            <div className="flex items-center gap-2">
+                              <div 
+                                className="w-2 h-2 rounded-full" 
+                                style={{ backgroundColor: category.color }}
                               />
-                              <Button
-                                type="button"
-                                onClick={handleCreateCategory}
-                                disabled={!newCategoryName.trim()}
-                                className="h-10 bg-gradient-to-r from-[#1ca094] to-[#16a085] hover:from-[#16a085] hover:to-[#138b7a]"
-                              >
-                                Add
-                              </Button>
-                              <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => {
-                                  setShowNewCategory(false)
-                                  setNewCategoryName('')
-                                }}
-                                className="h-10 border border-[#e9ecef]"
-                              >
-                                Cancel
-                              </Button>
+                              <span className="text-sm">{category.name}</span>
                             </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Due Date & Time */}
-                    <div className="space-y-3">
-                      <Label className="text-sm font-semibold text-[#333]">Due Date & Time</Label>
-                      <ModernDatePicker
-                        value={formData.due_date}
-                        onChange={(date) => setFormData(prev => ({ ...prev, due_date: date }))}
-                        showTime={true}
-                        timeValue={formData.due_time}
-                        onTimeChange={(time) => setFormData(prev => ({ ...prev, due_time: time }))}
-                        placeholder="When is this due?"
-                        className="w-full"
+                          </SelectItem>
+                        ))}
+                        <SelectItem value="__add_new__" onSelect={() => setShowNewCategory(true)}>
+                          <div className="flex items-center gap-2 text-primary">
+                            <Plus className="w-3 h-3" />
+                            <span className="text-sm">Add Category</span>
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <div className="flex gap-1">
+                      <Input
+                        placeholder="Category name"
+                        value={newCategoryName}
+                        onChange={(e) => setNewCategoryName(e.target.value)}
+                        className="h-9 text-sm"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault()
+                            handleCreateCategory()
+                          }
+                          if (e.key === 'Escape') {
+                            setShowNewCategory(false)
+                            setNewCategoryName('')
+                          }
+                        }}
                       />
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={handleCreateCategory}
+                        disabled={!newCategoryName.trim()}
+                        className="h-9 px-3"
+                      >
+                        Add
+                      </Button>
                     </div>
-
-                    {/* Quick Duration Buttons */}
-                    <div className="space-y-3">
-                      <Label className="text-sm font-semibold text-[#333]">Quick Duration</Label>
-                      <div className="flex gap-3">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => setFormData(prev => ({ ...prev, description: prev.description + (prev.description ? ' • ' : '') + '5 minute task' }))}
-                          className="px-4 py-2 border border-[#e9ecef] text-[#666] hover:border-[#1ca094] hover:text-[#1ca094] transition-all"
-                        >
-                          5 min
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => setFormData(prev => ({ ...prev, description: prev.description + (prev.description ? ' • ' : '') + '15 minute task' }))}
-                          className="px-4 py-2 border border-[#e9ecef] text-[#666] hover:border-[#1ca094] hover:text-[#1ca094] transition-all"
-                        >
-                          15 min
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => setFormData(prev => ({ ...prev, description: prev.description + (prev.description ? ' • ' : '') + '30 minute task' }))}
-                          className="px-4 py-2 border border-[#e9ecef] text-[#666] hover:border-[#1ca094] hover:text-[#1ca094] transition-all"
-                        >
-                          30 min
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                  )}
+                </div>
               </div>
-            )}
-          </div>
+
+              {/* Description */}
+              <div className="space-y-1">
+                <Label htmlFor="description" className="text-sm font-medium text-gray-700">Description</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="Add details about this task..."
+                  rows={3}
+                  className="text-sm resize-none"
+                />
+              </div>
+
+              {/* Quick Duration */}
+              <div className="space-y-1">
+                <Label className="text-sm font-medium text-gray-700">Quick Duration</Label>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setFormData(prev => ({ ...prev, description: prev.description + (prev.description ? ' • ' : '') + '5 minute task' }))}
+                    className="text-xs px-3 py-1 h-7"
+                  >
+                    5m
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setFormData(prev => ({ ...prev, description: prev.description + (prev.description ? ' • ' : '') + '15 minute task' }))}
+                    className="text-xs px-3 py-1 h-7"
+                  >
+                    15m
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setFormData(prev => ({ ...prev, description: prev.description + (prev.description ? ' • ' : '') + '30 minute task' }))}
+                    className="text-xs px-3 py-1 h-7"
+                  >
+                    30m
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Footer Section */}
+        {/* Compact Footer */}
         {!isTemplate && (
-          <div className="bg-white border-t border-[#e9ecef] px-8 py-6">
-            <div className="flex justify-end gap-3">
+          <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50">
+            <div className="flex justify-end gap-2">
               <Button 
                 type="button" 
                 variant="outline" 
                 onClick={() => setOpen(false)}
-                className="px-6 py-3 border border-[#e9ecef] text-[#666] hover:text-[#333] hover:border-[#1ca094] transition-all"
+                className="px-4 py-2 text-sm"
               >
                 Cancel
               </Button>
               <Button 
                 onClick={handleSubmit} 
-                className="px-8 py-3 bg-gradient-to-r from-[#1ca094] to-[#16a085] hover:from-[#16a085] hover:to-[#138b7a] text-white font-medium shadow-sm transition-all"
+                className="px-4 py-2 text-sm"
                 disabled={!formData.title.trim()}
               >
                 Create Task
