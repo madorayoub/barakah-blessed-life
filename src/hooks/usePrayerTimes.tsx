@@ -38,18 +38,7 @@ export function usePrayerTimes() {
         }
 
         setSettings(data)
-        
-        // Force recalculation when settings change
-        if (location && data) {
-          const today = new Date()
-          const times = calculatePrayerTimes(
-            location.latitude,
-            location.longitude,
-            today,
-            data
-          )
-          setPrayerTimes(times)
-        }
+        // Settings are set, prayer times will be calculated in the next useEffect
       } catch (error) {
         console.error('Error loading prayer settings:', error)
       }
@@ -146,7 +135,7 @@ export function usePrayerTimes() {
       }
     }
     setLoading(false)
-  }, [location, settings, schedulePrayerNotifications, toast])
+  }, [location, settings]) // Only depend on location and settings
 
   // Load today's prayer completions
   useEffect(() => {
