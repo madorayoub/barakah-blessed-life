@@ -255,14 +255,19 @@ export function useTasks() {
   const createTask = async (taskData: Omit<Task, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
     if (!user) return
 
-    // Debug: Log the taskData to see what's being passed
-    console.log('Creating task with data:', taskData)
+    // Clean the taskData to ensure no unwanted parent_task_id
+    const cleanTaskData = { ...taskData }
+    
+    // If parent_task_id is empty, null, undefined, or just whitespace, remove it completely
+    if (!cleanTaskData.parent_task_id || cleanTaskData.parent_task_id.trim() === '') {
+      delete cleanTaskData.parent_task_id
+    }
 
     try {
       const { data, error } = await supabase
         .from('tasks')
         .insert({
-          ...taskData,
+          ...cleanTaskData,
           user_id: user.id
         })
         .select(`
@@ -285,8 +290,8 @@ export function useTasks() {
       // Real-time subscription will handle state updates automatically
 
       toast({
-        title: (taskData.parent_task_id && taskData.parent_task_id.trim()) ? "Subtask created" : "Task created",
-        description: `"${taskData.title}" has been ${(taskData.parent_task_id && taskData.parent_task_id.trim()) ? 'added to your subtasks' : 'created successfully'}`
+        title: cleanTaskData.parent_task_id ? "Subtask created" : "Task created",
+        description: `"${cleanTaskData.title}" has been ${cleanTaskData.parent_task_id ? 'added to your subtasks' : 'created successfully'}`
       })
 
       return {
