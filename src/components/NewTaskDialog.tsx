@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { ModernDatePicker } from '@/components/ui/modern-date-picker'
-import { useTasks, TaskTemplate } from '@/contexts/TasksContext'
+import { useTasks, TaskTemplate, Task } from '@/contexts/TasksContext'
 
 const iconMap: Record<string, any> = {
   'sun': Sun,
@@ -85,9 +85,11 @@ const getTemplateIcon = (templateName: string): string => {
 
 interface NewTaskDialogProps {
   children: React.ReactNode
+  onTaskCreate?: (taskData: Omit<Task, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => void
+  initialStatus?: 'pending' | 'in_progress' | 'completed'
 }
 
-export function NewTaskDialog({ children }: NewTaskDialogProps) {
+export function NewTaskDialog({ children, onTaskCreate: propOnTaskCreate, initialStatus = 'pending' }: NewTaskDialogProps) {
   const { createTask, createTaskFromTemplate, createCategory, categories, templates } = useTasks()
   const [open, setOpen] = useState(false)
   const [isTemplate, setIsTemplate] = useState(false)
@@ -99,7 +101,8 @@ export function NewTaskDialog({ children }: NewTaskDialogProps) {
     priority: 'medium' as 'low' | 'medium' | 'high' | 'urgent',
     category_id: '',
     due_date: '',
-    due_time: ''
+    due_time: '',
+    status: initialStatus
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -107,16 +110,23 @@ export function NewTaskDialog({ children }: NewTaskDialogProps) {
     
     if (!formData.title.trim()) return
 
-    await createTask({
+    const taskData = {
       title: formData.title,
       description: formData.description || undefined,
       priority: formData.priority,
-      status: 'pending',
+      status: formData.status as 'pending' | 'in_progress' | 'completed',
       category_id: formData.category_id || undefined,
       due_date: formData.due_date || undefined,
       due_time: formData.due_time || undefined,
       is_recurring: false
-    })
+    }
+
+    // Use prop function if provided, otherwise use context
+    if (propOnTaskCreate) {
+      await propOnTaskCreate(taskData)
+    } else {
+      await createTask(taskData)
+    }
 
     // Reset form
     setFormData({
@@ -125,7 +135,8 @@ export function NewTaskDialog({ children }: NewTaskDialogProps) {
       priority: 'medium',
       category_id: '',
       due_date: '',
-      due_time: ''
+      due_time: '',
+      status: initialStatus
     })
     setOpen(false)
   }

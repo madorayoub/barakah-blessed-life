@@ -1,5 +1,7 @@
 import { Plus, GripVertical, Settings, MoreHorizontal } from 'lucide-react'
 import { useState, useCallback } from 'react'
+import { DndProvider } from 'react-dnd'
+import { HTML5Backend } from 'react-dnd-html5-backend'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -8,8 +10,9 @@ import EnhancedTaskCard from './EnhancedTaskCard'
 import { TaskDetailPanel } from './TaskDetailPanel'
 import { AddColumnButton } from './AddColumnButton'
 import { BoardTips } from './BoardTips'
-import { Task } from '@/contexts/TasksContext'
+import { Task, useTasks } from '@/contexts/TasksContext'
 import { useTaskStatuses } from '@/hooks/useTaskStatuses'
+import { DroppableColumn } from './DroppableColumn'
 
 interface TaskBoardViewProps {
   tasks: Task[]
@@ -21,6 +24,7 @@ interface TaskBoardViewProps {
 }
 
 export function TaskBoardView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit, onTaskCreate, loading }: TaskBoardViewProps) {
+  const { updateTask } = useTasks()
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [isPanelOpen, setIsPanelOpen] = useState(false)
   const [expandedColumns, setExpandedColumns] = useState<Record<string, boolean>>({})
@@ -85,6 +89,31 @@ export function TaskBoardView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit,
     }))
   }, [])
 
+  // Handle task drag and drop
+  const handleTaskDrop = useCallback(async (taskId: string, newStatus: string) => {
+    const task = tasks.find(t => t.id === taskId)
+    if (!task || task.status === newStatus) return
+
+    console.log(`Moving task ${taskId} from ${task.status} to ${newStatus}`)
+    await updateTask(taskId, { status: newStatus as Task['status'] })
+  }, [tasks, updateTask])
+
+  // Handle column-specific task creation
+  const handleCreateTaskInColumn = useCallback((status: string) => {
+    return (taskData: Omit<Task, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
+      const statusMapping: Record<string, Task['status']> = {
+        'pending': 'pending',
+        'in_progress': 'in_progress', 
+        'completed': 'completed'
+      }
+      
+      onTaskCreate({
+        ...taskData,
+        status: statusMapping[status] || 'pending'
+      })
+    }
+  }, [onTaskCreate])
+
   if (loading || statusesLoading) {
     return (
       <div className="flex gap-6 overflow-x-auto">
@@ -110,115 +139,48 @@ export function TaskBoardView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit,
   }
 
   return (
-    <div className="space-y-4">
-      {/* Board Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-semibold">Task Board</h2>
-          <p className="text-muted-foreground text-sm">Organize tasks with simple drag and drop</p>
+    <DndProvider backend={HTML5Backend}>
+      <div className="space-y-4">
+        {/* Board Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-semibold">Task Board</h2>
+            <p className="text-muted-foreground text-sm">Organize tasks with simple drag and drop</p>
+          </div>
+          <NewTaskDialog onTaskCreate={onTaskCreate}>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Task
+            </Button>
+          </NewTaskDialog>
         </div>
-        <NewTaskDialog>
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Task
-          </Button>
-        </NewTaskDialog>
-      </div>
 
-      {/* Kanban Board */}
-      <div className="flex gap-6 overflow-x-auto pb-6">
-        {columns.map(column => {
-          const columnTasks = getTasksByStatus(column.status)
+        {/* Kanban Board */}
+        <div className="flex gap-6 overflow-x-auto pb-6">
+          {columns.map(column => {
+            const columnTasks = getTasksByStatus(column.status)
           const isExpanded = expandedColumns[column.id] || false
           const visibleTasks = isExpanded ? columnTasks : columnTasks.slice(0, INITIAL_TASK_LIMIT)
           const hasMoreTasks = columnTasks.length > INITIAL_TASK_LIMIT
-          
-          return (
-            <Card key={column.id} className={`flex-shrink-0 w-80 min-h-96 ${column.color}`}>
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center justify-between text-base">
-                  <div className="flex items-center gap-2">
-                    {column.customColor && (
-                      <div 
-                        className="w-3 h-3 rounded-full" 
-                        style={{ backgroundColor: column.customColor }}
-                      />
-                    )}
-                    <span>{column.title}</span>
-                  </div>
-                  <Badge variant="secondary" className="text-xs">
-                    {columnTasks.length}
-                  </Badge>
-                </CardTitle>
-              </CardHeader>
-              
-              <CardContent className="space-y-3">
-                {/* Column-Specific Create Task Button - Uses Unified Dialog */}
-                <NewTaskDialog>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full justify-start text-muted-foreground hover:text-foreground h-8 mb-1 border-2 border-dashed border-primary/30 hover:border-primary/50 hover:bg-primary/5"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add task to {column.title}
-                  </Button>
-                </NewTaskDialog>
-                
-                {/* Tasks - Enhanced key for proper re-rendering */}
-                {visibleTasks.map(task => (
-                  <EnhancedTaskCard
-                    key={`${task.id}-${task.updated_at}-${task.status}`}
-                    task={task}
-                    onComplete={onTaskComplete}
-                    onDelete={onTaskDelete}
-                    onEdit={onTaskEdit}
-                    onClick={handleTaskClick}
-                  />
-                ))}
-                
-                {/* Show More Button */}
-                {hasMoreTasks && !isExpanded && (
-                  <Button
-                    variant="ghost"
-                    onClick={() => toggleColumnExpansion(column.id)}
-                    className="w-full py-3 mt-2 text-sm text-muted-foreground hover:text-foreground border-2 border-dashed border-primary/30 hover:border-primary/50 hover:bg-primary/5 rounded-lg transition-all"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Show More ({columnTasks.length - INITIAL_TASK_LIMIT} more tasks)
-                  </Button>
-                )}
-                
-                {/* Show Less Button */}
-                {hasMoreTasks && isExpanded && (
-                  <Button
-                    variant="ghost"
-                    onClick={() => toggleColumnExpansion(column.id)}
-                    className="w-full py-2 mt-2 text-sm text-muted-foreground hover:text-foreground border border-gray-300 hover:bg-gray-50 rounded-lg"
-                  >
-                    Show Less
-                  </Button>
-                )}
-                
-                {columnTasks.length === 0 && (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <NewTaskDialog>
-                      <Button 
-                        variant="ghost" 
-                        size="lg"
-                        className="w-full h-20 border-2 border-dashed border-primary/30 hover:border-primary/50 hover:bg-primary/5 flex-col gap-2"
-                      >
-                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                          <Plus className="h-4 w-4 text-primary" />
-                        </div>
-                        <span className="text-sm font-medium text-muted-foreground">Add first task</span>
-                      </Button>
-                    </NewTaskDialog>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )
+            
+            return (
+              <DroppableColumn
+                key={column.id}
+                column={column}
+                tasks={visibleTasks}
+                isExpanded={isExpanded}
+                hasMoreTasks={hasMoreTasks}
+                onTaskDrop={handleTaskDrop}
+                onTaskClick={handleTaskClick}
+                onTaskComplete={onTaskComplete}
+                onTaskDelete={onTaskDelete}
+                onTaskEdit={onTaskEdit}
+                onCreateTask={handleCreateTaskInColumn(column.status)}
+                onToggleExpansion={() => toggleColumnExpansion(column.id)}
+                totalTasks={columnTasks.length}
+                remainingTasks={columnTasks.length - INITIAL_TASK_LIMIT}
+              />
+            )
         })}
         
         {/* Add Column Button */}
@@ -239,6 +201,7 @@ export function TaskBoardView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit,
         onDelete={onTaskDelete}
         onCreate={onTaskCreate}
       />
-    </div>
+      </div>
+    </DndProvider>
   )
 }
