@@ -277,24 +277,25 @@ export function ModernDatePicker({
           </PopoverContent>
         </Popover>
 
-        {/* Time Picker (if enabled) - Full clickable area */}
+        {/* Time Picker (if enabled) - Styled to match date picker */}
         {showTime && (
           <div className="flex-shrink-0">
-            <div className="space-y-1">
-              <Label className="text-sm font-medium text-gray-700">Time</Label>
-              <div 
-                className="relative cursor-pointer"
-                onClick={(e) => {
-                  const input = e.currentTarget.querySelector('input[type="time"]') as HTMLInputElement;
-                  input?.focus();
-                  input?.showPicker?.();
-                }}
-              >
+            <div 
+              className="relative cursor-pointer"
+              onClick={(e) => {
+                const input = e.currentTarget.querySelector('input[type="time"]') as HTMLInputElement;
+                input?.focus();
+                input?.showPicker?.();
+              }}
+            >
+              <div className="min-h-[36px] w-28 border-2 border-gray-200 rounded-lg px-3 py-2 flex items-center gap-2 hover:border-primary focus-within:border-primary transition-colors bg-white">
+                <Clock className="h-4 w-4 text-primary flex-shrink-0" />
                 <Input
                   type="time"
                   value={timeValue || ''}
                   onChange={(e) => onTimeChange?.(e.target.value)}
-                  className="min-h-[36px] w-28 border-2 border-gray-200 focus:border-primary rounded-lg bg-white text-gray-900 text-sm hover:border-primary transition-colors cursor-pointer"
+                  className="border-0 p-0 h-auto text-sm text-gray-900 font-medium bg-transparent focus:ring-0 focus:outline-none cursor-pointer flex-1"
+                  placeholder="--:--"
                 />
               </div>
             </div>
