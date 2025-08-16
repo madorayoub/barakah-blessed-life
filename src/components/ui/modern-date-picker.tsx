@@ -1,7 +1,7 @@
 import { Calendar, Clock } from 'lucide-react'
 import { Label } from '@/components/ui/label'
 
-interface SimpleDatePickerProps {
+interface ModernDatePickerProps {
   value?: string
   onChange: (date: string) => void
   placeholder?: string
@@ -21,9 +21,8 @@ export function ModernDatePicker({
   timeValue = "",
   onTimeChange,
   className
-}: SimpleDatePickerProps) {
+}: ModernDatePickerProps) {
   
-  // Smart date formatting for display
   const formatDisplayValue = (dateStr: string) => {
     if (!dateStr) return ""
     
@@ -51,45 +50,57 @@ export function ModernDatePicker({
     })
   }
 
-  const displayValue = value ? formatDisplayValue(value) : placeholder
+  const displayValue = value ? formatDisplayValue(value) : ""
 
   return (
-    <div className={`w-full max-w-xs ${className}`}>
+    <div className={`w-full max-w-sm ${className}`}>
       {label && (
-        <Label className="text-sm font-medium text-gray-700 mb-2 block">
+        <Label className="text-sm font-semibold text-gray-800 mb-3 block">
           {label}
         </Label>
       )}
       
       <div className="space-y-3">
-        {/* Date Input - Native and Simple */}
-        <div className="relative">
+        {/* Beautiful Date Input - Asana Style */}
+        <div className="relative group">
           <input
             type="date"
             value={value || ""}
             onChange={(e) => onChange(e.target.value)}
-            className="w-full h-10 px-3 pr-10 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none bg-white text-gray-900 cursor-pointer hover:border-gray-300"
+            placeholder={placeholder}
+            className="w-full h-12 px-4 pr-12 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium text-gray-900 placeholder-gray-500 cursor-pointer transition-all duration-200 hover:bg-gray-100 hover:border-gray-300 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
           />
-          <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+          <Calendar className="absolute right-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none group-hover:text-gray-500 transition-colors" />
           
-          {/* Display smart label below input */}
-          {value && (
-            <div className="text-xs text-gray-500 mt-1 pl-1">
-              {displayValue}
+          {/* Smart Label Display */}
+          {value && displayValue && (
+            <div className="absolute left-4 -bottom-6 text-xs font-medium text-primary bg-white px-2 py-1 rounded-md shadow-sm border border-primary/20">
+              ✨ {displayValue}
             </div>
           )}
         </div>
 
-        {/* Time Input - Native and Simple */}
+        {/* Beautiful Time Input - Asana Style */}
         {showTime && (
-          <div className="relative">
+          <div className="relative group">
             <input
               type="time"
               value={timeValue || ""}
               onChange={(e) => onTimeChange?.(e.target.value)}
-              className="w-full h-10 px-3 pr-10 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none bg-white text-gray-900 cursor-pointer hover:border-gray-300"
+              className="w-full h-12 px-4 pr-12 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium text-gray-900 cursor-pointer transition-all duration-200 hover:bg-gray-100 hover:border-gray-300 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
             />
-            <Clock className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+            <Clock className="absolute right-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none group-hover:text-gray-500 transition-colors" />
+            
+            {/* Time Display Helper */}
+            {timeValue && (
+              <div className="absolute right-14 top-1/2 transform -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
+                {new Date(`2000-01-01T${timeValue}`).toLocaleTimeString('en-US', { 
+                  hour: 'numeric', 
+                  minute: '2-digit', 
+                  hour12: true 
+                })}
+              </div>
+            )}
           </div>
         )}
       </div>
