@@ -5,6 +5,8 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CalendarExport } from '@/components/CalendarExport'
 import CalendarMonth from '@/components/CalendarMonth'
+import { GoogleCalendarConnect } from '@/components/GoogleCalendarConnect'
+import { AppleCalendarExport } from '@/components/AppleCalendarExport'
 import { useNavigate } from 'react-router-dom'
 
 const CalendarView = () => {
@@ -130,9 +132,18 @@ const CalendarView = () => {
             </div>
           </section>
 
-          {/* Calendar Export Component */}
+          {/* Calendar Integration Components */}
           <section>
-            <h2 className="text-xl font-bold mb-6">Export Your Prayer Schedule</h2>
+            <h2 className="text-xl font-bold mb-6">Real-Time Calendar Integration</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <GoogleCalendarConnect />
+              <AppleCalendarExport />
+            </div>
+          </section>
+
+          {/* Legacy Export */}
+          <section>
+            <h2 className="text-xl font-bold mb-6">Universal Calendar Export</h2>
             <CalendarExport />
           </section>
 

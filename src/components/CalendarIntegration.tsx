@@ -1,27 +1,53 @@
 import { useState } from "react"
-import { Calendar, Download, ExternalLink, Settings, Check } from "lucide-react"
+import { Calendar, Download, ExternalLink, Settings, Check, Smartphone, Globe, Clock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { IslamicCard, IslamicCardContent, IslamicCardHeader, IslamicCardTitle } from "@/components/ui/islamic-card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Badge } from "@/components/ui/badge"
+import { Switch } from "@/components/ui/switch"
+import { Slider } from "@/components/ui/slider"
+import { useGoogleCalendar } from "@/hooks/useGoogleCalendar"
+import { useAppleCalendar } from "@/hooks/useAppleCalendar"
+import { useAuth } from "@/hooks/useAuth"
 
 const CalendarIntegration = () => {
   const [selectedCalendar, setSelectedCalendar] = useState("")
-  const [isExported, setIsExported] = useState(false)
+  const [syncOptions, setSyncOptions] = useState({
+    includePrayers: true,
+    includeTasks: true,
+    days: 30,
+    includeReminders: true,
+    reminderMinutes: 10
+  })
 
-  const calendarOptions = [
-    { value: "google", label: "Google Calendar", icon: "🌟" },
-    { value: "apple", label: "Apple Calendar", icon: "🍎" },
-    { value: "outlook", label: "Microsoft Outlook", icon: "📧" },
-    { value: "ics", label: "Download ICS File", icon: "📥" }
-  ]
+  const { user } = useAuth()
+  const { 
+    isAuthorized: isGoogleAuthorized, 
+    isLoading: isGoogleLoading,
+    signIn: signInGoogle,
+    signOut: signOutGoogle,
+    syncAll: syncGoogleAll
+  } = useGoogleCalendar()
+  
+  const { 
+    generateAdvancedICS,
+    generateWebCalURL,
+    isGenerating: isAppleGenerating
+  } = useAppleCalendar()
 
-  const handleExport = () => {
-    // Simulate calendar export
-    setIsExported(true)
-    setTimeout(() => setIsExported(false), 3000)
+  const handleGoogleSync = async () => {
+    if (isGoogleAuthorized) {
+      await syncGoogleAll()
+    } else {
+      await signInGoogle()
+    }
   }
 
-  const subscriptionUrl = "https://barakah-tasks.app/calendar/user123.ics"
+  const handleAppleExport = async () => {
+    await generateAdvancedICS(syncOptions)
+  }
+
+  const subscriptionUrl = user ? generateWebCalURL(user.id) : ""
 
   return (
     <IslamicCard variant="blessed" className="w-full max-w-lg">
@@ -34,42 +60,148 @@ const CalendarIntegration = () => {
           Sync your spiritual schedule with your daily calendar
         </p>
       </IslamicCardHeader>
-      <IslamicCardContent className="space-y-4">
+      <IslamicCardContent className="space-y-6">
         
-        {/* Calendar Selection */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Choose Your Calendar</label>
-          <Select value={selectedCalendar} onValueChange={setSelectedCalendar}>
-            <SelectTrigger className="bg-card/50 border-primary-foreground/20">
-              <SelectValue placeholder="Select calendar platform" />
-            </SelectTrigger>
-            <SelectContent>
-              {calendarOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  <div className="flex items-center gap-2">
-                    <span>{option.icon}</span>
-                    <span>{option.label}</span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Subscription URL Display */}
-        {selectedCalendar && (
-          <div className="space-y-3 p-4 bg-card/30 rounded-lg border border-primary-foreground/20">
-            <div className="text-sm font-medium">Your Personal Calendar Feed</div>
-            <div className="flex gap-2 text-xs">
-              <code className="flex-1 p-2 bg-card/50 rounded text-primary-foreground/80 break-all">
-                {subscriptionUrl}
-              </code>
-              <Button size="sm" variant="outline" className="shrink-0 text-primary-foreground border-primary-foreground/20">
-                Copy
-              </Button>
+        {/* Sync Options */}
+        <div className="space-y-4">
+          <label className="text-sm font-medium">Sync Options</label>
+          
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <div className="text-sm">Prayer Times</div>
+                <div className="text-xs text-muted-foreground">Include 5 daily prayers</div>
+              </div>
+              <Switch 
+                checked={syncOptions.includePrayers}
+                onCheckedChange={(checked) => setSyncOptions(prev => ({ ...prev, includePrayers: checked }))}
+              />
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <div className="text-sm">Tasks & Goals</div>
+                <div className="text-xs text-muted-foreground">Include personal tasks</div>
+              </div>
+              <Switch 
+                checked={syncOptions.includeTasks}
+                onCheckedChange={(checked) => setSyncOptions(prev => ({ ...prev, includeTasks: checked }))}
+              />
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <div className="text-sm">Reminders</div>
+                <div className="text-xs text-muted-foreground">Get notifications before events</div>
+              </div>
+              <Switch 
+                checked={syncOptions.includeReminders}
+                onCheckedChange={(checked) => setSyncOptions(prev => ({ ...prev, includeReminders: checked }))}
+              />
+            </div>
+            
+            {syncOptions.includeReminders && (
+              <div className="space-y-2 ml-4">
+                <div className="text-sm">Reminder Time: {syncOptions.reminderMinutes} minutes before</div>
+                <Slider
+                  value={[syncOptions.reminderMinutes]}
+                  onValueChange={([value]) => setSyncOptions(prev => ({ ...prev, reminderMinutes: value }))}
+                  max={60}
+                  min={5}
+                  step={5}
+                  className="w-full"
+                />
+              </div>
+            )}
+            
+            <div className="space-y-2">
+              <div className="text-sm">Sync Duration: {syncOptions.days} days</div>
+              <Slider
+                value={[syncOptions.days]}
+                onValueChange={([value]) => setSyncOptions(prev => ({ ...prev, days: value }))}
+                max={90}
+                min={7}
+                step={1}
+                className="w-full"
+              />
             </div>
           </div>
-        )}
+        </div>
+
+        {/* Google Calendar Integration */}
+        <div className="space-y-3 p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg border border-blue-200">
+          <div className="flex items-center gap-2">
+            <Globe className="h-5 w-5 text-blue-600" />
+            <div className="text-sm font-medium text-blue-900">Google Calendar</div>
+            <Badge variant={isGoogleAuthorized ? "default" : "secondary"}>
+              {isGoogleAuthorized ? "Connected" : "Not Connected"}
+            </Badge>
+          </div>
+          
+          <div className="text-xs text-blue-700 mb-3">
+            Real-time sync with automatic updates when you change prayer times or tasks
+          </div>
+          
+          <Button 
+            onClick={handleGoogleSync}
+            disabled={isGoogleLoading}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            {isGoogleLoading ? (
+              <>
+                <Clock className="h-4 w-4 mr-2 animate-spin" />
+                {isGoogleAuthorized ? "Syncing..." : "Connecting..."}
+              </>
+            ) : (
+              <>
+                <Globe className="h-4 w-4 mr-2" />
+                {isGoogleAuthorized ? "Sync Now" : "Connect Google Calendar"}
+              </>
+            )}
+          </Button>
+          
+          {isGoogleAuthorized && (
+            <Button 
+              onClick={signOutGoogle}
+              variant="outline"
+              size="sm"
+              className="w-full text-blue-600 border-blue-200"
+            >
+              Disconnect
+            </Button>
+          )}
+        </div>
+
+        {/* Apple Calendar Integration */}
+        <div className="space-y-3 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-gray-200">
+          <div className="flex items-center gap-2">
+            <Smartphone className="h-5 w-5 text-gray-600" />
+            <div className="text-sm font-medium text-gray-900">Apple Calendar</div>
+            <Badge variant="secondary">Export</Badge>
+          </div>
+          
+          <div className="text-xs text-gray-700 mb-3">
+            Download .ics file to import into Apple Calendar, iPhone, iPad, or Mac
+          </div>
+          
+          <Button 
+            onClick={handleAppleExport}
+            disabled={isAppleGenerating}
+            className="w-full bg-gray-600 hover:bg-gray-700 text-white"
+          >
+            {isAppleGenerating ? (
+              <>
+                <Clock className="h-4 w-4 mr-2 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Download className="h-4 w-4 mr-2" />
+                Download for Apple Calendar
+              </>
+            )}
+          </Button>
+        </div>
 
         {/* What Gets Synced */}
         <div className="space-y-2">
@@ -94,31 +226,25 @@ const CalendarIntegration = () => {
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex gap-2">
+        {/* Quick Actions */}
+        <div className="grid grid-cols-2 gap-2">
           <Button 
-            onClick={handleExport}
-            disabled={!selectedCalendar}
-            className={`flex-1 transition-all duration-300 ${
-              isExported 
-                ? "bg-green-600 text-white" 
-                : "bg-card/50 text-primary-foreground border border-primary-foreground/20 hover:bg-card/70"
-            }`}
+            onClick={handleGoogleSync}
+            disabled={isGoogleLoading}
+            variant="outline"
+            size="sm"
           >
-            {isExported ? (
-              <>
-                <Check className="h-4 w-4 mr-2" />
-                Synced!
-              </>
-            ) : (
-              <>
-                <Download className="h-4 w-4 mr-2" />
-                Export Calendar
-              </>
-            )}
+            <Globe className="h-4 w-4 mr-2" />
+            Google Sync
           </Button>
-          <Button size="icon" variant="outline" className="text-primary-foreground border-primary-foreground/20">
-            <Settings className="h-4 w-4" />
+          <Button 
+            onClick={handleAppleExport}
+            disabled={isAppleGenerating}
+            variant="outline"
+            size="sm"
+          >
+            <Smartphone className="h-4 w-4 mr-2" />
+            Apple Export
           </Button>
         </div>
 
