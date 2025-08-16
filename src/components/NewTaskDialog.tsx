@@ -107,6 +107,8 @@ export function NewTaskDialog({ children, onTaskCreate: propOnTaskCreate, initia
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    console.log(`🎯 FORM SUBMIT START - Status: "${formData.status}"`)
+    console.log(`🎯 FORM DATA:`, formData)
     
     if (!formData.title.trim()) return
 
@@ -121,10 +123,14 @@ export function NewTaskDialog({ children, onTaskCreate: propOnTaskCreate, initia
       is_recurring: false
     }
 
+    console.log(`🎯 FINAL TASK DATA BEFORE SUBMIT:`, taskData)
+
     // Use prop function if provided, otherwise use context
     if (propOnTaskCreate) {
+      console.log(`🎯 USING PROP FUNCTION - onTaskCreate`)
       await propOnTaskCreate(taskData)
     } else {
+      console.log(`🎯 USING CONTEXT FUNCTION - createTask`)
       await createTask(taskData)
     }
 
