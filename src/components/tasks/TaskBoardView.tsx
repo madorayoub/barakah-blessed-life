@@ -1,11 +1,12 @@
-import { Plus } from 'lucide-react'
-import { useState } from 'react'
+import { Plus, GripVertical, Settings, MoreHorizontal } from 'lucide-react'
+import { useState, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { NewTaskDialog } from '@/components/NewTaskDialog'
-import { MagicTaskCard } from './MagicTaskCard'
+import { EnhancedTaskCard } from './EnhancedTaskCard'
 import { QuickAddTask } from './QuickAddTask'
+import { TaskDetailPanel } from './TaskDetailPanel'
 import { Task } from '@/hooks/useTasks'
 
 interface TaskBoardViewProps {
@@ -17,19 +18,33 @@ interface TaskBoardViewProps {
 }
 
 export function TaskBoardView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit, loading }: TaskBoardViewProps) {
-  // Simple 3-column Kanban (ClickUp's winning formula)
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null)
+  const [isPanelOpen, setIsPanelOpen] = useState(false)
+
+  // Professional 3-column Kanban (Research-backed columns)
   const columns = [
-    { id: 'pending', title: 'To Do', status: 'pending', color: 'bg-blue-50 border-blue-200' },
-    { id: 'in_progress', title: 'In Progress', status: 'in_progress', color: 'bg-yellow-50 border-yellow-200' },
-    { id: 'completed', title: 'Done', status: 'completed', color: 'bg-green-50 border-green-200' }
+    { id: 'pending', title: 'To Do', status: 'pending', color: 'bg-blue-50/50 border-blue-200' },
+    { id: 'in_progress', title: 'In Progress', status: 'in_progress', color: 'bg-yellow-50/50 border-yellow-200' },
+    { id: 'completed', title: 'Done', status: 'completed', color: 'bg-green-50/50 border-green-200' }
   ]
 
   const getTasksByStatus = (status: string) => {
     return tasks.filter(task => task.status === status)
   }
 
-  const handleStatusChange = (task: Task, newStatus: Task['status']) => {
-    onTaskEdit({ ...task, status: newStatus })
+  const handleTaskClick = (task: Task) => {
+    setSelectedTask(task)
+    setIsPanelOpen(true)
+  }
+
+  const handlePanelClose = () => {
+    setIsPanelOpen(false)
+    setSelectedTask(null)
+  }
+
+  const handleTaskUpdate = (updatedTask: Task) => {
+    onTaskEdit(updatedTask)
+    setSelectedTask(updatedTask)
   }
 
   if (loading) {
@@ -91,14 +106,14 @@ export function TaskBoardView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit,
                 
                 {/* Tasks */}
                 {columnTasks.map(task => (
-                  <div key={task.id} className="cursor-pointer">
-                    <MagicTaskCard
-                      task={task}
-                      onComplete={onTaskComplete}
-                      onDelete={onTaskDelete}
-                      onEdit={onTaskEdit}
-                    />
-                  </div>
+                  <EnhancedTaskCard
+                    key={task.id}
+                    task={task}
+                    onComplete={onTaskComplete}
+                    onDelete={onTaskDelete}
+                    onEdit={onTaskEdit}
+                    onClick={handleTaskClick}
+                  />
                 ))}
                 
                 {columnTasks.length === 0 && (
@@ -125,14 +140,23 @@ export function TaskBoardView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit,
             <div>
               <h4 className="font-medium text-sm mb-1">Quick Board Tips</h4>
               <ul className="text-xs text-muted-foreground space-y-1">
-                <li>• Click "Add task" in any column to create tasks in that status</li>
-                <li>• Edit task details to move between columns</li>
+                <li>• Click any task card to view details and edit</li>
+                <li>• Add tasks directly to specific columns</li>
                 <li>• Use priority flags to organize important tasks</li>
               </ul>
             </div>
           </div>
         </CardContent>
       </Card>
+
+      {/* Task Detail Panel */}
+      <TaskDetailPanel
+        task={selectedTask}
+        isOpen={isPanelOpen}
+        onClose={handlePanelClose}
+        onUpdate={handleTaskUpdate}
+        onDelete={onTaskDelete}
+      />
     </div>
   )
 }
