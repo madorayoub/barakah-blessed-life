@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { NewTaskDialog } from '@/components/NewTaskDialog'
 import { MagicTaskCard } from './MagicTaskCard'
-import { Task } from '@/hooks/useTasks'
+import { Task } from '@/contexts/TasksContext'
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths } from 'date-fns'
 
 interface TaskCalendarViewProps {

@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { NewTaskDialog } from '@/components/NewTaskDialog'
 import { MagicTaskCard } from './MagicTaskCard'
-import { Task } from '@/hooks/useTasks'
+import { Task } from '@/contexts/TasksContext'
 
 interface TaskListViewProps {
   tasks: Task[]

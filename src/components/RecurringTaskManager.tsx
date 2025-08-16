@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useTasks } from '@/hooks/useTasks'
+import { useTasks } from '@/contexts/TasksContext'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/integrations/supabase/client'
 

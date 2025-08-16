@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { useTasks } from '@/hooks/useTasks'
+import { useTasks } from '@/contexts/TasksContext'
 
 interface QuickAddTaskProps {
   groupId?: string
@@ -62,7 +62,7 @@ export function QuickAddTask({ groupId, columnStatus }: QuickAddTaskProps) {
     await createTask({
       title: taskTitle,
       priority,
-      status: taskStatus as 'pending' | 'in_progress' | 'completed' | 'cancelled',
+      status: taskStatus as 'pending' | 'in_progress' | 'completed',
       due_date: dueDate,
       is_recurring: false
     })

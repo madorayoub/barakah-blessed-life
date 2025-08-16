@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { usePrayerTimes } from '@/hooks/usePrayerTimes'
-import { useTasks } from '@/hooks/useTasks'
+import { useTasks } from '@/contexts/TasksContext'
 import { useToast } from '@/hooks/use-toast'
 import { format, addDays } from 'date-fns'
 

@@ -3,7 +3,7 @@ import { Lightbulb, Clock, BookOpen, Heart, Sun, Moon, Star } from 'lucide-react
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { useTasks } from '@/hooks/useTasks'
+import { useTasks } from '@/contexts/TasksContext'
 import { usePrayerTimes } from '@/hooks/usePrayerTimes'
 
 interface SmartTaskSuggestionsProps {

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Task } from '@/hooks/useTasks'
+import { Task } from '@/contexts/TasksContext'
 import { cn } from '@/lib/utils'
 
 interface SubtaskManagerProps {

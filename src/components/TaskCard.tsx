@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { Task } from '@/hooks/useTasks'
+import { Task } from '@/contexts/TasksContext'
 import { format } from 'date-fns'
 
 interface TaskCardProps {

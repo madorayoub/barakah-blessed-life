@@ -2,7 +2,7 @@ import { Calendar, Download, FileText, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { usePrayerTimes } from '@/hooks/usePrayerTimes'
-import { useTasks } from '@/hooks/useTasks'
+import { useTasks } from '@/contexts/TasksContext'
 import { formatPrayerTime } from '@/lib/prayerTimes'
 import { format, addDays } from 'date-fns'
 

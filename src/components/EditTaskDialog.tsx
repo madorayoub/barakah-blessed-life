@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { ModernDatePicker } from '@/components/ui/modern-date-picker'
-import { useTasks, Task } from '@/hooks/useTasks'
+import { useTasks, Task } from '@/contexts/TasksContext'
 
 interface EditTaskDialogProps {
   task: Task | null
@@ -57,7 +57,7 @@ export function EditTaskDialog({ task, open, onOpenChange }: EditTaskDialogProps
       category_id: formData.category_id || undefined,
       due_date: formData.due_date || undefined,
       due_time: formData.due_time || undefined,
-      status: formData.status
+      status: formData.status as 'pending' | 'in_progress' | 'completed'
     })
 
     onOpenChange(false)
@@ -84,18 +84,16 @@ export function EditTaskDialog({ task, open, onOpenChange }: EditTaskDialogProps
     const colors = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#84cc16', '#f97316']
     const randomColor = colors[Math.floor(Math.random() * colors.length)]
 
-    const newCategory = await createCategory({
+    await createCategory({
       name: newCategoryName,
       color: randomColor,
       icon: 'circle',
       is_default: false
     })
 
-    if (newCategory) {
-      setFormData(prev => ({ ...prev, category_id: newCategory.id }))
-      setNewCategoryName('')
-      setShowNewCategory(false)
-    }
+    // After creating category, the categories list will update via real-time subscription
+    setNewCategoryName('')
+    setShowNewCategory(false)
   }
 
   const getPriorityColor = (priority: string) => {
