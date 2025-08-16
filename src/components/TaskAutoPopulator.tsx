@@ -40,6 +40,10 @@ const TaskAutoPopulator = () => {
     const populateInitialTasks = async () => {
       if (!user) return
 
+      // Check if we've already tried to populate tasks for this user
+      const hasPopulated = localStorage.getItem(`tasks-populated-${user.id}`)
+      if (hasPopulated) return
+
       try {
         // Check if user already has tasks
         const { data: existingTasks } = await supabase
@@ -49,7 +53,8 @@ const TaskAutoPopulator = () => {
           .limit(1)
 
         if (existingTasks && existingTasks.length > 0) {
-          // User already has tasks, don't populate
+          // User already has tasks, mark as populated
+          localStorage.setItem(`tasks-populated-${user.id}`, 'true')
           return
         }
 
@@ -111,6 +116,9 @@ const TaskAutoPopulator = () => {
           .insert(tasksData)
 
         if (insertError) throw insertError
+
+        // Mark as populated to prevent future runs
+        localStorage.setItem(`tasks-populated-${user.id}`, 'true')
 
         toast({
           title: "Welcome to Barakah Tasks! 🌟",
