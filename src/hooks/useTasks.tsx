@@ -237,12 +237,26 @@ export function useTasks() {
     if (!user) return
 
     try {
+      // Remove read-only and joined fields that shouldn't be updated
+      const {
+        id,
+        user_id,
+        created_at,
+        updated_at,
+        category, // Remove joined category data
+        subtasks, // Remove joined subtasks data
+        ...updateData
+      } = updates
+
       const { data, error } = await supabase
         .from('tasks')
-        .update(updates)
+        .update(updateData)
         .eq('id', taskId)
         .eq('user_id', user.id)
-        .select()
+        .select(`
+          *,
+          category:task_categories(*)
+        `)
         .single()
 
       if (error) {
