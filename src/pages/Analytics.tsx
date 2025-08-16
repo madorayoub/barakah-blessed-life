@@ -5,7 +5,18 @@ import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Flame, Calendar, TrendingUp, ChevronDown, ChevronUp, Trophy, BookOpen, Target, Download, Eye } from 'lucide-react'
+import { 
+  Flame, 
+  Calendar, 
+  TrendingUp, 
+  ChevronDown, 
+  ChevronUp, 
+  Trophy, 
+  BookOpen, 
+  Target, 
+  Download, 
+  Eye 
+} from 'lucide-react'
 import { useAnalytics } from '@/hooks/useAnalytics'
 import { PrayerAnalytics } from '@/components/analytics/PrayerAnalytics'
 import { TaskAnalytics } from '@/components/analytics/TaskAnalytics'
