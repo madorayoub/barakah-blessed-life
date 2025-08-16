@@ -255,6 +255,9 @@ export function useTasks() {
   const createTask = async (taskData: Omit<Task, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
     if (!user) return
 
+    // Debug: Log the taskData to see what's being passed
+    console.log('Creating task with data:', taskData)
+
     try {
       const { data, error } = await supabase
         .from('tasks')
@@ -282,8 +285,8 @@ export function useTasks() {
       // Real-time subscription will handle state updates automatically
 
       toast({
-        title: taskData.parent_task_id ? "Subtask created" : "Task created",
-        description: `"${taskData.title}" has been added to your ${taskData.parent_task_id ? 'subtasks' : 'tasks'}`
+        title: (taskData.parent_task_id && taskData.parent_task_id.trim()) ? "Subtask created" : "Task created",
+        description: `"${taskData.title}" has been ${(taskData.parent_task_id && taskData.parent_task_id.trim()) ? 'added to your subtasks' : 'created successfully'}`
       })
 
       return {
