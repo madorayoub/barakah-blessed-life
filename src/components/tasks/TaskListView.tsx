@@ -3,7 +3,6 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { NewTaskDialog } from '@/components/NewTaskDialog'
 import { MagicTaskCard } from './MagicTaskCard'
-import { QuickAddTask } from './QuickAddTask'
 import { Task } from '@/hooks/useTasks'
 
 interface TaskListViewProps {
@@ -103,8 +102,17 @@ export function TaskListView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit, 
               />
             ))}
             
-            {/* Quick Add for each section */}
-            <QuickAddTask groupId={groupId} />
+            {/* Add Task for each section - Uses Unified Dialog */}
+            <NewTaskDialog>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start text-muted-foreground hover:text-foreground h-8 border-2 border-dashed border-primary/30 hover:border-primary/50 hover:bg-primary/5"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add task to {title}
+              </Button>
+            </NewTaskDialog>
           </div>
         )}
       </div>
@@ -143,9 +151,17 @@ export function TaskListView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit, 
 
   return (
     <div className="space-y-1">
-      {/* Quick Add at the top */}
+      {/* Main Add Task at the top - Uses Unified Dialog */}
       <div className="mb-6">
-        <QuickAddTask />
+        <NewTaskDialog>
+          <Button
+            variant="outline"
+            className="w-full h-12 border-2 border-dashed border-primary/30 hover:border-primary/50 hover:bg-primary/5 justify-center"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add New Task
+          </Button>
+        </NewTaskDialog>
       </div>
 
       {/* Auto-organized task groups */}

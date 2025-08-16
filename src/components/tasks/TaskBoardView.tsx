@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { NewTaskDialog } from '@/components/NewTaskDialog'
 import { EnhancedTaskCard } from './EnhancedTaskCard'
-import { QuickAddTask } from './QuickAddTask'
 import { TaskDetailPanel } from './TaskDetailPanel'
 import { AddColumnButton } from './AddColumnButton'
 import { BoardTips } from './BoardTips'
@@ -142,8 +141,17 @@ export function TaskBoardView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit,
               </CardHeader>
               
               <CardContent className="space-y-3">
-                {/* Quick Add */}
-                <QuickAddTask groupId={column.id} columnStatus={column.status} />
+                {/* Column-Specific Create Task Button - Uses Unified Dialog */}
+                <NewTaskDialog>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start text-muted-foreground hover:text-foreground h-8 mb-1 border-2 border-dashed border-primary/30 hover:border-primary/50 hover:bg-primary/5"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add task to {column.title}
+                  </Button>
+                </NewTaskDialog>
                 
                 {/* Tasks */}
                 {visibleTasks.map(task => (
