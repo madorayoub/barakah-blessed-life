@@ -107,18 +107,27 @@ export function TaskBoardView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit,
   }, [tasks, updateTask])
 
   // Handle column-specific task creation
-  const handleCreateTaskInColumn = useCallback((status: string) => {
+  const handleCreateTaskInColumn = useCallback((columnStatus: string) => {
+    // Map column status to correct initial status for dialog
+    const dialogStatusMapping: Record<string, 'pending' | 'in_progress' | 'completed'> = {
+      'pending': 'pending',
+      'to_do': 'pending',
+      'in_progress': 'in_progress', 
+      'completed': 'completed',
+      'done': 'completed'
+    }
+    
+    const initialDialogStatus = dialogStatusMapping[columnStatus] || 'pending'
+    
     return (taskData: Omit<Task, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-      // Map column status to database status
+      // Map dialog status to database status
       const dbStatusMapping: Record<string, Task['status']> = {
         'pending': 'pending',
-        'to_do': 'pending',
         'in_progress': 'in_progress', 
-        'completed': 'completed',
-        'done': 'completed'
+        'completed': 'completed'
       }
       
-      const mappedStatus = dbStatusMapping[status] || 'pending'
+      const mappedStatus = dbStatusMapping[taskData.status] || 'pending'
       
       onTaskCreate({
         ...taskData,
@@ -126,6 +135,23 @@ export function TaskBoardView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit,
       })
     }
   }, [onTaskCreate])
+
+  // Store initial status for dialog
+  const [dialogInitialStatus, setDialogInitialStatus] = useState<'pending' | 'in_progress' | 'completed'>('pending')
+  const [showTaskDialog, setShowTaskDialog] = useState(false)
+
+  const openDialogForColumn = useCallback((columnStatus: string) => {
+    const statusMapping: Record<string, 'pending' | 'in_progress' | 'completed'> = {
+      'pending': 'pending',
+      'to_do': 'pending',
+      'in_progress': 'in_progress', 
+      'completed': 'completed',
+      'done': 'completed'
+    }
+    
+    setDialogInitialStatus(statusMapping[columnStatus] || 'pending')
+    setShowTaskDialog(true)
+  }, [])
 
   if (loading || statusesLoading) {
     return (
@@ -160,13 +186,23 @@ export function TaskBoardView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit,
             <h2 className="text-xl font-semibold">Task Board</h2>
             <p className="text-muted-foreground text-sm">Organize tasks with simple drag and drop</p>
           </div>
-          <NewTaskDialog onTaskCreate={onTaskCreate}>
+          <NewTaskDialog onTaskCreate={onTaskCreate} initialStatus={dialogInitialStatus}>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
               Add Task
             </Button>
           </NewTaskDialog>
         </div>
+
+        {/* Task Dialog for Column-Specific Creation */}
+        {showTaskDialog && (
+          <NewTaskDialog 
+            onTaskCreate={handleCreateTaskInColumn(dialogInitialStatus)} 
+            initialStatus={dialogInitialStatus}
+          >
+            <div style={{ display: 'none' }} />
+          </NewTaskDialog>
+        )}
 
         {/* Kanban Board */}
         <div className="flex gap-6 overflow-x-auto pb-6">

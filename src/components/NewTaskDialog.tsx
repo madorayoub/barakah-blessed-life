@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Plus, Calendar, Clock, Flag, BookOpen, Heart, Star, Gift, GraduationCap, Phone, Users, Sun, Moon, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -104,6 +104,11 @@ export function NewTaskDialog({ children, onTaskCreate: propOnTaskCreate, initia
     due_time: '',
     status: initialStatus
   })
+
+  // Update status when initialStatus changes (when different column opens dialog)
+  useEffect(() => {
+    setFormData(prev => ({ ...prev, status: initialStatus }))
+  }, [initialStatus])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
