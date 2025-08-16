@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, Calendar, Clock, Flag, BookOpen, Heart, Star, Gift, GraduationCap, Phone, Users, Sun, Moon, Settings } from 'lucide-react'
+import { Plus, Calendar, Clock, Flag, BookOpen, Heart, Star, Gift, GraduationCap, Phone, Users, Sun, Moon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
@@ -10,7 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge'
 import { ModernDatePicker } from '@/components/ui/modern-date-picker'
 import { useTasks, TaskTemplate } from '@/hooks/useTasks'
-import { AdvancedTaskDialog } from './AdvancedTaskDialog'
 
 const iconMap: Record<string, any> = {
   'sun': Sun,
@@ -114,41 +113,18 @@ export function NewTaskDialog({ children }: NewTaskDialogProps) {
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add New Task</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <Plus className="h-5 w-5" />
+            Create New Task
+          </DialogTitle>
           <DialogDescription>
             Create a custom task or choose from Islamic templates
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
-          {/* Mode Selection */}
-          <div className="flex items-center justify-center mb-4">
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant="default"
-                size="sm"
-                className="h-8"
-              >
-                <Plus className="h-3 w-3 mr-1" />
-                Quick Task
-              </Button>
-              <AdvancedTaskDialog>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="h-8"
-                >
-                  <Settings className="h-3 w-3 mr-1" />
-                  Advanced
-                </Button>
-              </AdvancedTaskDialog>
-            </div>
-          </div>
-
+        <div className="space-y-6 py-4">
           {/* Template or Custom Toggle */}
           <div className="flex gap-2 justify-center">
             <Button
@@ -172,7 +148,7 @@ export function NewTaskDialog({ children }: NewTaskDialogProps) {
           {isTemplate ? (
             /* Template Selection */
             <div className="space-y-4">
-              <h3 className="font-medium">Choose from Islamic Templates</h3>
+              <h3 className="font-medium text-center">Choose from Islamic Templates</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto">
                 {templates.map((template) => {
                   const IconComponent = iconMap[template.icon] || Plus
@@ -217,32 +193,37 @@ export function NewTaskDialog({ children }: NewTaskDialogProps) {
               </div>
             </div>
           ) : (
-            /* Custom Task Form */
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
+            /* COMPREHENSIVE CUSTOM FORM with ALL features */
+            <div className="space-y-4">
+              
+              {/* Task Title */}
+              <div>
                 <Label htmlFor="title">Task Title *</Label>
                 <Input
                   id="title"
                   value={formData.title}
                   onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                  placeholder="Enter task title"
+                  placeholder="What needs to be done?"
+                  className="text-base font-medium"
                   required
                 />
               </div>
 
-              <div className="space-y-2">
+              {/* Description */}
+              <div>
                 <Label htmlFor="description">Description</Label>
                 <Textarea
                   id="description"
                   value={formData.description}
                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="Optional task description"
+                  placeholder="Add details about this task..."
                   rows={3}
                 />
               </div>
 
+              {/* Row 1: Priority and Category */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
+                <div>
                   <Label htmlFor="priority">Priority</Label>
                   <Select
                     value={formData.priority}
@@ -254,15 +235,15 @@ export function NewTaskDialog({ children }: NewTaskDialogProps) {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="low">Low</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="high">High</SelectItem>
-                      <SelectItem value="urgent">Urgent</SelectItem>
+                      <SelectItem value="low">🟢 Low</SelectItem>
+                      <SelectItem value="medium">🟡 Medium</SelectItem>
+                      <SelectItem value="high">🟠 High</SelectItem>
+                      <SelectItem value="urgent">🔴 Urgent</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
-                <div className="space-y-2">
+                <div>
                   <Label htmlFor="category">Category</Label>
                   <div className="space-y-2">
                     <Select
@@ -341,20 +322,18 @@ export function NewTaskDialog({ children }: NewTaskDialogProps) {
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <ModernDatePicker
-                  label="Due Date"
-                  value={formData.due_date}
-                  onChange={(date) => setFormData(prev => ({ ...prev, due_date: date }))}
-                  showTime={true}
-                  timeValue={formData.due_time}
-                  onTimeChange={(time) => setFormData(prev => ({ ...prev, due_time: time }))}
-                  placeholder="Select due date (optional)"
-                  className="w-full"
-                />
-              </div>
+              {/* Due Date & Time - Using the beautiful ModernDatePicker */}
+              <ModernDatePicker
+                label="Due Date & Time"
+                value={formData.due_date}
+                onChange={(date) => setFormData(prev => ({ ...prev, due_date: date }))}
+                showTime={true}
+                timeValue={formData.due_time}
+                onTimeChange={(time) => setFormData(prev => ({ ...prev, due_time: time }))}
+                placeholder="When is this due?"
+              />
 
-              {/* Quick Time Buttons */}
+              {/* Quick Duration Buttons */}
               <div className="space-y-2">
                 <Label>Quick Duration</Label>
                 <div className="flex gap-2">
@@ -362,7 +341,7 @@ export function NewTaskDialog({ children }: NewTaskDialogProps) {
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => setFormData(prev => ({ ...prev, description: '5 minute task' }))}
+                    onClick={() => setFormData(prev => ({ ...prev, description: prev.description + (prev.description ? ' • ' : '') + '5 minute task' }))}
                   >
                     5 min
                   </Button>
@@ -370,7 +349,7 @@ export function NewTaskDialog({ children }: NewTaskDialogProps) {
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => setFormData(prev => ({ ...prev, description: '15 minute task' }))}
+                    onClick={() => setFormData(prev => ({ ...prev, description: prev.description + (prev.description ? ' • ' : '') + '15 minute task' }))}
                   >
                     15 min
                   </Button>
@@ -378,22 +357,23 @@ export function NewTaskDialog({ children }: NewTaskDialogProps) {
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => setFormData(prev => ({ ...prev, description: '30 minute task' }))}
+                    onClick={() => setFormData(prev => ({ ...prev, description: prev.description + (prev.description ? ' • ' : '') + '30 minute task' }))}
                   >
                     30 min
                   </Button>
                 </div>
               </div>
 
+              {/* Create Task Button */}
               <div className="flex justify-end gap-2 pt-4">
                 <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="submit">
+                <Button onClick={handleSubmit} className="w-32" size="lg">
                   Create Task
                 </Button>
               </div>
-            </form>
+            </div>
           )}
         </div>
       </DialogContent>
