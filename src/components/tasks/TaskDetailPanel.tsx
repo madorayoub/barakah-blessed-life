@@ -117,7 +117,7 @@ export function TaskDetailPanel({ task, isOpen, onClose, onUpdate, onDelete }: T
       {/* Overlay */}
       <div 
         className={cn(
-          "fixed inset-0 bg-black/30 z-40 transition-all duration-300",
+          "fixed inset-0 bg-black/40 z-40 transition-all duration-300",
           isOpen ? "opacity-100 visible" : "opacity-0 invisible"
         )}
         onClick={onClose}
@@ -126,7 +126,7 @@ export function TaskDetailPanel({ task, isOpen, onClose, onUpdate, onDelete }: T
       {/* Panel */}
       <div 
         className={cn(
-          "fixed right-0 top-0 h-full w-full md:w-[420px] bg-background border-l shadow-xl z-50 transform transition-transform duration-300 cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+          "fixed right-0 top-0 h-full w-full md:w-[420px] bg-white border-l border-gray-200 shadow-2xl z-50 transform transition-transform duration-300 cubic-bezier(0.25, 0.46, 0.45, 0.94)",
           isOpen ? "translate-x-0" : "translate-x-full"
         )}
         onKeyDown={handleKeyDown}
@@ -134,9 +134,10 @@ export function TaskDetailPanel({ task, isOpen, onClose, onUpdate, onDelete }: T
       >
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="relative p-6 border-b bg-muted/20">
-            <h2 className="text-lg font-semibold text-foreground">Task Details</h2>
-            <div className="flex items-center gap-2 mt-2">
+          <div className="relative p-6 border-b border-gray-200 bg-gray-50">
+            <h2 className="text-xl font-bold text-gray-900">Task Details</h2>
+            <p className="text-sm text-gray-600 mt-1">Edit your task information</p>
+            <div className="flex items-center gap-3 mt-3">
               {hasChanges && !isAutoSaving && (
                 <Button onClick={handleSave} size="sm" variant="default" disabled={isAutoSaving}>
                   <Save className="h-4 w-4 mr-1" />
@@ -144,8 +145,8 @@ export function TaskDetailPanel({ task, isOpen, onClose, onUpdate, onDelete }: T
                 </Button>
               )}
               {isAutoSaving && (
-                <div className="text-sm text-muted-foreground flex items-center gap-2">
-                  <div className="animate-spin h-3 w-3 border border-primary border-t-transparent rounded-full"></div>
+                <div className="text-sm text-gray-600 flex items-center gap-2">
+                  <div className="animate-spin h-3 w-3 border-2 border-primary border-t-transparent rounded-full"></div>
                   Auto-saving...
                 </div>
               )}
@@ -154,69 +155,69 @@ export function TaskDetailPanel({ task, isOpen, onClose, onUpdate, onDelete }: T
               onClick={onClose} 
               size="icon" 
               variant="ghost"
-              className="absolute top-4 right-4 h-8 w-8 rounded-md hover:bg-muted"
+              className="absolute top-4 right-4 h-8 w-8 rounded-md hover:bg-gray-200 text-gray-500 hover:text-gray-700"
             >
               <X className="h-4 w-4" />
             </Button>
           </div>
           
           {/* Content */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-white">
             {/* Title */}
             <div className="space-y-3">
-              <label className="text-sm font-semibold text-foreground">Title</label>
+              <label className="text-sm font-semibold text-gray-900">Task Title</label>
               <Input
                 value={editedTask.title}
                 onChange={(e) => handleFieldChange('title', e.target.value)}
-                className="text-xl font-semibold border-2 focus:border-primary py-3"
-                placeholder="Task title..."
+                className="text-xl font-bold border-2 border-gray-200 focus:border-primary py-3 text-gray-900 bg-white placeholder:text-gray-400"
+                placeholder="Enter task title..."
               />
             </div>
             
             {/* Status */}
             <div className="space-y-3">
-              <label className="text-sm font-semibold text-foreground">Status</label>
+              <label className="text-sm font-semibold text-gray-900">Status</label>
               <Select 
                 value={editedTask.status} 
                 onValueChange={(value) => handleFieldChange('status', value)}
               >
-                <SelectTrigger className="h-12 text-base">
+                <SelectTrigger className="h-12 text-base border-2 border-gray-200 bg-white text-gray-900">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-background border shadow-lg">
-                  <SelectItem value="pending">📋 To Do</SelectItem>
-                  <SelectItem value="in_progress">⚡ In Progress</SelectItem>
-                  <SelectItem value="completed">✅ Done</SelectItem>
+                <SelectContent className="bg-white border-2 border-gray-200 shadow-lg">
+                  <SelectItem value="pending" className="text-gray-900">📋 To Do</SelectItem>
+                  <SelectItem value="in_progress" className="text-gray-900">⚡ In Progress</SelectItem>
+                  <SelectItem value="completed" className="text-gray-900">✅ Done</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             
             {/* Priority */}
             <div className="space-y-3">
-              <label className="text-sm font-semibold text-foreground">Priority</label>
+              <label className="text-sm font-semibold text-gray-900">Priority</label>
               <Select 
                 value={editedTask.priority} 
                 onValueChange={(value) => handleFieldChange('priority', value)}
               >
-                <SelectTrigger className="h-12 text-base">
+                <SelectTrigger className="h-12 text-base border-2 border-gray-200 bg-white text-gray-900">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-background border shadow-lg">
-                  <SelectItem value="high">
+                <SelectContent className="bg-white border-2 border-gray-200 shadow-lg">
+                  <SelectItem value="high" className="text-gray-900">
                     <div className="flex items-center gap-2">
-                      <Flag className="h-4 w-4 text-destructive" />
+                      <Flag className="h-4 w-4 text-red-500" />
                       🔴 High Priority
                     </div>
                   </SelectItem>
-                  <SelectItem value="medium">
+                  <SelectItem value="medium" className="text-gray-900">
                     <div className="flex items-center gap-2">
-                      <Flag className="h-4 w-4 text-primary" />
+                      <Flag className="h-4 w-4 text-yellow-500" />
                       🟡 Medium Priority
                     </div>
                   </SelectItem>
-                  <SelectItem value="low">
+                  <SelectItem value="low" className="text-gray-900">
                     <div className="flex items-center gap-2">
-                      <Flag className="h-4 w-4 text-muted-foreground" />
+                      <Flag className="h-4 w-4 text-green-500" />
                       🟢 Low Priority
                     </div>
                   </SelectItem>
@@ -227,55 +228,55 @@ export function TaskDetailPanel({ task, isOpen, onClose, onUpdate, onDelete }: T
             {/* Due Date & Time */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-3">
-                <label className="text-sm font-semibold text-foreground">Due Date</label>
+                <label className="text-sm font-semibold text-gray-900">Due Date</label>
                 <Input
                   type="date"
                   value={formatDate(editedTask.due_date)}
                   onChange={(e) => handleFieldChange('due_date', e.target.value || null)}
-                  className="h-12 text-base"
+                  className="h-12 text-base border-2 border-gray-200 bg-white text-gray-900"
                 />
               </div>
               
               <div className="space-y-3">
-                <label className="text-sm font-semibold text-foreground">Due Time</label>
+                <label className="text-sm font-semibold text-gray-900">Due Time</label>
                 <Input
                   type="time"
                   value={editedTask.due_time || ''}
                   onChange={(e) => handleFieldChange('due_time', e.target.value || null)}
-                  className="h-12 text-base"
+                  className="h-12 text-base border-2 border-gray-200 bg-white text-gray-900"
                 />
               </div>
             </div>
             
             {/* Description */}
             <div className="space-y-3">
-              <label className="text-sm font-semibold text-foreground">Description</label>
+              <label className="text-sm font-semibold text-gray-900">Description</label>
               <Textarea
                 value={editedTask.description || ''}
                 onChange={(e) => handleFieldChange('description', e.target.value || null)}
                 placeholder="Add task description..."
                 rows={5}
-                className="text-base leading-relaxed resize-none"
+                className="text-base leading-relaxed resize-none border-2 border-gray-200 bg-white text-gray-900 placeholder:text-gray-400"
               />
             </div>
             
             {/* Task Info */}
-            <Card className="p-3 bg-muted/50">
-              <div className="space-y-2 text-sm">
+            <Card className="p-4 bg-gray-50 border-2 border-gray-200">
+              <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Created:</span>
-                  <span>{new Date(task.created_at).toLocaleDateString()}</span>
+                  <span className="text-gray-600 font-medium">Created:</span>
+                  <span className="text-gray-900 font-semibold">{new Date(task.created_at).toLocaleDateString()}</span>
                 </div>
                 {task.updated_at !== task.created_at && (
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Updated:</span>
-                    <span>{new Date(task.updated_at).toLocaleDateString()}</span>
+                    <span className="text-gray-600 font-medium">Updated:</span>
+                    <span className="text-gray-900 font-semibold">{new Date(task.updated_at).toLocaleDateString()}</span>
                   </div>
                 )}
                 {task.completed_at && (
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Completed:</span>
-                    <span>{new Date(task.completed_at).toLocaleDateString()}</span>
+                    <span className="text-gray-600 font-medium">Completed:</span>
+                    <span className="text-green-600 font-semibold">{new Date(task.completed_at).toLocaleDateString()}</span>
                   </div>
                 )}
               </div>
@@ -283,19 +284,19 @@ export function TaskDetailPanel({ task, isOpen, onClose, onUpdate, onDelete }: T
           </div>
           
           {/* Footer */}
-          <div className="p-4 border-t bg-muted/20">
-            <div className="flex justify-between">
+          <div className="p-6 border-t border-gray-200 bg-gray-50">
+            <div className="flex justify-between items-center">
               <Button 
                 onClick={handleDelete} 
                 variant="destructive" 
                 size="sm"
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white"
               >
                 <Trash2 className="h-4 w-4" />
                 Delete Task
               </Button>
               
-              <div className="text-xs text-muted-foreground">
+              <div className="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-md">
                 Press Esc to close • Ctrl+S to save
               </div>
             </div>
