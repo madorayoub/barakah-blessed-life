@@ -33,7 +33,8 @@ export default function Analytics() {
     achievements, 
     loading, 
     getMotivationalMessage, 
-    getQuranVerse 
+    getQuranVerse,
+    getDaysSinceJoining
   } = useAnalytics()
 
   const [expandedSections, setExpandedSections] = useState({
@@ -62,12 +63,13 @@ export default function Analytics() {
     )
   }
 
-  const todayPrayers = prayerStats?.weeklyData?.[6]?.completed || 0
+  const todayPrayers = prayerStats?.weeklyData?.[prayerStats.weeklyData.length - 1]?.completed || 0
   const totalDailyPrayers = 5
   const currentStreak = prayerStats?.currentStreak || 0
   const weeklyCompletion = prayerStats?.weeklyData?.reduce((acc, day) => acc + day.completed, 0) || 0
-  const totalWeeklyPrayers = 35
-  const weeklyProgress = (weeklyCompletion / totalWeeklyPrayers) * 100
+  const totalWeeklyPrayers = prayerStats?.weeklyData?.reduce((acc, day) => acc + day.total, 0) || 35
+  const weeklyProgress = totalWeeklyPrayers > 0 ? (weeklyCompletion / totalWeeklyPrayers) * 100 : 0
+  const daysSinceJoining = getDaysSinceJoining()
 
   return (
     <div className="container mx-auto p-4 md:p-6 space-y-6 md:space-y-8">
@@ -93,7 +95,9 @@ export default function Analytics() {
       <div className="text-center space-y-4 md:space-y-6">
         <div>
           <h2 className="text-xl md:text-2xl font-semibold mb-2">Your Spiritual Journey</h2>
-          <p className="text-muted-foreground">Stay motivated with insights and progress tracking</p>
+          <p className="text-muted-foreground">
+            Day {daysSinceJoining} of your journey • Fair tracking from your join date
+          </p>
         </div>
 
         {/* Daily Progress Circle */}
@@ -141,8 +145,11 @@ export default function Analytics() {
               <div className="mb-1 md:mb-2">
                 <span className="text-lg md:text-2xl font-bold">{weeklyProgress.toFixed(0)}%</span>
               </div>
-              <p className="text-xs md:text-sm text-muted-foreground">This Week</p>
+              <p className="text-xs md:text-sm text-muted-foreground">Since Joining</p>
               <Progress value={weeklyProgress} className="h-1.5 md:h-2 mt-1 md:mt-2" />
+              {daysSinceJoining <= 7 && (
+                <p className="text-xs text-green-600 mt-1">Fair tracking!</p>
+              )}
             </CardContent>
           </Card>
 
@@ -171,7 +178,8 @@ export default function Analytics() {
                     <div>
                       <CardTitle className="text-base md:text-lg">Prayer Patterns</CardTitle>
                       <CardDescription className="text-sm">
-                        {prayerStats?.completionRate?.toFixed(0) || 0}% completion rate this week
+                        {prayerStats?.completionRate?.toFixed(0) || 0}% completion rate since joining
+                        {daysSinceJoining <= 7 && " • Fair tracking active"}
                       </CardDescription>
                     </div>
                   </div>

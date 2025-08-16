@@ -11,9 +11,10 @@ interface TaskCardProps {
   onComplete: (taskId: string) => void
   onDelete: (taskId: string) => void
   onEdit?: (task: Task) => void
+  onClick?: (task: Task) => void
 }
 
-export function TaskCard({ task, onComplete, onDelete, onEdit }: TaskCardProps) {
+export function TaskCard({ task, onComplete, onDelete, onEdit, onClick }: TaskCardProps) {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'urgent': return 'border-red-500 bg-red-50'
@@ -38,12 +39,20 @@ export function TaskCard({ task, onComplete, onDelete, onEdit }: TaskCardProps) 
   const isOverdue = task.due_date && new Date(task.due_date) < new Date() && !isCompleted
 
   return (
-    <Card className={`transition-all duration-200 hover:shadow-md ${isCompleted ? 'opacity-75' : ''}`}>
+    <Card 
+      className={`transition-all duration-200 hover:shadow-md ${
+        isCompleted ? 'opacity-75' : ''
+      } ${onClick ? 'cursor-pointer' : ''}`}
+      onClick={onClick ? () => onClick(task) : undefined}
+    >
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
           {/* Completion Checkbox */}
           <button
-            onClick={() => onComplete(task.id)}
+            onClick={(e) => {
+              e.stopPropagation()
+              onComplete(task.id)
+            }}
             className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 ${
               isCompleted 
                 ? 'bg-primary border-primary text-white' 
@@ -60,10 +69,15 @@ export function TaskCard({ task, onComplete, onDelete, onEdit }: TaskCardProps) 
                 {task.title}
               </h3>
               
-              {/* Actions Menu */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          {/* Actions Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-8 w-8 p-0" 
+                onClick={(e) => e.stopPropagation()}
+              >
                     <MoreHorizontal className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>

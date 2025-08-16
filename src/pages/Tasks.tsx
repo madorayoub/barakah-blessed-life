@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useTasks } from '@/hooks/useTasks'
 import { TaskCard } from '@/components/TaskCard'
+import { TaskDetailSidebar } from '@/components/TaskDetailSidebar'
 import { NewTaskDialog } from '@/components/NewTaskDialog'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -12,12 +13,24 @@ const Tasks = () => {
   const { tasks, completeTask, deleteTask, loading } = useTasks()
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'completed'>('all')
+  const [selectedTask, setSelectedTask] = useState<any>(null)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   const filteredTasks = tasks.filter(task => {
     const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = filterStatus === 'all' || task.status === filterStatus
     return matchesSearch && matchesStatus
   })
+
+  const handleTaskClick = (task: any) => {
+    setSelectedTask(task)
+    setIsSidebarOpen(true)
+  }
+
+  const handleSidebarClose = () => {
+    setIsSidebarOpen(false)
+    setSelectedTask(null)
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -122,10 +135,23 @@ const Tasks = () => {
                 task={task}
                 onComplete={completeTask}
                 onDelete={deleteTask}
+                onClick={handleTaskClick}
               />
             ))}
           </div>
         )}
+
+        {/* Task Detail Sidebar */}
+        <TaskDetailSidebar
+          task={selectedTask}
+          isOpen={isSidebarOpen}
+          onClose={handleSidebarClose}
+          onComplete={completeTask}
+          onDelete={(taskId) => {
+            deleteTask(taskId)
+            handleSidebarClose()
+          }}
+        />
       </main>
     </div>
   )

@@ -150,9 +150,12 @@ const Prayers = () => {
                   </div>
                   <div className="text-sm text-muted-foreground">
                     {completedCount === totalPrayers 
-                      ? "🎉 All prayers completed today!" 
+                      ? "🎉 All prayers completed today! Masha'Allah!" 
                       : `${totalPrayers - completedCount} prayers remaining`
                     }
+                  </div>
+                  <div className="text-xs text-emerald-600 bg-emerald-50 p-2 rounded">
+                    💡 Your progress is tracked fairly from your join date - no historical penalties!
                   </div>
                 </div>
               </CardContent>

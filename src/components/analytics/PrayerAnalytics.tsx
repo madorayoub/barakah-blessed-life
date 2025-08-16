@@ -48,7 +48,7 @@ export function PrayerAnalytics({ stats }: PrayerAnalyticsProps) {
             </div>
             <Progress value={stats.completionRate} className="mt-2" />
             <p className="text-xs text-muted-foreground mt-1">
-              {stats.completedPrayers} of {stats.totalPrayers} prayers
+              {stats.completedPrayers} of {stats.totalPrayers} prayers since joining
             </p>
           </CardContent>
         </Card>
@@ -102,8 +102,8 @@ export function PrayerAnalytics({ stats }: PrayerAnalyticsProps) {
       {/* Weekly Progress Chart */}
       <Card>
         <CardHeader>
-          <CardTitle>Weekly Prayer Progress</CardTitle>
-          <CardDescription>Your prayer completions this week</CardDescription>
+          <CardTitle>Prayer Progress Since Joining</CardTitle>
+          <CardDescription>Your prayer completions from registration date forward</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
