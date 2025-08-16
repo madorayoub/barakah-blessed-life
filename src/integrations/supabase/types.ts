@@ -346,6 +346,7 @@ export type Database = {
           description: string | null
           due_date: string | null
           due_time: string | null
+          estimated_duration: number | null
           id: string
           is_recurring: boolean | null
           parent_task_id: string | null
@@ -363,6 +364,7 @@ export type Database = {
           description?: string | null
           due_date?: string | null
           due_time?: string | null
+          estimated_duration?: number | null
           id?: string
           is_recurring?: boolean | null
           parent_task_id?: string | null
@@ -380,6 +382,7 @@ export type Database = {
           description?: string | null
           due_date?: string | null
           due_time?: string | null
+          estimated_duration?: number | null
           id?: string
           is_recurring?: boolean | null
           parent_task_id?: string | null
