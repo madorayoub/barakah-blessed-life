@@ -273,17 +273,49 @@ export function useTasks() {
 
   const completeTask = async (taskId: string) => {
     const completed_at = new Date().toISOString()
+    const task = tasks.find(t => t.id === taskId)
+    
     const result = await updateTask(taskId, { 
       status: 'completed',
       completed_at
     })
 
     if (result) {
+      // Check for streak
+      const completedToday = getCompletedTasksToday()
+      const streak = calculateTaskStreak(task?.title || '', completedToday)
+      
       toast({
-        title: "Task completed",
-        description: "Great job! Keep up the good work"
+        title: "Task completed! 🎉",
+        description: streak > 1 ? `${streak} day streak!` : "Great job! Keep up the good work"
       })
     }
+
+    return result
+  }
+
+  const calculateTaskStreak = (taskTitle: string, completedTasks: Task[]) => {
+    // Simple streak calculation - count consecutive days
+    const similarTasks = tasks.filter(t => 
+      t.title === taskTitle && t.status === 'completed'
+    ).sort((a, b) => new Date(b.completed_at!).getTime() - new Date(a.completed_at!).getTime())
+    
+    let streak = 1
+    const today = new Date()
+    
+    for (let i = 1; i < similarTasks.length; i++) {
+      const taskDate = new Date(similarTasks[i].completed_at!)
+      const prevDate = new Date(similarTasks[i-1].completed_at!)
+      const daysDiff = Math.floor((prevDate.getTime() - taskDate.getTime()) / (1000 * 60 * 60 * 24))
+      
+      if (daysDiff === 1) {
+        streak++
+      } else {
+        break
+      }
+    }
+    
+    return streak
   }
 
   const deleteTask = async (taskId: string) => {
@@ -368,6 +400,7 @@ export function useTasks() {
     createTaskFromTemplate,
     getTodaysTasks,
     getCompletedTasksToday,
-    getTasksByCategory
+    getTasksByCategory,
+    calculateTaskStreak
   }
 }

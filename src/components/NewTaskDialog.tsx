@@ -253,6 +253,37 @@ export function NewTaskDialog({ children }: NewTaskDialogProps) {
                 </div>
               </div>
 
+              {/* Quick Time Buttons */}
+              <div className="space-y-2">
+                <Label>Quick Duration</Label>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setFormData(prev => ({ ...prev, description: '5 minute task' }))}
+                  >
+                    5 min
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setFormData(prev => ({ ...prev, description: '15 minute task' }))}
+                  >
+                    15 min
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setFormData(prev => ({ ...prev, description: '30 minute task' }))}
+                  >
+                    30 min
+                  </Button>
+                </div>
+              </div>
+
               <div className="flex justify-end gap-2 pt-4">
                 <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                   Cancel

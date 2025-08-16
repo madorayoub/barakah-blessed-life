@@ -5,16 +5,21 @@ import { useTasks } from '@/hooks/useTasks'
 import { TaskCard } from '@/components/TaskCard'
 import { TaskDetailSidebar } from '@/components/TaskDetailSidebar'
 import { NewTaskDialog } from '@/components/NewTaskDialog'
+import { SmartTaskSuggestions } from '@/components/SmartTaskSuggestions'
+import { TaskCompletionReward } from '@/components/TaskCompletionReward'
+import { RecurringTaskManager } from '@/components/RecurringTaskManager'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 const Tasks = () => {
   const navigate = useNavigate()
-  const { tasks, completeTask, deleteTask, loading } = useTasks()
+  const { tasks, completeTask, deleteTask, loading, calculateTaskStreak } = useTasks()
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'completed'>('all')
   const [selectedTask, setSelectedTask] = useState<any>(null)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [showReward, setShowReward] = useState(false)
+  const [completedTaskInfo, setCompletedTaskInfo] = useState<any>(null)
 
   const filteredTasks = tasks.filter(task => {
     const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -32,8 +37,32 @@ const Tasks = () => {
     setSelectedTask(null)
   }
 
+  const handleTaskComplete = async (taskId: string) => {
+    const task = tasks.find(t => t.id === taskId)
+    const result = await completeTask(taskId)
+    
+    if (result && task) {
+      const streak = calculateTaskStreak(task.title, [])
+      const isIslamicTask = task.title.toLowerCase().includes('prayer') || 
+                          task.title.toLowerCase().includes('dhikr') ||
+                          task.title.toLowerCase().includes('quran')
+      
+      setCompletedTaskInfo({
+        taskTitle: task.title,
+        streak,
+        isIslamicTask
+      })
+      setShowReward(true)
+    }
+  }
+
+  const handleTaskSuggested = (taskTitle: string) => {
+    // Optional: focus on the suggested task or show a notification
+  }
+
   return (
     <div className="min-h-screen bg-background">
+      <RecurringTaskManager />
       <header className="bg-white border-b">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-4 mb-2">
@@ -64,6 +93,9 @@ const Tasks = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8">
+        {/* Smart Suggestions */}
+        <SmartTaskSuggestions onTaskSuggested={handleTaskSuggested} />
+        
         {/* Filters and Search */}
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
           <div className="relative flex-1">
@@ -133,7 +165,7 @@ const Tasks = () => {
               <TaskCard
                 key={task.id}
                 task={task}
-                onComplete={completeTask}
+                onComplete={handleTaskComplete}
                 onDelete={deleteTask}
                 onClick={handleTaskClick}
               />
@@ -146,11 +178,20 @@ const Tasks = () => {
           task={selectedTask}
           isOpen={isSidebarOpen}
           onClose={handleSidebarClose}
-          onComplete={completeTask}
+          onComplete={handleTaskComplete}
           onDelete={(taskId) => {
             deleteTask(taskId)
             handleSidebarClose()
           }}
+        />
+
+        {/* Completion Reward Animation */}
+        <TaskCompletionReward
+          taskTitle={completedTaskInfo?.taskTitle || ''}
+          isVisible={showReward}
+          onComplete={() => setShowReward(false)}
+          streak={completedTaskInfo?.streak || 0}
+          isIslamicTask={completedTaskInfo?.isIslamicTask || false}
         />
       </main>
     </div>
