@@ -5,6 +5,8 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CalendarExport } from '@/components/CalendarExport'
 import CalendarMonth from '@/components/CalendarMonth'
+import CalendarWeekView from '@/components/CalendarWeekView'
+import CalendarDayView from '@/components/CalendarDayView'
 import { GoogleCalendarConnect } from '@/components/GoogleCalendarConnect'
 import { AppleCalendarExport } from '@/components/AppleCalendarExport'
 import { CalDAVIntegration } from '@/components/CalDAVIntegration'
@@ -15,7 +17,7 @@ const CalendarView = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="bg-white border-b">
+      <header className="bg-card border-b">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
             <Button 
@@ -29,32 +31,48 @@ const CalendarView = () => {
             </Button>
             <div className="h-4 w-px bg-border" />
             <div>
-              <h1 className="text-2xl font-bold">Calendar Integration</h1>
-              <p className="text-muted-foreground">Sync prayer times with your external calendars</p>
+              <h1 className="text-2xl font-bold">Calendar</h1>
+              <p className="text-muted-foreground">Your Islamic schedule and prayer times</p>
             </div>
           </div>
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-8 max-w-6xl">
-        <Tabs defaultValue="calendar" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="calendar">Calendar View</TabsTrigger>
-            <TabsTrigger value="export">Export & Sync</TabsTrigger>
-            <TabsTrigger value="caldav">CalDAV Integration</TabsTrigger>
+        <Tabs defaultValue="week" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="day">Day</TabsTrigger>
+            <TabsTrigger value="week">Week</TabsTrigger>
+            <TabsTrigger value="month">Month</TabsTrigger>
+            <TabsTrigger value="sync">Sync</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="calendar" className="space-y-6">
-            {/* Calendar View */}
+          <TabsContent value="day" className="space-y-6">
+            <CalendarDayView />
+          </TabsContent>
+
+          <TabsContent value="week" className="space-y-6">
+            <CalendarWeekView />
+          </TabsContent>
+
+          <TabsContent value="month" className="space-y-6">
+            <CalendarMonth />
+          </TabsContent>
+
+          <TabsContent value="sync" className="space-y-6">
+            {/* Sync Section */}
             <div className="space-y-6">
               <div className="text-center">
-                <h2 className="text-2xl font-bold mb-2">Prayer Times Calendar</h2>
+                <h2 className="text-2xl font-bold mb-2">Calendar Sync</h2>
                 <p className="text-muted-foreground">
-                  View your prayer times, Islamic events, and personal tasks in one place
+                  Connect your external calendars to sync prayer times and tasks automatically
                 </p>
               </div>
               
-              <CalendarMonth />
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                <GoogleCalendarConnect />
+                <AppleCalendarExport />
+              </div>
             </div>
           </TabsContent>
 
