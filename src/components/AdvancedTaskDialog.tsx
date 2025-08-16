@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
+import { ModernDatePicker } from '@/components/ui/modern-date-picker'
 import { useTasks, Task } from '@/hooks/useTasks'
 import { toast } from '@/hooks/use-toast'
 
@@ -233,35 +234,18 @@ export function AdvancedTaskDialog({ children }: AdvancedTaskDialogProps) {
             </div>
           </div>
 
-          {/* Row 2: Due Date and Time */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="due_date" className="text-sm font-medium flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                Due Date
-              </Label>
-              <Input
-                id="due_date"
-                type="date"
-                value={formData.due_date}
-                onChange={(e) => setFormData(prev => ({ ...prev, due_date: e.target.value }))}
-                className="border-2 border-gray-200 focus:border-primary"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="due_time" className="text-sm font-medium flex items-center gap-2">
-                <Clock className="h-4 w-4" />
-                Due Time
-              </Label>
-              <Input
-                id="due_time"
-                type="time"
-                value={formData.due_time}
-                onChange={(e) => setFormData(prev => ({ ...prev, due_time: e.target.value }))}
-                className="border-2 border-gray-200 focus:border-primary"
-              />
-            </div>
+          {/* Due Date and Time */}
+          <div className="space-y-4">
+            <ModernDatePicker
+              label="Due Date"
+              value={formData.due_date}
+              onChange={(date) => setFormData(prev => ({ ...prev, due_date: date }))}
+              showTime={true}
+              timeValue={formData.due_time}
+              onTimeChange={(time) => setFormData(prev => ({ ...prev, due_time: time }))}
+              placeholder="Select due date"
+              className="w-full"
+            />
           </div>
 
           {/* Category */}

@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { ModernDatePicker } from '@/components/ui/modern-date-picker'
 import { Task } from '@/hooks/useTasks'
 import { useTaskStatuses } from '@/hooks/useTaskStatuses'
 import { SubtaskManager } from './SubtaskManager'
@@ -289,26 +290,17 @@ export function TaskDetailPanel({ task, isOpen, onClose, onUpdate, onDelete, onC
             </div>
             
             {/* Due Date & Time */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-3">
-                <label className="text-sm font-semibold text-gray-900">Due Date</label>
-                <Input
-                  type="date"
-                  value={formatDate(editedTask.due_date)}
-                  onChange={(e) => handleFieldChange('due_date', e.target.value || null)}
-                  className="h-12 text-base border-2 border-gray-200 bg-white text-gray-900"
-                />
-              </div>
-              
-              <div className="space-y-3">
-                <label className="text-sm font-semibold text-gray-900">Due Time</label>
-                <Input
-                  type="time"
-                  value={editedTask.due_time || ''}
-                  onChange={(e) => handleFieldChange('due_time', e.target.value || null)}
-                  className="h-12 text-base border-2 border-gray-200 bg-white text-gray-900"
-                />
-              </div>
+            <div className="space-y-3">
+              <ModernDatePicker
+                label="Due Date & Time"
+                value={formatDate(editedTask.due_date)}
+                onChange={(date) => handleFieldChange('due_date', date || null)}
+                showTime={true}
+                timeValue={editedTask.due_time || ''}
+                onTimeChange={(time) => handleFieldChange('due_time', time || null)}
+                placeholder="Set due date (optional)"
+                className="w-full"
+              />
             </div>
             
             {/* Description */}

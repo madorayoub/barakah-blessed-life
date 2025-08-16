@@ -230,6 +230,33 @@ Exact color specifications as per Phase 2 requirements
   }
 }
 
+/* Modern Date Picker Enhancements */
+@layer components {
+  .date-picker-calendar {
+    @apply shadow-xl border-2 border-border rounded-lg overflow-hidden;
+  }
+  
+  .date-picker-cell {
+    @apply min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg font-medium text-sm transition-all duration-200;
+  }
+  
+  .date-picker-cell:hover {
+    @apply bg-primary/10 text-primary cursor-pointer;
+  }
+  
+  .date-picker-cell.selected {
+    @apply bg-primary text-white;
+  }
+  
+  .date-picker-cell.today {
+    @apply ring-2 ring-primary ring-offset-2;
+  }
+  
+  .date-picker-navigation {
+    @apply h-8 w-8 hover:bg-primary/10 text-primary transition-colors;
+  }
+}
+
 @keyframes gentle-float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-10px); }
