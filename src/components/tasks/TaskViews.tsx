@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { TaskListView } from './TaskListView'
 import { TaskBoardView } from './TaskBoardView'
 import { TaskCalendarView } from './TaskCalendarView'
-import { Task } from '@/hooks/useTasks'
+import { Task } from '@/contexts/TasksContext'
 
 interface TaskViewsProps {
   tasks: Task[]

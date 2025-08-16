@@ -1,7 +1,7 @@
 import { LayoutDashboard, CheckSquare, Clock, Calendar, User, Check, X, BarChart3, BookOpen } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { usePrayerTimes } from "@/hooks/usePrayerTimes"
-import { useTasks } from "@/hooks/useTasks"
+import { useTasks } from "@/contexts/TasksContext"
 import { useAuth } from "@/hooks/useAuth"
 import { formatPrayerTime, getNextPrayer, getTimeUntilPrayer } from "@/lib/prayerTimes"
 import { getFairTrackingMessage, isFairTrackingActive } from "@/lib/fairTracking"

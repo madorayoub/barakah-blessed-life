@@ -1,0 +1,608 @@
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { supabase } from '@/integrations/supabase/client'
+import { useAuth } from '@/hooks/useAuth'
+import { toast } from '@/hooks/use-toast'
+
+export interface Task {
+  id: string
+  user_id: string
+  title: string
+  description?: string
+  priority: 'low' | 'medium' | 'high' | 'urgent'
+  status: 'pending' | 'in_progress' | 'completed'
+  due_date?: string
+  due_time?: string
+  category_id?: string
+  is_recurring?: boolean
+  recurring_pattern?: string
+  parent_task_id?: string
+  completed_at?: string
+  created_at: string
+  updated_at: string
+  category?: TaskCategory
+  subtasks?: Task[]
+}
+
+export interface TaskCategory {
+  id: string
+  user_id: string
+  name: string
+  color: string
+  icon?: string
+  is_default?: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface TaskTemplate {
+  id: string
+  name: string
+  description?: string
+  category: string
+  priority: 'low' | 'medium' | 'high' | 'urgent'
+  estimated_duration?: number
+  is_recurring?: boolean
+  recurring_pattern?: string
+  icon?: string
+  is_system?: boolean
+  is_public?: boolean
+  created_at: string
+}
+
+interface TasksContextType {
+  tasks: Task[]
+  categories: TaskCategory[]
+  templates: TaskTemplate[]
+  loading: boolean
+  createTask: (taskData: Omit<Task, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => Promise<Task | undefined>
+  updateTask: (taskId: string, updates: Partial<Task>) => Promise<Task | undefined>
+  deleteTask: (taskId: string) => Promise<void>
+  completeTask: (taskId: string) => Promise<void>
+  createTaskFromTemplate: (templateId: string, customData?: Partial<Task>) => Promise<Task | undefined>
+  createCategory: (categoryData: Omit<TaskCategory, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => Promise<void>
+  getTodaysTasks: () => Task[]
+  getCompletedTasksToday: () => Task[]
+  getTasksByCategory: (categoryId: string) => Task[]
+  calculateTaskStreak: () => number
+}
+
+const TasksContext = createContext<TasksContextType | undefined>(undefined)
+
+export function TasksProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth()
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [categories, setCategories] = useState<TaskCategory[]>([])
+  const [templates, setTemplates] = useState<TaskTemplate[]>([])
+  const [loading, setLoading] = useState(true)
+
+  // Load user's tasks
+  useEffect(() => {
+    async function loadTasks() {
+      if (!user) {
+        setTasks([])
+        return
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('tasks')
+          .select(`
+            *,
+            category:task_categories(*),
+            subtasks:tasks!parent_task_id(*)
+          `)
+          .eq('user_id', user.id)
+          .is('parent_task_id', null)
+          .order('created_at', { ascending: false })
+
+        if (error) {
+          console.error('Error loading tasks:', error)
+          return
+        }
+
+        const formattedTasks = (data as any[])?.map(task => ({
+          ...task,
+          priority: task.priority as Task['priority'],
+          status: task.status as Task['status'],
+          subtasks: Array.isArray(task.subtasks) ? task.subtasks.map((sub: any) => ({
+            ...sub,
+            priority: sub.priority as Task['priority'],
+            status: sub.status as Task['status'],
+            subtasks: []
+          })) : []
+        })) || []
+
+        setTasks(formattedTasks)
+        console.log('🔄 CONTEXT: Loaded tasks from database:', formattedTasks.length)
+      } catch (error) {
+        console.error('Error loading tasks:', error)
+      }
+    }
+
+    loadTasks()
+  }, [user])
+
+  // Real-time subscription for tasks
+  useEffect(() => {
+    if (!user) return
+
+    console.log('🔄 CONTEXT: Setting up real-time subscription')
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'tasks',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('🔄 CONTEXT: Real-time task change:', payload.eventType)
+          
+          if (payload.eventType === 'INSERT') {
+            const newTask = payload.new as any
+            // Only add if it's a parent task (not a subtask) and not already in state
+            if (!newTask.parent_task_id) {
+              setTasks(prev => {
+                // Check if task already exists (from optimistic update)
+                const exists = prev.some(task => task.id === newTask.id)
+                if (exists) return prev
+                
+                const formattedTask = {
+                  ...newTask,
+                  priority: newTask.priority as Task['priority'],
+                  status: newTask.status as Task['status'],
+                  subtasks: []
+                } as Task
+                return [formattedTask, ...prev]
+              })
+            }
+          } else if (payload.eventType === 'UPDATE') {
+            const updatedTask = payload.new as any
+            setTasks(prev => prev.map(task => {
+              if (task.id === updatedTask.id) {
+                return {
+                  ...task,
+                  ...updatedTask,
+                  priority: updatedTask.priority as Task['priority'],
+                  status: updatedTask.status as Task['status'],
+                  subtasks: task.subtasks || []
+                } as Task
+              }
+              return task
+            }))
+          } else if (payload.eventType === 'DELETE') {
+            const deletedTask = payload.old as any
+            setTasks(prev => prev.filter(task => task.id !== deletedTask.id))
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [user])
+
+  // Load categories and templates
+  useEffect(() => {
+    async function loadCategories() {
+      if (!user) return
+
+      try {
+        const { data, error } = await supabase
+          .from('task_categories')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('name')
+
+        if (error) {
+          console.error('Error loading categories:', error)
+          return
+        }
+
+        setCategories(data || [])
+      } catch (error) {
+        console.error('Error loading categories:', error)
+      }
+    }
+
+    async function loadTemplates() {
+      try {
+        let difficultyMode = 'basic'
+        if (user) {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('difficulty_mode')
+            .eq('user_id', user.id)
+            .maybeSingle()
+          
+          difficultyMode = profileData?.difficulty_mode || 'basic'
+        }
+
+        const { data, error } = await supabase
+          .from('task_templates')
+          .select('*')
+          .order('name')
+
+        if (error) {
+          console.error('Error loading templates:', error)
+          return
+        }
+
+        // Filter templates based on difficulty mode
+        let filteredTemplates = data || []
+        if (difficultyMode === 'basic') {
+          // In basic mode, only show essential worship tasks
+          filteredTemplates = filteredTemplates.filter(template => 
+            ['Morning Dhikr', 'Evening Dhikr', 'Quran Reading', 'Friday Prayer'].includes(template.name)
+          )
+        }
+
+        setTemplates(filteredTemplates.map(template => ({
+          ...template,
+          priority: template.priority as 'low' | 'medium' | 'high' | 'urgent'
+        })))
+      } catch (error) {
+        console.error('Error loading templates:', error)
+      }
+    }
+
+    loadCategories()
+    loadTemplates()
+    setLoading(false)
+  }, [user])
+
+  const createTask = async (taskData: Omit<Task, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
+    if (!user) return
+
+    // Clean and validate task data
+    const cleanTaskData = { ...taskData }
+    
+    // Remove undefined/null fields that shouldn't be sent to database
+    Object.keys(cleanTaskData).forEach(key => {
+      const value = cleanTaskData[key as keyof typeof cleanTaskData]
+      if (value === undefined || value === null || value === '') {
+        delete cleanTaskData[key as keyof typeof cleanTaskData]
+      }
+    })
+
+    try {
+      const { data, error } = await supabase
+        .from('tasks')
+        .insert({
+          ...cleanTaskData,
+          user_id: user.id
+        })
+        .select(`
+          *,
+          category:task_categories(*),
+          subtasks:tasks!parent_task_id(*)
+        `)
+        .single()
+
+      if (error) {
+        console.error('Error creating task:', error)
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to create task"
+        })
+        return
+      }
+
+      const newTask = {
+        ...data,
+        priority: data.priority as Task['priority'],
+        status: data.status as Task['status'],
+        subtasks: Array.isArray(data.subtasks) ? data.subtasks : []
+      } as Task
+
+      // 🚀 CONTEXT NUCLEAR UPDATE: JSON Deep Copy for Create
+      if (!cleanTaskData.parent_task_id) {
+        setTasks(prevTasks => {
+          console.log('✅ CONTEXT NUCLEAR CREATE - Task:', newTask.title)
+          console.log('✅ Tasks BEFORE create:', prevTasks.length)
+          
+          // Deep copy existing tasks + add new task
+          const deepCopiedTasks = JSON.parse(JSON.stringify(prevTasks))
+          const finalTasks = [newTask, ...deepCopiedTasks]
+          
+          console.log('✅ Tasks AFTER create:', finalTasks.length)
+          console.log('✅ CONTEXT NUCLEAR: Created completely new array!')
+          
+          return finalTasks
+        })
+      } else {
+        // Handle subtask creation
+        setTasks(prevTasks => {
+          const deepCopiedTasks = JSON.parse(JSON.stringify(prevTasks))
+          const finalTasks = deepCopiedTasks.map((task: Task) => {
+            if (task.id === cleanTaskData.parent_task_id) {
+              return {
+                ...task,
+                subtasks: [...(task.subtasks || []), newTask]
+              }
+            }
+            return task
+          })
+          return finalTasks
+        })
+      }
+
+      console.log('✅ CONTEXT CREATE COMPLETE')
+      return newTask
+    } catch (error) {
+      console.error('Error creating task:', error)
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to create task"
+      })
+    }
+  }
+
+  const deleteTask = async (taskId: string) => {
+    if (!user) return
+
+    try {
+      console.log('🔥 CONTEXT DELETE START - Task ID:', taskId)
+      console.log('🔥 Current tasks:', tasks.length)
+
+      // 🚀 CONTEXT NUCLEAR UPDATE: JSON Deep Copy for Delete
+      setTasks(prevTasks => {
+        console.log('🔥 CONTEXT Tasks BEFORE delete:', prevTasks.length)
+        
+        // Deep copy the entire array
+        const deepCopiedTasks = JSON.parse(JSON.stringify(prevTasks))
+        
+        // Filter out deleted task
+        const filteredTasks = deepCopiedTasks.filter((task: Task) => task.id !== taskId)
+        
+        // Remove from subtasks too
+        const finalTasks = filteredTasks.map((task: Task) => ({
+          ...task,
+          subtasks: (task.subtasks || []).filter(subtask => subtask.id !== taskId)
+        }))
+        
+        console.log('🔥 CONTEXT Tasks AFTER delete:', finalTasks.length)
+        console.log('🔥 CONTEXT NUCLEAR: Created completely new array!')
+        
+        return finalTasks
+      })
+
+      const { error } = await supabase
+        .from('tasks')
+        .delete()
+        .eq('id', taskId)
+        .eq('user_id', user.id)
+
+      if (error) {
+        console.error('Error deleting task:', error)
+        // Could revert optimistic update here if needed
+        return
+      }
+
+      console.log('🔥 CONTEXT DELETE COMPLETE')
+    } catch (error) {
+      console.error('Error deleting task:', error)
+    }
+  }
+
+  const updateTask = async (taskId: string, updates: Partial<Task>) => {
+    if (!user) return
+
+    try {
+      const updateData = { ...updates }
+      delete updateData.id
+      delete updateData.user_id
+      delete updateData.created_at
+      delete updateData.updated_at
+
+      const { data, error } = await supabase
+        .from('tasks')
+        .update(updateData)
+        .eq('id', taskId)
+        .eq('user_id', user.id)
+        .select(`
+          *,
+          category:task_categories(*),
+          subtasks:tasks!parent_task_id(*)
+        `)
+        .single()
+
+      if (error) {
+        console.error('Error updating task:', error)
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to update task"
+        })
+        return
+      }
+
+      const updatedTask = {
+        ...data,
+        priority: data.priority as Task['priority'],
+        status: data.status as Task['status'],
+        subtasks: Array.isArray(data.subtasks) ? data.subtasks : []
+      } as Task
+
+      // Nuclear update for task updates
+      setTasks(prev => {
+        const deepCopied = JSON.parse(JSON.stringify(prev))
+        return deepCopied.map((task: Task) => {
+          if (task.id === taskId) {
+            return { ...task, ...updatedTask }
+          }
+          return {
+            ...task,
+            subtasks: (task.subtasks || []).map(subtask => 
+              subtask.id === taskId ? { ...subtask, ...updatedTask } : subtask
+            )
+          }
+        })
+      })
+
+      return updatedTask
+    } catch (error) {
+      console.error('Error updating task:', error)
+    }
+  }
+
+  const completeTask = async (taskId: string) => {
+    const completed_at = new Date().toISOString()
+    
+    // Nuclear optimistic update
+    setTasks(prev => {
+      const deepCopied = JSON.parse(JSON.stringify(prev))
+      return deepCopied.map((t: Task) => {
+        if (t.id === taskId) {
+          return { ...t, status: 'completed' as Task['status'], completed_at }
+        }
+        return {
+          ...t,
+          subtasks: (t.subtasks || []).map(subtask => 
+            subtask.id === taskId 
+              ? { ...subtask, status: 'completed' as Task['status'], completed_at }
+              : subtask
+          )
+        }
+      })
+    })
+
+    const result = await updateTask(taskId, { 
+      status: 'completed',
+      completed_at
+    })
+
+    if (result) {
+      toast({
+        title: "Task completed!",
+        description: "Great job! Keep up the good work.",
+      })
+    }
+  }
+
+  const createTaskFromTemplate = async (templateId: string, customData?: Partial<Task>) => {
+    const template = templates.find(t => t.id === templateId)
+    if (!template) return
+
+    const taskData = {
+      title: template.name,
+      description: template.description,
+      priority: template.priority,
+      status: 'pending' as const,
+      category_id: customData?.category_id,
+      due_date: customData?.due_date,
+      due_time: customData?.due_time,
+      is_recurring: template.is_recurring || false,
+      recurring_pattern: template.recurring_pattern,
+      ...customData
+    }
+
+    return await createTask(taskData)
+  }
+
+  const createCategory = async (categoryData: Omit<TaskCategory, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
+    if (!user) return
+
+    try {
+      const { data, error } = await supabase
+        .from('task_categories')
+        .insert({
+          ...categoryData,
+          user_id: user.id
+        })
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Error creating category:', error)
+        return
+      }
+
+      setCategories(prev => [...prev, data])
+    } catch (error) {
+      console.error('Error creating category:', error)
+    }
+  }
+
+  const getTodaysTasks = () => {
+    const today = new Date().toISOString().split('T')[0]
+    return tasks.filter(task => 
+      task.due_date === today && task.status !== 'completed'
+    )
+  }
+
+  const getCompletedTasksToday = () => {
+    const today = new Date().toISOString().split('T')[0]
+    return tasks.filter(task => {
+      if (!task.completed_at) return false
+      const completedDate = new Date(task.completed_at).toISOString().split('T')[0]
+      return completedDate === today
+    })
+  }
+
+  const getTasksByCategory = (categoryId: string) => {
+    return tasks.filter(task => task.category_id === categoryId)
+  }
+
+  const calculateTaskStreak = () => {
+    if (tasks.length === 0) return 0
+    
+    let streak = 0
+    let currentDate = new Date()
+    currentDate.setHours(0, 0, 0, 0)
+    
+    while (true) {
+      const dateStr = currentDate.toISOString().split('T')[0]
+      const tasksOnDate = tasks.filter(task => {
+        if (!task.completed_at) return false
+        const completedDate = new Date(task.completed_at).toISOString().split('T')[0]
+        return completedDate === dateStr
+      })
+      
+      if (tasksOnDate.length > 0) {
+        streak++
+        currentDate.setDate(currentDate.getDate() - 1)
+      } else {
+        break
+      }
+    }
+    
+    return streak
+  }
+
+  const value: TasksContextType = {
+    tasks,
+    categories,
+    templates,
+    loading,
+    createTask,
+    updateTask,
+    deleteTask,
+    completeTask,
+    createTaskFromTemplate,
+    createCategory,
+    getTodaysTasks,
+    getCompletedTasksToday,
+    getTasksByCategory,
+    calculateTaskStreak
+  }
+
+  return (
+    <TasksContext.Provider value={value}>
+      {children}
+    </TasksContext.Provider>
+  )
+}
+
+export function useTasks() {
+  const context = useContext(TasksContext)
+  if (context === undefined) {
+    throw new Error('useTasks must be used within a TasksProvider')
+  }
+  return context
+}

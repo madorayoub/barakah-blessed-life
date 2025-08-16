@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Task } from '@/hooks/useTasks'
+import { Task } from '@/contexts/TasksContext'
 import { cn } from '@/lib/utils'
 import { memo, useCallback } from 'react'
 

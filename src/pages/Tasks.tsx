@@ -2,7 +2,7 @@ import { TaskViews } from '@/components/tasks/TaskViews'
 import { TaskDetailSidebar } from '@/components/TaskDetailSidebar'
 import { TaskCompletionReward } from '@/components/TaskCompletionReward'
 import { RecurringTaskManager } from '@/components/RecurringTaskManager'
-import { useTasks } from '@/hooks/useTasks'
+import { useTasks } from '@/contexts/TasksContext'
 import { useState } from 'react'
 import { AppHeader } from '@/components/AppHeader'
 
@@ -34,10 +34,10 @@ const Tasks = () => {
 
   const handleTaskComplete = async (taskId: string) => {
     const task = tasks.find(t => t.id === taskId)
-    const result = await completeTask(taskId)
+    await completeTask(taskId)
     
-    if (result && task) {
-      const streak = calculateTaskStreak(task.title, [])
+    if (task) {
+      const streak = calculateTaskStreak()
       const isIslamicTask = task.title.toLowerCase().includes('prayer') || 
                           task.title.toLowerCase().includes('dhikr') ||
                           task.title.toLowerCase().includes('quran')

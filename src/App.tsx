@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
+import { TasksProvider } from "@/contexts/TasksContext";
 import { Onboarding } from "@/components/Onboarding";
 import Index from "./pages/Index";
 import Demo from "./pages/Demo";
@@ -43,11 +44,12 @@ const App = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TaskAutoPopulator />
-        <TooltipProvider>
-          <Toaster />
-          <BrowserRouter 
+        <AuthProvider>
+          <TasksProvider>
+            <TaskAutoPopulator />
+            <TooltipProvider>
+              <Toaster />
+              <BrowserRouter
             future={{
               v7_startTransition: true,
               v7_relativeSplatPath: true
@@ -89,9 +91,10 @@ const App = () => {
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
           </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-      </AuthProvider>
+              </BrowserRouter>
+            </TooltipProvider>
+          </TasksProvider>
+        </AuthProvider>
     </QueryClientProvider>
   )
 };

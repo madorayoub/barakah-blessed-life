@@ -8,7 +8,7 @@ import EnhancedTaskCard from './EnhancedTaskCard'
 import { TaskDetailPanel } from './TaskDetailPanel'
 import { AddColumnButton } from './AddColumnButton'
 import { BoardTips } from './BoardTips'
-import { Task } from '@/hooks/useTasks'
+import { Task } from '@/contexts/TasksContext'
 import { useTaskStatuses } from '@/hooks/useTaskStatuses'
 
 interface TaskBoardViewProps {
