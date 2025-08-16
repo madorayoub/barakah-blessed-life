@@ -462,30 +462,6 @@ const Settings = () => {
             </CardContent>
           </Card>
 
-          {/* Account Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Account Actions
-              </CardTitle>
-              <CardDescription>
-                Manage your account settings
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Sign Out</p>
-                  <p className="text-sm text-muted-foreground">Sign out of your account</p>
-                </div>
-                <Button onClick={signOut} variant="outline">
-                  Sign Out
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Help & Support */}
           <Card>
             <CardHeader>
@@ -550,6 +526,37 @@ const Settings = () => {
                     Get Support
                   </Button>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Account Actions */}
+          <Card className="border-destructive/20">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Shield className="h-5 w-5 text-destructive" />
+                Account Actions
+              </CardTitle>
+              <CardDescription>
+                Manage your account security and session
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between p-4 border border-destructive/20 rounded-lg bg-destructive/5">
+                <div>
+                  <h4 className="font-medium">Sign Out</h4>
+                  <p className="text-sm text-muted-foreground">
+                    End your current session and return to login
+                  </p>
+                </div>
+                <Button
+                  onClick={signOut}
+                  variant="destructive"
+                  size="sm"
+                  className="ml-4"
+                >
+                  Sign Out
+                </Button>
               </div>
             </CardContent>
           </Card>
