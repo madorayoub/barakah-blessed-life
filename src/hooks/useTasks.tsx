@@ -258,8 +258,15 @@ export function useTasks() {
     // Clean the taskData to ensure no unwanted parent_task_id
     const cleanTaskData = { ...taskData }
     
-    // If parent_task_id is empty, null, undefined, or just whitespace, remove it completely
-    if (!cleanTaskData.parent_task_id || cleanTaskData.parent_task_id.trim() === '') {
+    // STRICT RULE: Only allow parent_task_id if it's being created from a subtask context
+    // Remove parent_task_id completely for regular task creation
+    // Only legitimate subtasks should have this field
+    if (cleanTaskData.parent_task_id) {
+      console.log('⚠️ WARNING: parent_task_id detected in task creation:', cleanTaskData.parent_task_id)
+      console.log('Task data:', cleanTaskData)
+      console.log('This might be a bug - regular tasks should not have parent_task_id')
+      
+      // For now, remove it completely to fix the notification issue
       delete cleanTaskData.parent_task_id
     }
 

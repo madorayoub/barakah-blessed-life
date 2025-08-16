@@ -128,7 +128,7 @@ export function TaskDetailPanel({ task, isOpen, onClose, onUpdate, onDelete, onC
       parent_task_id: task.id
     }
     
-    // Create the subtask via the proper create function
+    // Create the subtask via the proper create function - explicitly mark as subtask
     await onCreate(subtaskData)
     
     // The real-time subscription should update the parent task automatically
