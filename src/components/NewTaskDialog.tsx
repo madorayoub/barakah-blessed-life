@@ -29,9 +29,11 @@ interface NewTaskDialogProps {
 }
 
 export function NewTaskDialog({ children }: NewTaskDialogProps) {
-  const { createTask, createTaskFromTemplate, categories, templates } = useTasks()
+  const { createTask, createTaskFromTemplate, createCategory, categories, templates } = useTasks()
   const [open, setOpen] = useState(false)
   const [isTemplate, setIsTemplate] = useState(false)
+  const [showNewCategory, setShowNewCategory] = useState(false)
+  const [newCategoryName, setNewCategoryName] = useState('')
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -72,6 +74,27 @@ export function NewTaskDialog({ children }: NewTaskDialogProps) {
   const handleTemplateSelect = async (template: TaskTemplate) => {
     await createTaskFromTemplate(template)
     setOpen(false)
+  }
+
+  const handleCreateCategory = async () => {
+    if (!newCategoryName.trim()) return
+
+    // Generate a random color for the new category
+    const colors = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#84cc16', '#f97316']
+    const randomColor = colors[Math.floor(Math.random() * colors.length)]
+
+    const newCategory = await createCategory({
+      name: newCategoryName,
+      color: randomColor,
+      icon: 'circle',
+      is_default: false
+    })
+
+    if (newCategory) {
+      setFormData(prev => ({ ...prev, category_id: newCategory.id }))
+      setNewCategoryName('')
+      setShowNewCategory(false)
+    }
   }
 
   const getPriorityColor = (priority: string) => {
@@ -213,21 +236,80 @@ export function NewTaskDialog({ children }: NewTaskDialogProps) {
 
                 <div className="space-y-2">
                   <Label htmlFor="category">Category</Label>
-                  <Select
-                    value={formData.category_id}
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, category_id: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map((category) => (
-                        <SelectItem key={category.id} value={category.id}>
-                          {category.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="space-y-2">
+                    <Select
+                      value={formData.category_id}
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, category_id: value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map((category) => (
+                          <SelectItem key={category.id} value={category.id}>
+                            <div className="flex items-center gap-2">
+                              <div 
+                                className="w-3 h-3 rounded-full" 
+                                style={{ backgroundColor: category.color }}
+                              />
+                              {category.name}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    
+                    {/* Add New Category */}
+                    {!showNewCategory ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowNewCategory(true)}
+                        className="w-full"
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add New Category
+                      </Button>
+                    ) : (
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Category name"
+                          value={newCategoryName}
+                          onChange={(e) => setNewCategoryName(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault()
+                              handleCreateCategory()
+                            }
+                            if (e.key === 'Escape') {
+                              setShowNewCategory(false)
+                              setNewCategoryName('')
+                            }
+                          }}
+                        />
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={handleCreateCategory}
+                          disabled={!newCategoryName.trim()}
+                        >
+                          Add
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setShowNewCategory(false)
+                            setNewCategoryName('')
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 

@@ -388,6 +388,46 @@ export function useTasks() {
     return tasks.filter(task => task.category_id === categoryId)
   }
 
+  const createCategory = async (categoryData: Omit<TaskCategory, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
+    if (!user) return
+
+    try {
+      const { data, error } = await supabase
+        .from('task_categories')
+        .insert({
+          ...categoryData,
+          user_id: user.id
+        })
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Error creating category:', error)
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to create category"
+        })
+        return
+      }
+
+      setCategories(prev => [...prev, data as TaskCategory])
+      toast({
+        title: "Category created",
+        description: `"${categoryData.name}" category has been added`
+      })
+
+      return data as TaskCategory
+    } catch (error) {
+      console.error('Error creating category:', error)
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to create category"
+      })
+    }
+  }
+
   return {
     tasks,
     categories,
@@ -398,6 +438,7 @@ export function useTasks() {
     completeTask,
     deleteTask,
     createTaskFromTemplate,
+    createCategory,
     getTodaysTasks,
     getCompletedTasksToday,
     getTasksByCategory,
