@@ -8,6 +8,7 @@ import { EnhancedTaskCard } from './EnhancedTaskCard'
 import { QuickAddTask } from './QuickAddTask'
 import { TaskDetailPanel } from './TaskDetailPanel'
 import { AddColumnButton } from './AddColumnButton'
+import { BoardTips } from './BoardTips'
 import { Task } from '@/hooks/useTasks'
 import { useTaskStatuses } from '@/hooks/useTaskStatuses'
 
@@ -145,10 +146,18 @@ export function TaskBoardView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit,
                 
                 {columnTasks.length === 0 && (
                   <div className="text-center py-8 text-muted-foreground">
-                    <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-muted flex items-center justify-center">
-                      <Plus className="h-6 w-6" />
-                    </div>
-                    <p className="text-sm">No tasks in {column.title.toLowerCase()}</p>
+                    <NewTaskDialog>
+                      <Button 
+                        variant="ghost" 
+                        size="lg"
+                        className="w-full h-20 border-2 border-dashed border-primary/30 hover:border-primary/50 hover:bg-primary/5 flex-col gap-2"
+                      >
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                          <Plus className="h-4 w-4 text-primary" />
+                        </div>
+                        <span className="text-sm font-medium text-muted-foreground">Add first task</span>
+                      </Button>
+                    </NewTaskDialog>
                   </div>
                 )}
               </CardContent>
@@ -163,23 +172,7 @@ export function TaskBoardView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit,
       </div>
 
       {/* Board Tips */}
-      <Card className="bg-primary/5 border-primary/20">
-        <CardContent className="p-4">
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <Plus className="h-4 w-4 text-primary" />
-            </div>
-            <div>
-              <h4 className="font-medium text-sm mb-1">Quick Board Tips</h4>
-              <ul className="text-xs text-muted-foreground space-y-1">
-                <li>• Click any task card to view details and edit</li>
-                <li>• Add tasks directly to specific columns</li>
-                <li>• Use priority flags to organize important tasks</li>
-              </ul>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <BoardTips />
 
       {/* Task Detail Panel */}
       <TaskDetailPanel
