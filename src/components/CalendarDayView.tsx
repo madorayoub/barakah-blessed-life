@@ -1,13 +1,19 @@
-import { useState } from 'react'
-import { ChevronLeft, ChevronRight, Clock, CheckCircle, Settings } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { ChevronLeft, ChevronRight, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { usePrayerTimes } from '@/hooks/usePrayerTimes'
 import { useTasks } from '@/hooks/useTasks'
-import { calculatePrayerTimes, formatPrayerTime } from '@/lib/prayerTimes'
+import { calculatePrayerTimes } from '@/lib/prayerTimes'
 import { GoogleCalendarConnect } from '@/components/GoogleCalendarConnect'
 import { AppleCalendarExport } from '@/components/AppleCalendarExport'
+import ThemeSelector, { ThemeType, getRecommendedTheme } from '@/components/calendar-themes/ThemeSelector'
+import TimelineView from '@/components/calendar-themes/TimelineView'
+import AgendaView from '@/components/calendar-themes/AgendaView'
+import CardsView from '@/components/calendar-themes/CardsView'
+import ZenView from '@/components/calendar-themes/ZenView'
+import BlocksView from '@/components/calendar-themes/BlocksView'
 
 interface CalendarEvent {
   id: string
@@ -20,8 +26,25 @@ interface CalendarEvent {
 
 const CalendarDayView = () => {
   const [currentDate, setCurrentDate] = useState(new Date())
+  const [currentTheme, setCurrentTheme] = useState<ThemeType>('agenda')
   const { prayerTimes, settings, location, markPrayerComplete, isPrayerComplete } = usePrayerTimes()
   const { tasks } = useTasks()
+
+  // Load saved theme or use recommended theme
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('calendar-theme') as ThemeType
+    if (savedTheme) {
+      setCurrentTheme(savedTheme)
+    } else {
+      setCurrentTheme(getRecommendedTheme())
+    }
+  }, [])
+
+  // Save theme preference
+  const handleThemeChange = (theme: ThemeType) => {
+    setCurrentTheme(theme)
+    localStorage.setItem('calendar-theme', theme)
+  }
 
   // Generate events for the current date
   const getEventsForDate = (date: Date): CalendarEvent[] => {
@@ -104,21 +127,37 @@ const CalendarDayView = () => {
   }
 
   const events = getEventsForDate(currentDate)
-  const prayers = events.filter(e => e.type === 'prayer')
-  const tasksForDay = events.filter(e => e.type === 'task')
+
+  const renderThemeView = () => {
+    const props = {
+      date: currentDate,
+      events,
+      onPrayerComplete: (prayerName: string) => {
+        markPrayerComplete(prayerName)
+      }
+    }
+
+    switch (currentTheme) {
+      case 'timeline':
+        return <TimelineView {...props} />
+      case 'agenda':
+        return <AgendaView {...props} />
+      case 'cards':
+        return <CardsView {...props} />
+      case 'zen':
+        return <ZenView {...props} />
+      case 'blocks':
+        return <BlocksView {...props} />
+      default:
+        return <AgendaView {...props} />
+    }
+  }
 
   return (
     <Card className="w-full">
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-xl">
-            {currentDate.toLocaleDateString('en-US', { 
-              weekday: 'long', 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
-            })}
-          </CardTitle>
+        <div className="flex items-center justify-between mb-4">
+          {/* Navigation Controls */}
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
@@ -141,120 +180,44 @@ const CalendarDayView = () => {
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
-            
-            {/* Sync Button */}
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="default" size="sm" className="ml-2">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Sync
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                  <DialogTitle>Calendar Sync</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-6">
-                  <p className="text-muted-foreground">
-                    Connect your external calendars to sync prayer times and tasks automatically.
-                  </p>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <GoogleCalendarConnect />
-                    <AppleCalendarExport />
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
           </div>
+          
+          {/* Sync Button */}
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Settings className="h-4 w-4 mr-2" />
+                Sync
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Calendar Sync</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-6">
+                <p className="text-muted-foreground">
+                  Connect your external calendars to sync prayer times and tasks automatically.
+                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <GoogleCalendarConnect />
+                  <AppleCalendarExport />
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
+
+        {/* Theme Selector */}
+        <ThemeSelector 
+          currentTheme={currentTheme} 
+          onThemeChange={handleThemeChange} 
+        />
       </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Prayer Times Section */}
-        <div>
-          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <Clock className="h-5 w-5 text-emerald-600" />
-            Prayer Times
-            {isToday(currentDate) && (
-              <span className="text-sm font-normal text-muted-foreground">- Today</span>
-            )}
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {prayers.map(prayer => (
-              <Card 
-                key={prayer.id} 
-                className={`p-4 ${
-                  prayer.isNext 
-                    ? 'ring-2 ring-emerald-500 bg-emerald-50' 
-                    : prayer.completed 
-                      ? 'bg-emerald-50 opacity-75' 
-                      : 'bg-card'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="font-medium">{prayer.title}</div>
-                    {prayer.time && (
-                      <div className="text-sm text-muted-foreground">
-                        {formatPrayerTime(prayer.time)}
-                      </div>
-                    )}
-                    {prayer.isNext && (
-                      <div className="text-xs text-emerald-600 font-medium mt-1">
-                        Next Prayer
-                      </div>
-                    )}
-                  </div>
-                  {prayer.completed ? (
-                    <CheckCircle className="h-5 w-5 text-emerald-600" />
-                  ) : (
-                    <div className="w-5 h-5 rounded-full border-2 border-emerald-300" />
-                  )}
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
 
-        {/* Tasks Section */}
-        {tasksForDay.length > 0 && (
-          <div>
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-blue-600" />
-              Tasks
-            </h3>
-            <div className="space-y-2">
-              {tasksForDay.map(task => (
-                <Card key={task.id} className={`p-3 ${task.completed ? 'bg-blue-50 opacity-75' : 'bg-card'}`}>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">{task.title}</div>
-                      {task.time && (
-                        <div className="text-sm text-muted-foreground">
-                          Due: {formatPrayerTime(task.time)}
-                        </div>
-                      )}
-                    </div>
-                    {task.completed ? (
-                      <CheckCircle className="h-5 w-5 text-blue-600" />
-                    ) : (
-                      <div className="w-5 h-5 rounded-full border-2 border-blue-300" />
-                    )}
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Empty State */}
-        {prayers.length === 0 && tasksForDay.length === 0 && (
-          <div className="text-center py-8 text-muted-foreground">
-            <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>No prayer times or tasks for this date.</p>
-            <p className="text-sm">Check your location and prayer settings.</p>
-          </div>
-        )}
+      <CardContent>
+        {/* Theme-based Content */}
+        {renderThemeView()}
       </CardContent>
     </Card>
   )
