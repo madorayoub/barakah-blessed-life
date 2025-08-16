@@ -16,9 +16,10 @@ interface BlocksViewProps {
   date: Date
   events: CalendarEvent[]
   onPrayerComplete?: (prayerName: string) => void
+  onEventClick?: (event: CalendarEvent) => void
 }
 
-const BlocksView = ({ date, events }: BlocksViewProps) => {
+const BlocksView = ({ date, events, onEventClick }: BlocksViewProps) => {
   // Generate time blocks covering the full day
   const generateTimeBlocks = () => {
     const blocks = []
@@ -250,14 +251,15 @@ const BlocksView = ({ date, events }: BlocksViewProps) => {
                   <div 
                     key={event.id}
                     className={`
-                      flex items-center justify-between p-3 rounded-lg border transition-all
+                      flex items-center justify-between p-3 rounded-lg border transition-all cursor-pointer
                       ${event.completed 
-                        ? 'bg-emerald-100 border-emerald-200 opacity-75' 
+                        ? 'bg-emerald-100 border-emerald-200 opacity-75 hover:opacity-90' 
                         : event.isNext
-                          ? 'bg-amber-100 border-amber-200'
-                          : 'bg-white border-gray-200 hover:shadow-sm'
+                          ? 'bg-amber-100 border-amber-200 hover:bg-amber-150'
+                          : 'bg-white border-gray-200 hover:shadow-sm hover:bg-gray-50'
                       }
                     `}
+                    onClick={() => onEventClick?.(event)}
                   >
                     <div className="flex items-center gap-3">
                       <span className="text-xl">{getEventIcon(event)}</span>

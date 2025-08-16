@@ -15,9 +15,10 @@ interface TimelineViewProps {
   date: Date
   events: CalendarEvent[]
   onPrayerComplete?: (prayerName: string) => void
+  onEventClick?: (event: CalendarEvent) => void
 }
 
-const TimelineView = ({ date, events }: TimelineViewProps) => {
+const TimelineView = ({ date, events, onEventClick }: TimelineViewProps) => {
   // Generate hourly slots from 4 AM to 11 PM
   const hours = Array.from({ length: 19 }, (_, i) => i + 4)
   const now = new Date()
@@ -83,7 +84,7 @@ const TimelineView = ({ date, events }: TimelineViewProps) => {
                       <Card 
                         key={event.id}
                         className={`
-                          p-3 transition-all
+                          p-3 transition-all cursor-pointer hover:shadow-md
                           ${event.type === 'prayer' 
                             ? event.isNext 
                               ? 'bg-emerald-100 border-emerald-300 shadow-sm' 
@@ -95,6 +96,7 @@ const TimelineView = ({ date, events }: TimelineViewProps) => {
                               : 'bg-blue-50 border-blue-200'
                           }
                         `}
+                        onClick={() => onEventClick?.(event)}
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">

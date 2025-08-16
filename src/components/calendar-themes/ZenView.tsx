@@ -15,9 +15,10 @@ interface ZenViewProps {
   date: Date
   events: CalendarEvent[]
   onPrayerComplete?: (prayerName: string) => void
+  onEventClick?: (event: CalendarEvent) => void
 }
 
-const ZenView = ({ date, events }: ZenViewProps) => {
+const ZenView = ({ date, events, onEventClick }: ZenViewProps) => {
   const prayers = events.filter(e => e.type === 'prayer')
   const tasks = events.filter(e => e.type === 'task')
 
@@ -37,15 +38,18 @@ const ZenView = ({ date, events }: ZenViewProps) => {
   }
 
   const PrayerItem = ({ prayer }: { prayer: CalendarEvent }) => (
-    <div className={`
-      flex items-center justify-between py-3 px-4 rounded-lg transition-all
-      ${prayer.isNext 
-        ? 'bg-amber-50 border border-amber-200' 
-        : prayer.completed 
-          ? 'opacity-60' 
-          : 'hover:bg-muted/30'
-      }
-    `}>
+    <div 
+      className={`
+        flex items-center justify-between py-3 px-4 rounded-lg transition-all cursor-pointer
+        ${prayer.isNext 
+          ? 'bg-amber-50 border border-amber-200 hover:bg-amber-100' 
+          : prayer.completed 
+            ? 'opacity-60 hover:opacity-80' 
+            : 'hover:bg-muted/50'
+        }
+      `}
+      onClick={() => onEventClick?.(prayer)}
+    >
       <div className="flex items-center gap-3">
         <span className="text-xl">{getPrayerIcon(prayer.title)}</span>
         <div>
@@ -150,7 +154,11 @@ const ZenView = ({ date, events }: ZenViewProps) => {
             </h3>
             <div className="space-y-2">
               {tasks.map(task => (
-                <div key={task.id} className="flex items-center justify-between py-2 px-3 rounded">
+                <div 
+                  key={task.id} 
+                  className="flex items-center justify-between py-2 px-3 rounded cursor-pointer hover:bg-muted/50 transition-all"
+                  onClick={() => onEventClick?.(task)}
+                >
                   <div className="flex items-center gap-3">
                     <span className="text-lg">📋</span>
                     <div className={`font-medium ${task.completed ? 'line-through opacity-60' : ''}`}>
