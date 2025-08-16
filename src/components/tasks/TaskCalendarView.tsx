@@ -13,10 +13,11 @@ interface TaskCalendarViewProps {
   onTaskComplete: (taskId: string) => void
   onTaskDelete: (taskId: string) => void
   onTaskEdit: (task: Task) => void
+  onTaskCreate: (taskData: Omit<Task, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => void
   loading: boolean
 }
 
-export function TaskCalendarView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit, loading }: TaskCalendarViewProps) {
+export function TaskCalendarView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit, onTaskCreate, loading }: TaskCalendarViewProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState(new Date())
 

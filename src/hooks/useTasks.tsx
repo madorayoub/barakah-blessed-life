@@ -94,7 +94,8 @@ export function useTasks() {
           .from('tasks')
           .select(`
             *,
-            category:task_categories(*)
+            category:task_categories(*),
+            subtasks:tasks!parent_task_id(*)
           `)
           .eq('user_id', user.id)
           .is('parent_task_id', null) // Only get parent tasks
@@ -105,10 +106,17 @@ export function useTasks() {
           return
         }
 
-        // Type assertion since we know the data structure
+          // Type assertion since we know the data structure
         setTasks((data as any[])?.map(task => ({
           ...task,
-          priority: task.priority as Task['priority']
+          priority: task.priority as Task['priority'],
+          status: task.status as Task['status'],
+          subtasks: Array.isArray(task.subtasks) ? task.subtasks.map((sub: any) => ({
+            ...sub,
+            priority: sub.priority as Task['priority'],
+            status: sub.status as Task['status'],
+            subtasks: [] // Subtasks don't have their own subtasks
+          })) : []
         })) || [])
       } catch (error) {
         console.error('Error loading tasks:', error)
@@ -200,7 +208,11 @@ export function useTasks() {
           ...taskData,
           user_id: user.id
         })
-        .select()
+        .select(`
+          *,
+          category:task_categories(*),
+          subtasks:tasks!parent_task_id(*)
+        `)
         .single()
 
       if (error) {
@@ -213,16 +225,48 @@ export function useTasks() {
         return
       }
 
-      setTasks(prev => [(data as any), ...prev].map(task => ({
-        ...task,
-        priority: task.priority as Task['priority']
-      })))
+      // If it's a subtask, update the parent task's subtasks
+      if (taskData.parent_task_id) {
+        setTasks(prev => prev.map(task => {
+          if (task.id === taskData.parent_task_id) {
+            return {
+              ...task,
+                subtasks: [...(task.subtasks || []), {
+                ...data,
+                priority: data.priority as Task['priority'],
+                status: data.status as Task['status'],
+                subtasks: [] // Subtasks don't have their own subtasks
+              } as Task]
+            }
+          }
+          return task
+        }))
+      } else {
+        const newTask = {
+          ...data,
+          priority: data.priority as Task['priority'],
+          status: data.status as Task['status'],
+          subtasks: Array.isArray(data.subtasks) ? data.subtasks.map((sub: any) => ({
+            ...sub,
+            priority: sub.priority as Task['priority'],
+            status: sub.status as Task['status'],
+            subtasks: [] // Subtasks don't have their own subtasks
+          })) : []
+        } as Task
+        setTasks(prev => [newTask, ...prev])
+      }
+
       toast({
-        title: "Task created",
-        description: `"${taskData.title}" has been added to your tasks`
+        title: taskData.parent_task_id ? "Subtask created" : "Task created",
+        description: `"${taskData.title}" has been added to your ${taskData.parent_task_id ? 'subtasks' : 'tasks'}`
       })
 
-      return data as Task
+      return {
+        ...data,
+        priority: data.priority as Task['priority'],
+        status: data.status as Task['status'],
+        subtasks: Array.isArray(data.subtasks) ? data.subtasks : []
+      } as Task
     } catch (error) {
       console.error('Error creating task:', error)
       toast({
@@ -255,7 +299,8 @@ export function useTasks() {
         .eq('user_id', user.id)
         .select(`
           *,
-          category:task_categories(*)
+          category:task_categories(*),
+          subtasks:tasks!parent_task_id(*)
         `)
         .single()
 
@@ -269,12 +314,40 @@ export function useTasks() {
         return
       }
 
-      setTasks(prev => prev.map(task => 
-        task.id === taskId 
-          ? { ...task, ...(data as any), priority: (data as any).priority as Task['priority'] } 
-          : task
-      ))
-      return data as Task
+      setTasks(prev => prev.map(task => {
+        if (task.id === taskId) {
+          return { 
+            ...task, 
+            ...data, 
+            priority: data.priority as Task['priority'],
+            status: data.status as Task['status'],
+            subtasks: Array.isArray(data.subtasks) ? data.subtasks.map((sub: any) => ({
+              ...sub,
+              priority: sub.priority as Task['priority'],
+              status: sub.status as Task['status'],
+              subtasks: [] // Subtasks don't have their own subtasks
+            })) : task.subtasks || []
+          } as Task
+        }
+        // Also update if this is a subtask of the current task
+        if (task.subtasks?.some(sub => sub.id === taskId)) {
+          return {
+            ...task,
+            subtasks: task.subtasks.map(sub => 
+              sub.id === taskId 
+                ? { ...sub, ...data, priority: data.priority as Task['priority'], status: data.status as Task['status'], subtasks: [] }
+                : sub
+            )
+          }
+        }
+        return task
+      }))
+      return {
+        ...data,
+        priority: data.priority as Task['priority'],
+        status: data.status as Task['status'],
+        subtasks: Array.isArray(data.subtasks) ? data.subtasks : []
+      } as Task
     } catch (error) {
       console.error('Error updating task:', error)
       toast({
@@ -352,7 +425,20 @@ export function useTasks() {
         return
       }
 
-      setTasks(prev => prev.filter(task => task.id !== taskId))
+      // Update tasks list - remove if parent task, or update parent's subtasks if subtask
+      setTasks(prev => prev.map(task => {
+        if (task.id === taskId) {
+          return null // Will be filtered out
+        }
+        if (task.subtasks?.some(sub => sub.id === taskId)) {
+          return {
+            ...task,
+            subtasks: task.subtasks.filter(sub => sub.id !== taskId)
+          }
+        }
+        return task
+      }).filter(Boolean) as Task[])
+
       toast({
         title: "Task deleted",
         description: "Task has been removed"

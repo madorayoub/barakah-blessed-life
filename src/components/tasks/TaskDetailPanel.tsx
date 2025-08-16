@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Task } from '@/hooks/useTasks'
 import { useTaskStatuses } from '@/hooks/useTaskStatuses'
+import { SubtaskManager } from './SubtaskManager'
 import { cn } from '@/lib/utils'
 import { toast } from '@/hooks/use-toast'
 
@@ -17,9 +18,10 @@ interface TaskDetailPanelProps {
   onClose: () => void
   onUpdate: (task: Task) => void
   onDelete: (taskId: string) => void
+  onCreate: (taskData: Omit<Task, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => void
 }
 
-export function TaskDetailPanel({ task, isOpen, onClose, onUpdate, onDelete }: TaskDetailPanelProps) {
+export function TaskDetailPanel({ task, isOpen, onClose, onUpdate, onDelete, onCreate }: TaskDetailPanelProps) {
   const [editedTask, setEditedTask] = useState<Task | null>(null)
   const [hasChanges, setHasChanges] = useState(false)
   const [isAutoSaving, setIsAutoSaving] = useState(false)
@@ -112,6 +114,31 @@ export function TaskDetailPanel({ task, isOpen, onClose, onUpdate, onDelete }: T
   const formatDate = (date: string | null) => {
     if (!date) return ''
     return new Date(date).toISOString().split('T')[0]
+  }
+
+  const handleCreateSubtask = async (title: string) => {
+    if (!task) return
+    
+    const subtaskData: Omit<Task, 'id' | 'user_id' | 'created_at' | 'updated_at'> = {
+      title,
+      description: '',
+      priority: 'medium',
+      status: 'pending',
+      is_recurring: false,
+      parent_task_id: task.id
+    }
+    
+    onCreate(subtaskData)
+  }
+
+  const handleUpdateSubtask = (subtaskId: string, updates: Partial<Task>) => {
+    onUpdate({ ...task!, subtasks: task!.subtasks?.map(sub => 
+      sub.id === subtaskId ? { ...sub, ...updates } : sub
+    ) } as Task)
+  }
+
+  const handleDeleteSubtask = (subtaskId: string) => {
+    onDelete(subtaskId)
   }
 
   return (
@@ -285,6 +312,14 @@ export function TaskDetailPanel({ task, isOpen, onClose, onUpdate, onDelete }: T
                 className="text-base leading-relaxed resize-none border-2 border-gray-200 bg-white text-gray-900 placeholder:text-gray-400"
               />
             </div>
+            
+            {/* Subtasks */}
+            <SubtaskManager
+              parentTask={task}
+              onCreateSubtask={handleCreateSubtask}
+              onUpdateSubtask={handleUpdateSubtask}
+              onDeleteSubtask={handleDeleteSubtask}
+            />
             
             {/* Task Info */}
             <Card className="p-4 bg-gray-50 border-2 border-gray-200">

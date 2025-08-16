@@ -16,10 +16,11 @@ interface TaskBoardViewProps {
   onTaskComplete: (taskId: string) => void
   onTaskDelete: (taskId: string) => void
   onTaskEdit: (task: Task) => void
+  onTaskCreate: (taskData: Omit<Task, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => void
   loading: boolean
 }
 
-export function TaskBoardView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit, loading }: TaskBoardViewProps) {
+export function TaskBoardView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit, onTaskCreate, loading }: TaskBoardViewProps) {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [isPanelOpen, setIsPanelOpen] = useState(false)
   const { statuses, loading: statusesLoading } = useTaskStatuses()
@@ -187,6 +188,7 @@ export function TaskBoardView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit,
         onClose={handlePanelClose}
         onUpdate={handleTaskUpdate}
         onDelete={onTaskDelete}
+        onCreate={onTaskCreate}
       />
     </div>
   )

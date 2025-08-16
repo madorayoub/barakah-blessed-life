@@ -7,7 +7,7 @@ import { useTasks } from '@/hooks/useTasks'
 import { useState } from 'react'
 
 const Tasks = () => {
-  const { tasks, updateTask, completeTask, deleteTask, loading, calculateTaskStreak } = useTasks()
+  const { tasks, updateTask, completeTask, deleteTask, createTask, loading, calculateTaskStreak } = useTasks()
   const [selectedTask, setSelectedTask] = useState<any>(null)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [showReward, setShowReward] = useState(false)
@@ -65,6 +65,7 @@ const Tasks = () => {
         onTaskComplete={handleTaskComplete}
         onTaskDelete={deleteTask}
         onTaskEdit={handleTaskEdit}
+        onTaskCreate={createTask}
         loading={loading}
       />
 

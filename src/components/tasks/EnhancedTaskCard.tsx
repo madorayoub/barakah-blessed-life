@@ -175,8 +175,17 @@ export function EnhancedTaskCard({ task, onComplete, onDelete, onEdit, onClick }
         )}
       </div>
       
-      {/* Subtask progress - placeholder for future implementation */}
-      {task.description && (
+      {/* Subtask progress */}
+      {task.subtasks && task.subtasks.length > 0 && (
+        <div className="mt-2 text-xs text-muted-foreground">
+          <span className="text-primary font-medium">
+            {task.subtasks.filter(sub => sub.status === 'completed').length} of {task.subtasks.length} subtasks completed
+          </span>
+        </div>
+      )}
+      
+      {/* Description */}
+      {task.description && !task.subtasks?.length && (
         <div className="mt-2 text-xs text-muted-foreground">
           <span className="line-clamp-1">{task.description}</span>
         </div>

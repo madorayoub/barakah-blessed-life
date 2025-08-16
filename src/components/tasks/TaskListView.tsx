@@ -11,10 +11,11 @@ interface TaskListViewProps {
   onTaskComplete: (taskId: string) => void
   onTaskDelete: (taskId: string) => void
   onTaskEdit: (task: Task) => void
+  onTaskCreate: (taskData: Omit<Task, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => void
   loading: boolean
 }
 
-export function TaskListView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit, loading }: TaskListViewProps) {
+export function TaskListView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit, onTaskCreate, loading }: TaskListViewProps) {
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(['overdue', 'today', 'tomorrow']))
 
   const toggleGroup = (groupId: string) => {

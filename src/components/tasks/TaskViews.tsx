@@ -13,12 +13,13 @@ interface TaskViewsProps {
   onTaskComplete: (taskId: string) => void
   onTaskDelete: (taskId: string) => void
   onTaskEdit: (task: Task) => void
+  onTaskCreate: (taskData: Omit<Task, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => void
   loading: boolean
 }
 
 export type TaskViewType = 'list' | 'board' | 'calendar'
 
-export function TaskViews({ tasks, onTaskComplete, onTaskDelete, onTaskEdit, loading }: TaskViewsProps) {
+export function TaskViews({ tasks, onTaskComplete, onTaskDelete, onTaskEdit, onTaskCreate, loading }: TaskViewsProps) {
   const navigate = useNavigate()
   const [currentView, setCurrentView] = useState<TaskViewType>('board') // Default to board view
   const [searchTerm, setSearchTerm] = useState('')
@@ -68,6 +69,7 @@ export function TaskViews({ tasks, onTaskComplete, onTaskDelete, onTaskEdit, loa
       onTaskComplete,
       onTaskDelete,
       onTaskEdit,
+      onTaskCreate,
       loading
     }
 
