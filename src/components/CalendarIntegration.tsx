@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
 import { Slider } from "@/components/ui/slider"
 import { useGoogleCalendar } from "@/hooks/useGoogleCalendar"
-import { useAppleCalendar } from "@/hooks/useAppleCalendar"
+import { useAppleCalendarSubscription } from "@/hooks/useAppleCalendarSubscription"
 import { useAuth } from "@/hooks/useAuth"
 
 const CalendarIntegration = () => {
@@ -30,12 +30,12 @@ const CalendarIntegration = () => {
   } = useGoogleCalendar()
   
   const { 
-    isSubscribed,
+    isConnected: isAppleConnected,
     subscriptionUrl,
-    createSubscription,
-    generateAdvancedICS,
+    generateSubscriptionUrl,
+    openAppleCalendar,
     isGenerating: isAppleGenerating
-  } = useAppleCalendar()
+  } = useAppleCalendarSubscription()
 
   const handleGoogleSync = async () => {
     if (isGoogleAuthorized) {
@@ -46,12 +46,12 @@ const CalendarIntegration = () => {
   }
 
   const handleAppleConnect = async () => {
-    if (isSubscribed) {
-      // Already connected, trigger sync
-      await generateAdvancedICS(syncOptions)
+    if (isAppleConnected) {
+      // Already connected, open calendar
+      openAppleCalendar()
     } else {
       // Connect for the first time
-      await createSubscription()
+      await generateSubscriptionUrl()
     }
   }
 
@@ -185,13 +185,13 @@ const CalendarIntegration = () => {
           <div className="flex items-center gap-2">
             <Smartphone className="h-5 w-5 text-gray-600" />
             <div className="text-sm font-medium text-gray-900">Apple Calendar</div>
-            <Badge variant={isSubscribed ? "default" : "secondary"}>
-              {isSubscribed ? "Connected" : "Not Connected"}
+            <Badge variant={isAppleConnected ? "default" : "secondary"}>
+              {isAppleConnected ? "Connected" : "Not Connected"}
             </Badge>
           </div>
           
           <div className="text-xs text-gray-700 mb-3">
-            {isSubscribed ? 'Live subscription active - auto-syncs every hour' : 'Connect for automatic live sync like Google Calendar'}
+            {isAppleConnected ? 'Subscription active - updates automatically' : 'One-click connection to Apple Calendar'}
           </div>
           
           <Button 
@@ -202,12 +202,12 @@ const CalendarIntegration = () => {
             {isAppleGenerating ? (
               <>
                 <Clock className="h-4 w-4 mr-2 animate-spin" />
-                {isSubscribed ? "Syncing..." : "Connecting..."}
+                {isAppleConnected ? "Opening..." : "Generating..."}
               </>
             ) : (
               <>
                 <Smartphone className="h-4 w-4 mr-2" />
-                {isSubscribed ? "Sync Now" : "Connect Apple Calendar"}
+                {isAppleConnected ? "Open Calendar" : "Connect Apple Calendar"}
               </>
             )}
           </Button>
@@ -254,7 +254,7 @@ const CalendarIntegration = () => {
             size="sm"
           >
             <Smartphone className="h-4 w-4 mr-2" />
-            {isSubscribed ? "Apple Sync" : "Apple Connect"}
+            {isAppleConnected ? "Apple Sync" : "Apple Connect"}
           </Button>
         </div>
 
