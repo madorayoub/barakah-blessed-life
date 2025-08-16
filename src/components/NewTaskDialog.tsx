@@ -32,7 +32,6 @@ interface NewTaskDialogProps {
 export function NewTaskDialog({ children }: NewTaskDialogProps) {
   const { createTask, createTaskFromTemplate, createCategory, categories, templates } = useTasks()
   const [open, setOpen] = useState(false)
-  const [taskMode, setTaskMode] = useState<'basic' | 'advanced'>('basic')
   const [isTemplate, setIsTemplate] = useState(false)
   const [showNewCategory, setShowNewCategory] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState('')
@@ -109,12 +108,6 @@ export function NewTaskDialog({ children }: NewTaskDialogProps) {
     }
   }
 
-  // If advanced mode is selected, render the AdvancedTaskDialog instead
-  const handleAdvancedMode = () => {
-    setOpen(false) // Close current dialog
-    // The AdvancedTaskDialog will be triggered separately
-  }
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -130,13 +123,12 @@ export function NewTaskDialog({ children }: NewTaskDialogProps) {
 
         <div className="space-y-6">
           {/* Mode Selection */}
-          <div className="flex items-center justify-center">
-            <div className="flex bg-muted rounded-lg p-1">
+          <div className="flex items-center justify-center mb-4">
+            <div className="flex gap-2">
               <Button
                 type="button"
-                variant={taskMode === 'basic' ? 'default' : 'ghost'}
+                variant="default"
                 size="sm"
-                onClick={() => setTaskMode('basic')}
                 className="h-8"
               >
                 <Plus className="h-3 w-3 mr-1" />
