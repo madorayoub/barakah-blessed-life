@@ -4,6 +4,7 @@ import { TaskCompletionReward } from '@/components/TaskCompletionReward'
 import { RecurringTaskManager } from '@/components/RecurringTaskManager'
 import { useTasks } from '@/hooks/useTasks'
 import { useState } from 'react'
+import { AppHeader } from '@/components/AppHeader'
 
 const Tasks = () => {
   const { tasks, updateTask, completeTask, deleteTask, createTask, loading, calculateTaskStreak } = useTasks()
@@ -51,6 +52,11 @@ const Tasks = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <AppHeader 
+        title="Tasks" 
+        subtitle="Organize your spiritual and daily tasks" 
+      />
+      
       <RecurringTaskManager />
       
       {/* Smart Suggestions temporarily disabled due to infinite loop */}

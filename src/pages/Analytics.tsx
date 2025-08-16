@@ -19,6 +19,7 @@ import {
   Eye,
   ArrowLeft 
 } from 'lucide-react'
+import { AppHeader } from '@/components/AppHeader'
 import { useAnalytics } from '@/hooks/useAnalytics'
 import { PrayerAnalytics } from '@/components/analytics/PrayerAnalytics'
 import { TaskAnalytics } from '@/components/analytics/TaskAnalytics'
@@ -74,26 +75,14 @@ export default function Analytics() {
   const daysSinceJoining = getDaysSinceJoining()
 
   return (
-    <div className="container mx-auto p-4 md:p-6 space-y-6 md:space-y-8">
-      {/* Header with Back Navigation */}
-      <div className="flex items-center gap-4 mb-6">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={() => navigate('/dashboard')}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Dashboard
-        </Button>
-        <div className="h-4 w-px bg-border" />
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold">Analytics</h1>
-          <p className="text-sm text-muted-foreground">Track your spiritual progress</p>
-        </div>
-      </div>
-
-      {/* Hero Section */}
+    <div className="min-h-screen bg-background">
+      <AppHeader 
+        title="Analytics" 
+        subtitle="Track your spiritual progress" 
+      />
+      
+      <div className="container mx-auto p-4 md:p-6 space-y-6 md:space-y-8">
+        {/* Hero Section */}
       <div className="text-center space-y-4 md:space-y-6">
         <div>
           <h2 className="text-xl md:text-2xl font-semibold mb-2">Your Spiritual Journey</h2>
@@ -320,6 +309,7 @@ export default function Analytics() {
           <p className="text-sm md:text-base text-muted-foreground italic">"{getQuranVerse()}"</p>
         </CardContent>
       </Card>
+      </div>
     </div>
   )
 }

@@ -13,6 +13,7 @@ import { ArrowLeft, BookOpen, Search, Bookmark, BookmarkX, Volume2, Play, Pause,
 import { Link } from 'react-router-dom'
 import { useQuran } from '@/hooks/useQuran'
 import { useToast } from '@/hooks/use-toast'
+import { AppHeader } from '@/components/AppHeader'
 
 export default function Quran() {
   const {
@@ -107,79 +108,10 @@ export default function Quran() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-emerald-900">
-      {/* Header */}
-      <div className="sticky top-0 z-40 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
-        <div className="container flex h-16 items-center justify-between px-4">
-          <div className="flex items-center gap-4">
-            <Link to="/dashboard">
-              <Button variant="ghost" size="sm" className="gap-2">
-                <ArrowLeft className="h-4 w-4" />
-                Dashboard
-              </Button>
-            </Link>
-            <div className="flex items-center gap-2">
-              <BookOpen className="h-5 w-5 text-emerald-600" />
-              <h1 className="text-xl font-semibold">Holy Qur'an</h1>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            {/* Reading Session Status */}
-            {currentSession && (
-              <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
-                <Play className="h-3 w-3 mr-1" />
-                Reading
-              </Badge>
-            )}
-            
-            {/* Reading Stats */}
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <BarChart3 className="h-4 w-4" />
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Reading Progress</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-3 gap-4 text-center">
-                    <div>
-                      <div className="text-2xl font-bold text-emerald-600">{stats.totalVersesRead}</div>
-                      <div className="text-sm text-muted-foreground">Verses Read</div>
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold text-blue-600">{stats.uniqueSurahs}</div>
-                      <div className="text-sm text-muted-foreground">Surahs</div>
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold text-amber-600">{stats.totalBookmarks}</div>
-                      <div className="text-sm text-muted-foreground">Bookmarks</div>
-                    </div>
-                  </div>
-                  {lastRead && (
-                    <div className="text-center p-4 bg-muted rounded-lg">
-                      <p className="text-sm text-muted-foreground">Last read:</p>
-                      <p className="font-medium">
-                        Surah {lastRead.surah_number}, Verse {lastRead.verse_number}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </DialogContent>
-            </Dialog>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => currentSession ? endReadingSession() : startReadingSession()}
-            >
-              {currentSession ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-            </Button>
-          </div>
-        </div>
-      </div>
+      <AppHeader 
+        title="Holy Qur'an" 
+        subtitle="Read, reflect, and grow spiritually" 
+      />
 
       <div className="container mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">

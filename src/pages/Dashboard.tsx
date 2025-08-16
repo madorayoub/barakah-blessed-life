@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth"
 import { formatPrayerTime, getNextPrayer, getTimeUntilPrayer } from "@/lib/prayerTimes"
 import { getFairTrackingMessage, isFairTrackingActive } from "@/lib/fairTracking"
 import { Link } from "react-router-dom"
+import { AppHeader } from "@/components/AppHeader"
 
 const Dashboard = () => {
   const { user, signOut } = useAuth()
@@ -47,30 +48,10 @@ const Dashboard = () => {
       </nav>
 
       {/* Header */}
-      <header className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold">Dashboard</h1>
-              <p className="text-muted-foreground">Welcome back, {user?.email?.split('@')[0] || 'User'}</p>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="hidden md:flex items-center gap-6">
-                <Link to="/dashboard" className="text-primary font-medium">Dashboard</Link>
-                <Link to="/tasks" className="text-muted-foreground hover:text-foreground">Tasks</Link>
-                <Link to="/prayers" className="text-muted-foreground hover:text-foreground">Prayers</Link>
-                <Link to="/quran" className="text-muted-foreground hover:text-foreground">Qur'an</Link>
-                <Link to="/calendar" className="text-muted-foreground hover:text-foreground">Calendar</Link>
-                <Link to="/analytics" className="text-muted-foreground hover:text-foreground">Analytics</Link>
-                <Link to="/settings" className="text-muted-foreground hover:text-foreground">Settings</Link>
-              </div>
-              <Button onClick={signOut} variant="outline" size="sm">
-                Sign Out
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <AppHeader 
+        title="Dashboard" 
+        subtitle={`Welcome back, ${user?.email?.split('@')[0] || 'User'}`} 
+      />
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8 pb-20 md:pb-8">
