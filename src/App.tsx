@@ -7,6 +7,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { Onboarding } from "@/components/Onboarding";
 import Index from "./pages/Index";
 import Demo from "./pages/Demo";
+import Pricing from "./pages/Pricing";
 import NotFound from "./pages/NotFound";
 
 // Auth pages
@@ -56,6 +57,7 @@ const App = () => {
           {/* Landing and Demo */}
           <Route path="/" element={<Index />} />
           <Route path="/demo" element={<Demo />} />
+          <Route path="/pricing" element={<Pricing />} />
           
           {/* Authentication */}
           <Route path="/auth/signup" element={<Signup />} />

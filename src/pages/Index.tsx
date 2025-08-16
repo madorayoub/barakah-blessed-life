@@ -60,6 +60,9 @@ const Index = () => {
               <Link to="/demo" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">
                 Demo
               </Link>
+              <Link to="/pricing" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">
+                Pricing
+              </Link>
               <Link to="/about" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">
                 About
               </Link>
