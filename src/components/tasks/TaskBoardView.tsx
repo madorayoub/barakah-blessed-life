@@ -30,15 +30,6 @@ export function TaskBoardView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit,
   const [expandedColumns, setExpandedColumns] = useState<Record<string, boolean>>({})
   const { statuses, loading: statusesLoading } = useTaskStatuses()
   
-  // DEBUG: Track task rendering in board view
-  console.log('🏛️ TASKBOARDVIEW RENDER - Tasks received:', tasks.length)
-  console.log('🏛️ TASKBOARDVIEW RENDER - Task IDs received:', tasks.map(t => t.id))
-  console.log('🏛️ TASKBOARDVIEW RENDER - Task statuses:', tasks.map(t => `${t.id.slice(0,8)}:${t.status}`))
-  console.log('🏛️ TaskBoardView component re-rendered at:', new Date().toISOString())
-  
-  // DEBUG: Log current column configuration
-  console.log('🎯 COLUMNS CONFIGURED:', statuses.length > 0 ? 'Custom Statuses' : 'Default Columns')
-  
   const INITIAL_TASK_LIMIT = 10
 
   // Map custom statuses to columns, with fallback to default columns
@@ -54,45 +45,19 @@ export function TaskBoardView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit,
     { id: 'completed', title: 'Done', status: 'completed', color: 'bg-green-50/50 border-green-200' }
   ]
   
-  // 🎯 DEBUG: Log column configuration
-  console.log('🎯 COLUMNS SETUP:', columns.map(c => `${c.title}(${c.status})`))
-  console.log('🎯 STATUSES FROM HOOK:', statuses.length, statuses.map(s => s.name))
+  // Create status mapping for filtering
+  const statusMapping: Record<string, string[]> = {
+    'pending': ['pending'],
+    'to_do': ['pending'], 
+    'in_progress': ['in_progress'],
+    'completed': ['completed'],
+    'done': ['completed'],
+    'tests': ['pending', 'in_progress', 'completed'] // Show all tasks in tests column
+  }
 
   const getTasksByStatus = (statusId: string) => {
-    const filteredTasks = tasks.filter(task => {
-      // 🎯 DEBUG: Log task filtering logic
-      console.log(`🎯 FILTER DEBUG - Checking task ${task.id}:`)
-      console.log(`  - Task status: "${task.status}"`)
-      console.log(`  - Looking for column: "${statusId}"`)
-      
-      // Handle legacy status mapping
-      if (statusId === 'to_do' && task.status === 'pending') {
-        console.log(`  ✅ MATCH: to_do ← pending`)
-        return true
-      }
-      if (statusId === 'in_progress' && task.status === 'in_progress') {
-        console.log(`  ✅ MATCH: in_progress ← in_progress`)
-        return true
-      }
-      if (statusId === 'done' && task.status === 'completed') {
-        console.log(`  ✅ MATCH: done ← completed`)
-        return true
-      }
-      
-      // Direct status match
-      const directMatch = task.status === statusId
-      if (directMatch) {
-        console.log(`  ✅ DIRECT MATCH: ${statusId} ← ${task.status}`)
-      } else {
-        console.log(`  ❌ NO MATCH: ${statusId} ≠ ${task.status}`)
-      }
-      
-      return directMatch
-    })
-    
-    // DEBUG: Log task filtering results
-    console.log(`🎯 COLUMN ${statusId}: ${filteredTasks.length} tasks filtered from ${tasks.length} total`)
-    console.log(`🎯 FILTERED TASK IDs:`, filteredTasks.map(t => t.id))
+    const allowedStatuses = statusMapping[statusId] || [statusId]
+    const filteredTasks = tasks.filter(task => allowedStatuses.includes(task.status))
     return filteredTasks
   }
 
@@ -124,20 +89,10 @@ export function TaskBoardView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit,
   // Handle task drag and drop
   const handleTaskDrop = useCallback(async (taskId: string, newStatus: string) => {
     const task = tasks.find(t => t.id === taskId)
-    if (!task) {
-      console.log(`🎯 DRAG ERROR: Task ${taskId} not found`)
-      return
-    }
+    if (!task) return
     
-    console.log(`🎯 DRAG DROP: Task ${taskId} from "${task.status}" to "${newStatus}"`)
-    
-    if (task.status === newStatus) {
-      console.log(`🎯 DRAG SKIP: Same status, no update needed`)
-      return
-    }
-
     // Map column status to database status
-    const statusMapping: Record<string, Task['status']> = {
+    const dbStatusMapping: Record<string, Task['status']> = {
       'pending': 'pending',
       'to_do': 'pending', 
       'in_progress': 'in_progress',
@@ -145,22 +100,17 @@ export function TaskBoardView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit,
       'done': 'completed'
     }
     
-    const mappedStatus = statusMapping[newStatus] || newStatus as Task['status']
-    console.log(`🎯 DRAG STATUS MAPPING: "${newStatus}" → "${mappedStatus}"`)
-    
+    const mappedStatus = dbStatusMapping[newStatus] || newStatus as Task['status']
+    if (task.status === mappedStatus) return
+
     await updateTask(taskId, { status: mappedStatus })
-    console.log(`🎯 DRAG COMPLETE: Task ${taskId} updated to "${mappedStatus}"`)
   }, [tasks, updateTask])
 
   // Handle column-specific task creation
   const handleCreateTaskInColumn = useCallback((status: string) => {
-    console.log(`🎯 CREATE BUTTON CLICKED - Column Status: "${status}"`)
-    
     return (taskData: Omit<Task, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-      console.log(`🎯 HANDLER CALLED - Original Status: "${status}"`)
-      
       // Map column status to database status
-      const statusMapping: Record<string, Task['status']> = {
+      const dbStatusMapping: Record<string, Task['status']> = {
         'pending': 'pending',
         'to_do': 'pending',
         'in_progress': 'in_progress', 
@@ -168,16 +118,12 @@ export function TaskBoardView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit,
         'done': 'completed'
       }
       
-      const mappedStatus = statusMapping[status] || 'pending'
-      console.log(`🎯 STATUS MAPPING: "${status}" → "${mappedStatus}"`)
+      const mappedStatus = dbStatusMapping[status] || 'pending'
       
-      const finalTaskData = {
+      onTaskCreate({
         ...taskData,
         status: mappedStatus
-      }
-      
-      console.log(`🎯 FINAL TASK DATA:`, finalTaskData)
-      onTaskCreate(finalTaskData)
+      })
     }
   }, [onTaskCreate])
 
