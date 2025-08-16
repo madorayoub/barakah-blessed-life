@@ -255,26 +255,11 @@ export function useTasks() {
   const createTask = async (taskData: Omit<Task, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
     if (!user) return
 
-    // Clean the taskData to ensure no unwanted parent_task_id
-    const cleanTaskData = { ...taskData }
-    
-    // STRICT RULE: Only allow parent_task_id if it's being created from a subtask context
-    // Remove parent_task_id completely for regular task creation
-    // Only legitimate subtasks should have this field
-    if (cleanTaskData.parent_task_id) {
-      console.log('⚠️ WARNING: parent_task_id detected in task creation:', cleanTaskData.parent_task_id)
-      console.log('Task data:', cleanTaskData)
-      console.log('This might be a bug - regular tasks should not have parent_task_id')
-      
-      // For now, remove it completely to fix the notification issue
-      delete cleanTaskData.parent_task_id
-    }
-
     try {
       const { data, error } = await supabase
         .from('tasks')
         .insert({
-          ...cleanTaskData,
+          ...taskData,
           user_id: user.id
         })
         .select(`
@@ -297,8 +282,8 @@ export function useTasks() {
       // Real-time subscription will handle state updates automatically
 
       toast({
-        title: cleanTaskData.parent_task_id ? "Subtask created" : "Task created",
-        description: `"${cleanTaskData.title}" has been ${cleanTaskData.parent_task_id ? 'added to your subtasks' : 'created successfully'}`
+        title: taskData.parent_task_id ? "Subtask created" : "Task created",
+        description: `"${taskData.title}" has been ${taskData.parent_task_id ? 'added to your subtasks' : 'created successfully'}`
       })
 
       return {
@@ -455,7 +440,7 @@ export function useTasks() {
   }
 
   const createTaskFromTemplate = async (template: TaskTemplate) => {
-    const taskData = {
+    const taskData: Omit<Task, 'id' | 'user_id' | 'created_at' | 'updated_at'> = {
       title: template.name,
       description: template.description,
       priority: template.priority as Task['priority'],
@@ -463,6 +448,8 @@ export function useTasks() {
       is_recurring: template.is_recurring,
       recurring_pattern: template.recurring_pattern,
       due_date: new Date().toISOString().split('T')[0], // Today
+      // Explicitly ensure no parent_task_id for template tasks
+      parent_task_id: undefined
     }
 
     return await createTask(taskData)
