@@ -1,48 +1,33 @@
-import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Settings as SettingsIcon, MapPin, Clock, Bell, User, Compass, Moon, Sun, ArrowLeft, BookOpen, Heart, Shield, Star } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Switch } from '@/components/ui/switch'
-import { Separator } from '@/components/ui/separator'
-import { Badge } from '@/components/ui/badge'
-import { useAuth } from '@/hooks/useAuth'
-import { supabase } from '@/integrations/supabase/client'
-import { toast } from '@/hooks/use-toast'
-import { CalendarExport } from '@/components/CalendarExport'
-import { useNotifications } from '@/hooks/useNotifications'
-
-interface UserProfile {
-  display_name?: string
-  location_city?: string
-  location_country?: string
-  location_latitude?: number
-  location_longitude?: number
-  difficulty_mode?: string
-}
-
-interface PrayerSettings {
-  calculation_method: string
-  madhab: string
-  high_latitude_rule: string
-  fajr_adjustment: number
-  dhuhr_adjustment: number
-  asr_adjustment: number
-  maghrib_adjustment: number
-  isha_adjustment: number
-  notifications_enabled: boolean
-  notification_minutes_before: number
-}
+import { useState, useEffect } from "react"
+import { ArrowLeft, MapPin, Navigation, Loader2, Bell, Volume2, User, Clock, BookOpen, Heart, Shield, Settings as SettingsIcon, Star, Info, CheckCircle, AlertTriangle } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Slider } from "@/components/ui/slider"
+import { useAuth } from "@/hooks/useAuth"
+import { supabase } from "@/integrations/supabase/client"
+import { useToast } from "@/hooks/use-toast"
+import { useNavigate } from "react-router-dom"
+import { Badge } from "@/components/ui/badge"
 
 const Settings = () => {
-  const navigate = useNavigate()
   const { user, signOut } = useAuth()
-  const { permission, preferences, requestPermission, updatePreferences } = useNotifications()
-  const [profile, setProfile] = useState<UserProfile>({})
-  const [prayerSettings, setPrayerSettings] = useState<PrayerSettings>({
+  const { toast } = useToast()
+  const navigate = useNavigate()
+  const [loading, setLoading] = useState(true)
+  const [autoSaving, setAutoSaving] = useState(false)
+
+  const [profile, setProfile] = useState({
+    display_name: '',
+    location_city: '',
+    location_country: '',
+    difficulty_mode: 'basic'
+  })
+
+  const [prayerSettings, setPrayerSettings] = useState({
     calculation_method: 'ISNA',
     madhab: 'Shafi',
     high_latitude_rule: 'MiddleOfTheNight',
@@ -54,8 +39,6 @@ const Settings = () => {
     notifications_enabled: true,
     notification_minutes_before: 10
   })
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
 
   // Load user data
   useEffect(() => {
@@ -71,7 +54,12 @@ const Settings = () => {
           .maybeSingle()
 
         if (profileData) {
-          setProfile(profileData)
+          setProfile({
+            display_name: profileData.display_name || '',
+            location_city: profileData.location_city || '',
+            location_country: profileData.location_country || '',
+            difficulty_mode: profileData.difficulty_mode || 'basic'
+          })
         }
 
         // Load prayer settings
@@ -83,9 +71,9 @@ const Settings = () => {
 
         if (settingsData) {
           setPrayerSettings({
-            calculation_method: settingsData.calculation_method,
-            madhab: settingsData.madhab,
-            high_latitude_rule: settingsData.high_latitude_rule,
+            calculation_method: settingsData.calculation_method || 'ISNA',
+            madhab: settingsData.madhab || 'Shafi',
+            high_latitude_rule: settingsData.high_latitude_rule || 'MiddleOfTheNight',
             fajr_adjustment: settingsData.fajr_adjustment || 0,
             dhuhr_adjustment: settingsData.dhuhr_adjustment || 0,
             asr_adjustment: settingsData.asr_adjustment || 0,
@@ -110,48 +98,60 @@ const Settings = () => {
     loadUserData()
   }, [user])
 
-  const saveSettings = async () => {
-    if (!user) return
+  const autoSaveSettings = async (updates: any) => {
+    if (!user || autoSaving) return
 
-    setSaving(true)
+    setAutoSaving(true)
     try {
-      // Update profile
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({
-          display_name: profile.display_name,
-          location_city: profile.location_city,
-          location_country: profile.location_country,
-          difficulty_mode: profile.difficulty_mode
-        })
-        .eq('user_id', user.id)
+      // Update profile if profile updates are included
+      if (updates.profile) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update(updates.profile)
+          .eq('user_id', user.id)
 
-      if (profileError) throw profileError
+        if (profileError) throw profileError
+      }
 
-      // Update prayer settings
-      const { error: settingsError } = await supabase
-        .from('prayer_settings')
-        .upsert({
-          user_id: user.id,
-          ...prayerSettings
-        })
+      // Update prayer settings if prayer settings are included
+      if (updates.prayerSettings) {
+        const { error: settingsError } = await supabase
+          .from('prayer_settings')
+          .upsert({
+            user_id: user.id,
+            ...updates.prayerSettings
+          })
 
-      if (settingsError) throw settingsError
+        if (settingsError) throw settingsError
+      }
 
+      // Show brief success indicator
       toast({
-        title: "Settings saved",
-        description: "Your preferences have been updated successfully"
+        title: "Saved ✓",
+        description: "Settings updated automatically",
+        duration: 2000
       })
     } catch (error) {
-      console.error('Error saving settings:', error)
+      console.error('Error auto-saving settings:', error)
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Failed to save settings"
+        title: "Auto-save failed",
+        description: "Please try again or refresh the page"
       })
     } finally {
-      setSaving(false)
+      setAutoSaving(false)
     }
+  }
+
+  // Auto-save functions for different setting types
+  const updateProfile = (updates: any) => {
+    setProfile(prev => ({ ...prev, ...updates }))
+    autoSaveSettings({ profile: updates })
+  }
+
+  const updatePrayerSettings = (updates: any) => {
+    setPrayerSettings(prev => ({ ...prev, ...updates }))
+    autoSaveSettings({ prayerSettings: updates })
   }
 
   const getCurrentLocation = () => {
@@ -160,25 +160,63 @@ const Settings = () => {
         async (position) => {
           const { latitude, longitude } = position.coords
           
-          // Update profile with coordinates
-          setProfile(prev => ({
-            ...prev,
-            location_latitude: latitude,
-            location_longitude: longitude
-          }))
-
-          // Try to get city/country from coordinates (simplified)
-          toast({
-            title: "Location updated",
-            description: "Your location has been detected and saved"
-          })
+          try {
+            // Use reverse geocoding to get city name
+            const response = await fetch(
+              `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
+            )
+            
+            if (response.ok) {
+              const data = await response.json()
+              const cityName = data.city || data.locality
+              const countryName = data.countryName
+              
+              updateProfile({
+                location_city: cityName,
+                location_country: countryName,
+                location_latitude: latitude,
+                location_longitude: longitude
+              })
+              
+              toast({
+                title: "Location detected",
+                description: `Found: ${cityName}, ${countryName}`,
+              })
+            } else {
+              throw new Error("Failed to get location name")
+            }
+          } catch (error) {
+            console.error('Reverse geocoding failed:', error)
+            updateProfile({
+              location_latitude: latitude,
+              location_longitude: longitude
+            })
+            toast({
+              title: "Location detected",
+              description: "Location coordinates saved. Please enter city manually.",
+            })
+          }
         },
         (error) => {
-          console.error('Error getting location:', error)
+          let errorMessage = ""
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              errorMessage = "Location access denied. Please enable location services."
+              break
+            case error.POSITION_UNAVAILABLE:
+              errorMessage = "Location information is unavailable."
+              break
+            case error.TIMEOUT:
+              errorMessage = "Location request timed out."
+              break
+            default:
+              errorMessage = "An unknown error occurred while detecting location."
+              break
+          }
           toast({
             variant: "destructive",
-            title: "Location access denied", 
-            description: "Please enable location access for accurate prayer times"
+            title: "Location detection failed",
+            description: errorMessage
           })
         }
       )
@@ -203,34 +241,31 @@ const Settings = () => {
     <div className="min-h-screen bg-background">
       <header className="bg-white border-b">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-4 mb-4">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => navigate('/dashboard')}
-              className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back
-            </Button>
-            <div className="h-4 w-px bg-border" />
-            <div>
-              <h1 className="text-2xl font-bold flex items-center gap-2">
-                <SettingsIcon className="h-6 w-6" />
-                Settings
-              </h1>
-              <p className="text-muted-foreground">Customize your Islamic productivity experience</p>
-            </div>
-          </div>
           <div className="flex items-center justify-between">
-            <div className="flex gap-2">
-              <Button onClick={saveSettings} disabled={saving}>
-                {saving ? "Saving..." : "Save Changes"}
+            <div className="flex items-center gap-4">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => navigate('/dashboard')}
+                className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back
               </Button>
-              <Button onClick={signOut} variant="outline">
-                Sign Out
-              </Button>
+              <div className="h-4 w-px bg-border" />
+              <div>
+                <h1 className="text-2xl font-bold">Settings</h1>
+                <p className="text-muted-foreground">Manage your preferences and account</p>
+              </div>
             </div>
+            
+            {/* Auto-save indicator */}
+            {autoSaving && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Saving...
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -249,112 +284,55 @@ const Settings = () => {
                 Manage your account information and preferences
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="display_name">Display Name</Label>
                   <Input
                     id="display_name"
-                    value={profile.display_name || ''}
-                    onChange={(e) => setProfile(prev => ({ ...prev, display_name: e.target.value }))}
-                    placeholder="Your name"
+                    value={profile.display_name}
+                    onChange={(e) => updateProfile({ display_name: e.target.value })}
+                    placeholder="Enter your display name"
                   />
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="location_city">City</Label>
                   <Input
-                    id="email"
-                    value={user?.email || ''}
-                    disabled
-                    className="bg-muted"
+                    id="location_city"
+                    value={profile.location_city}
+                    onChange={(e) => updateProfile({ location_city: e.target.value })}
+                    placeholder="e.g., Marrakech"
                   />
                 </div>
-              </div>
 
-              <Separator />
-
-              {/* Difficulty Mode */}
-              <div className="space-y-4">
-                <div>
-                  <Label className="text-base font-medium">Difficulty Mode</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Choose your spiritual commitment level
-                  </p>
+                <div className="space-y-2">
+                  <Label htmlFor="location_country">Country</Label>
+                  <Input
+                    id="location_country"
+                    value={profile.location_country}
+                    onChange={(e) => updateProfile({ location_country: e.target.value })}
+                    placeholder="e.g., Morocco"
+                  />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div 
-                    className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                      profile.difficulty_mode === 'basic' ? 'border-primary bg-primary/5' : 'border-muted'
-                    }`}
-                    onClick={() => setProfile(prev => ({ ...prev, difficulty_mode: 'basic' }))}
+
+                <div className="space-y-2">
+                  <Label htmlFor="difficulty_mode">App Experience Level</Label>
+                  <Select
+                    value={profile.difficulty_mode}
+                    onValueChange={(value) => updateProfile({ difficulty_mode: value })}
                   >
-                    <div className="flex items-center gap-2 mb-2">
-                      <Moon className="h-5 w-5 text-blue-600" />
-                      <h3 className="font-medium">Basic Mode</h3>
-                      {profile.difficulty_mode === 'basic' && (
-                        <Badge variant="default" className="ml-auto">Selected</Badge>
-                      )}
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Focus on the 5 daily prayers only. Perfect for beginners or busy schedules.
-                    </p>
-                  </div>
-                  
-                  <div 
-                    className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                      profile.difficulty_mode === 'advanced' ? 'border-primary bg-primary/5' : 'border-muted'
-                    }`}
-                    onClick={() => setProfile(prev => ({ ...prev, difficulty_mode: 'advanced' }))}
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <Sun className="h-5 w-5 text-amber-600" />
-                      <h3 className="font-medium">Advanced Mode</h3>
-                      {profile.difficulty_mode === 'advanced' && (
-                        <Badge variant="default" className="ml-auto">Selected</Badge>
-                      )}
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Include Sunnah prayers, Quran reading goals, dhikr, and additional Islamic practices.
-                    </p>
-                  </div>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="basic">Basic - 5 Daily Prayers</SelectItem>
+                      <SelectItem value="advanced">Advanced - Full Islamic Practice</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
-            </CardContent>
-          </Card>
 
-          {/* Location Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MapPin className="h-5 w-5" />
-                Location Settings
-              </CardTitle>
-              <CardDescription>
-                Set your location for accurate prayer times
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="city">City</Label>
-                  <Input
-                    id="city"
-                    value={profile.location_city || ''}
-                    onChange={(e) => setProfile(prev => ({ ...prev, location_city: e.target.value }))}
-                    placeholder="Your city"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="country">Country</Label>
-                  <Input
-                    id="country"
-                    value={profile.location_country || ''}
-                    onChange={(e) => setProfile(prev => ({ ...prev, location_country: e.target.value }))}
-                    placeholder="Your country"
-                  />
-                </div>
-              </div>
-              
               <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
                 <div>
                   <p className="font-medium">Auto-detect Location</p>
@@ -363,7 +341,7 @@ const Settings = () => {
                   </p>
                 </div>
                 <Button onClick={getCurrentLocation} variant="outline">
-                  <Compass className="h-4 w-4 mr-2" />
+                  <Navigation className="h-4 w-4 mr-2" />
                   Detect Location
                 </Button>
               </div>
@@ -382,201 +360,156 @@ const Settings = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Calculation Method */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="calculation_method">Calculation Method</Label>
+                  <Label>Calculation Method</Label>
                   <Select
                     value={prayerSettings.calculation_method}
-                    onValueChange={(value) => setPrayerSettings(prev => ({ ...prev, calculation_method: value }))}
+                    onValueChange={(value) => updatePrayerSettings({ calculation_method: value })}
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="ISNA">ISNA (North America)</SelectItem>
-                      <SelectItem value="MuslimWorldLeague">Muslim World League</SelectItem>
+                      <SelectItem value="ISNA">ISNA (Islamic Society of North America)</SelectItem>
+                      <SelectItem value="MWL">Muslim World League</SelectItem>
                       <SelectItem value="Karachi">University of Karachi</SelectItem>
                       <SelectItem value="UmmAlQura">Umm Al-Qura (Makkah)</SelectItem>
                       <SelectItem value="Egyptian">Egyptian General Survey</SelectItem>
-                      <SelectItem value="Tehran">Institute of Geophysics Tehran</SelectItem>
-                      <SelectItem value="Kuwait">Kuwait</SelectItem>
-                      <SelectItem value="Qatar">Qatar</SelectItem>
-                      <SelectItem value="Singapore">Singapore</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="madhab">Madhab (Asr Calculation)</Label>
+                  <Label>Madhab (Jurisprudence School)</Label>
                   <Select
                     value={prayerSettings.madhab}
-                    onValueChange={(value) => setPrayerSettings(prev => ({ ...prev, madhab: value }))}
+                    onValueChange={(value) => updatePrayerSettings({ madhab: value })}
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Shafi">Shafi (Standard)</SelectItem>
-                      <SelectItem value="Hanafi">Hanafi (Later Asr)</SelectItem>
+                      <SelectItem value="Shafi">Shafi</SelectItem>
+                      <SelectItem value="Hanafi">Hanafi</SelectItem>
+                      <SelectItem value="Maliki">Maliki</SelectItem>
+                      <SelectItem value="Hanbali">Hanbali</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
 
-              <Separator />
+              <div className="space-y-4">
+                <Label>Prayer Time Adjustments (minutes)</Label>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-sm">Fajr: {prayerSettings.fajr_adjustment > 0 ? '+' : ''}{prayerSettings.fajr_adjustment}min</Label>
+                    <Slider
+                      value={[prayerSettings.fajr_adjustment]}
+                      onValueChange={([value]) => updatePrayerSettings({ fajr_adjustment: value })}
+                      min={-15}
+                      max={15}
+                      step={1}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label className="text-sm">Dhuhr: {prayerSettings.dhuhr_adjustment > 0 ? '+' : ''}{prayerSettings.dhuhr_adjustment}min</Label>
+                    <Slider
+                      value={[prayerSettings.dhuhr_adjustment]}
+                      onValueChange={([value]) => updatePrayerSettings({ dhuhr_adjustment: value })}
+                      min={-15}
+                      max={15}
+                      step={1}
+                    />
+                  </div>
 
-              {/* Manual Adjustments */}
-              <div>
-                <h4 className="font-medium mb-4">Manual Time Adjustments (minutes)</h4>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                  {['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'].map((prayer) => (
-                    <div key={prayer} className="space-y-2">
-                      <Label htmlFor={`${prayer}_adjustment`} className="capitalize">
-                        {prayer}
-                      </Label>
-                      <Input
-                        id={`${prayer}_adjustment`}
-                        type="number"
-                        min="-30"
-                        max="30"
-                        value={prayerSettings[`${prayer}_adjustment` as keyof PrayerSettings] as number}
-                        onChange={(e) => setPrayerSettings(prev => ({ 
-                          ...prev, 
-                          [`${prayer}_adjustment`]: parseInt(e.target.value) || 0 
-                        }))}
-                        className="text-center"
-                      />
-                    </div>
-                  ))}
+                  <div className="space-y-2">
+                    <Label className="text-sm">Asr: {prayerSettings.asr_adjustment > 0 ? '+' : ''}{prayerSettings.asr_adjustment}min</Label>
+                    <Slider
+                      value={[prayerSettings.asr_adjustment]}
+                      onValueChange={([value]) => updatePrayerSettings({ asr_adjustment: value })}
+                      min={-15}
+                      max={15}
+                      step={1}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label className="text-sm">Maghrib: {prayerSettings.maghrib_adjustment > 0 ? '+' : ''}{prayerSettings.maghrib_adjustment}min</Label>
+                    <Slider
+                      value={[prayerSettings.maghrib_adjustment]}
+                      onValueChange={([value]) => updatePrayerSettings({ maghrib_adjustment: value })}
+                      min={-15}
+                      max={15}
+                      step={1}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm">Isha: {prayerSettings.isha_adjustment > 0 ? '+' : ''}{prayerSettings.isha_adjustment}min</Label>
+                    <Slider
+                      value={[prayerSettings.isha_adjustment]}
+                      onValueChange={([value]) => updatePrayerSettings({ isha_adjustment: value })}
+                      min={-15}
+                      max={15}
+                      step={1}
+                    />
+                  </div>
                 </div>
-                <p className="text-xs text-muted-foreground mt-2">
-                  Adjust prayer times to match your local mosque. Use positive values to add minutes, negative to subtract.
-                </p>
               </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="notifications">Prayer Notifications</Label>
+                  <p className="text-sm text-muted-foreground">Receive reminders before prayer times</p>
+                </div>
+                <Switch
+                  id="notifications"
+                  checked={prayerSettings.notifications_enabled}
+                  onCheckedChange={(checked) => updatePrayerSettings({ notifications_enabled: checked })}
+                />
+              </div>
+
+              {prayerSettings.notifications_enabled && (
+                <div className="space-y-2">
+                  <Label>Notification timing: {prayerSettings.notification_minutes_before} minutes before</Label>
+                  <Slider
+                    value={[prayerSettings.notification_minutes_before]}
+                    onValueChange={([value]) => updatePrayerSettings({ notification_minutes_before: value })}
+                    min={5}
+                    max={30}
+                    step={5}
+                  />
+                </div>
+              )}
             </CardContent>
           </Card>
 
-          {/* Notification Settings */}
+          {/* Account Actions */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Bell className="h-5 w-5" />
-                Notification Settings
+                <User className="h-5 w-5" />
+                Account Actions
               </CardTitle>
               <CardDescription>
-                Configure prayer time and task reminders
+                Manage your account settings
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Browser Permission Status */}
-              <div className="p-4 rounded-lg border bg-muted/50">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-medium">Browser Notifications</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Status: {permission === 'granted' ? 'Enabled' : permission === 'denied' ? 'Blocked' : 'Not requested'}
-                    </p>
-                  </div>
-                  {permission !== 'granted' && (
-                    <Button onClick={requestPermission} variant="outline">
-                      Enable
-                    </Button>
-                  )}
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Sign Out</p>
+                  <p className="text-sm text-muted-foreground">Sign out of your account</p>
                 </div>
+                <Button onClick={signOut} variant="outline">
+                  Sign Out
+                </Button>
               </div>
-
-              {permission === 'granted' && (
-                <>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label htmlFor="prayer_notifications" className="text-base font-medium">
-                        Prayer Reminders
-                      </Label>
-                      <p className="text-sm text-muted-foreground">
-                        Get notified before each prayer time
-                      </p>
-                    </div>
-                    <Switch
-                      id="prayer_notifications"
-                      checked={preferences.prayerReminders}
-                      onCheckedChange={(checked) => updatePreferences({ prayerReminders: checked })}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label htmlFor="task_notifications" className="text-base font-medium">
-                        Task Reminders
-                      </Label>
-                      <p className="text-sm text-muted-foreground">
-                        Get notified about upcoming task due dates
-                      </p>
-                    </div>
-                    <Switch
-                      id="task_notifications"
-                      checked={preferences.taskReminders}
-                      onCheckedChange={(checked) => updatePreferences({ taskReminders: checked })}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label htmlFor="daily_goals" className="text-base font-medium">
-                        Daily Spiritual Goals
-                      </Label>
-                      <p className="text-sm text-muted-foreground">
-                        Reminders for dhikr, Quran reading, and other practices
-                      </p>
-                    </div>
-                    <Switch
-                      id="daily_goals"
-                      checked={preferences.dailyGoals}
-                      onCheckedChange={(checked) => updatePreferences({ dailyGoals: checked })}
-                    />
-                  </div>
-
-                  <div className="space-y-2 pl-4 border-l-2 border-primary/20">
-                    <Label htmlFor="notification_timing">
-                      Remind me before prayer time
-                    </Label>
-                    <Select
-                      value={preferences.minutesBefore.toString()}
-                      onValueChange={(value) => updatePreferences({ minutesBefore: parseInt(value) })}
-                    >
-                      <SelectTrigger className="w-40">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="5">5 minutes</SelectItem>
-                        <SelectItem value="10">10 minutes</SelectItem>
-                        <SelectItem value="15">15 minutes</SelectItem>
-                        <SelectItem value="20">20 minutes</SelectItem>
-                        <SelectItem value="30">30 minutes</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </>
-              )}
-
-              {permission === 'denied' && (
-                <div className="p-4 rounded-lg border border-orange-200 bg-orange-50">
-                  <h4 className="font-medium text-orange-900 mb-2">Notifications Blocked</h4>
-                  <p className="text-sm text-orange-700 mb-3">
-                    Notifications are currently blocked in your browser. To enable them:
-                  </p>
-                  <ol className="text-sm text-orange-700 space-y-1 list-decimal list-inside">
-                    <li>Click the lock icon in your browser's address bar</li>
-                    <li>Change notification permission to "Allow"</li>
-                    <li>Refresh this page</li>
-                  </ol>
-                </div>
-              )}
             </CardContent>
           </Card>
-
-          {/* Calendar Integration */}
-          <CalendarExport />
 
           {/* Help & Support */}
           <Card>
@@ -601,11 +534,11 @@ const Settings = () => {
                 </Button>
                 <Button 
                   variant="outline" 
-                  onClick={() => navigate('/about')}
+                  onClick={() => navigate('/app-info')}
                   className="flex items-center gap-2 justify-start"
                 >
-                  <Heart className="h-4 w-4" />
-                  About App
+                  <Info className="h-4 w-4" />
+                  App Information
                 </Button>
                 <Button 
                   variant="outline" 

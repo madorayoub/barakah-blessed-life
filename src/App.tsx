@@ -22,6 +22,7 @@ import Preferences from "./pages/onboarding/Preferences";
 
 // Main app pages
 import Dashboard from "./pages/Dashboard";
+import TaskAutoPopulator from "./components/TaskAutoPopulator"
 import Tasks from "./pages/Tasks";
 import Prayers from "./pages/Prayers";
 import CalendarView from "./pages/CalendarView";
@@ -70,6 +71,7 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+        <TaskAutoPopulator />
         <TooltipProvider>
           <Toaster />
           <Sonner />
