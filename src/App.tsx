@@ -36,20 +36,13 @@ import Help from "./pages/Help";
 import AppInfo from "./pages/AppInfo";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { SUPABASE_READY } from "@/integrations/supabase/client";
+import { MissingSupabaseConfig } from "@/components/MissingSupabaseConfig";
 
 const queryClient = new QueryClient();
 
 const App = () => {
   if (!SUPABASE_READY) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-6 text-center">
-        <h1 className="text-2xl font-semibold text-gray-900">Missing configuration</h1>
-        <p className="mt-2 max-w-xl text-gray-600">
-          Set <code>VITE_SUPABASE_URL</code> and <code>VITE_SUPABASE_ANON_KEY</code> in your GitHub Actions
-          secrets, then redeploy to enable Supabase features.
-        </p>
-      </div>
-    );
+    return <MissingSupabaseConfig />;
   }
 
   return (

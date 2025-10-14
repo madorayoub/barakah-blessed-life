@@ -60,6 +60,15 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
+## Troubleshooting blank screens locally
+
+If the development server starts but the browser only shows a blank page, check that the Supabase credentials are configured. The app halts rendering when either of the following environment variables are missing:
+
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
+
+Create a `.env.local` file in the project root with those values, or add them to your deployment environment. You can find both inside the Supabase dashboard under **Project Settings → API**.
+
 ## How can I deploy this project?
 
 Simply open [Lovable](https://lovable.dev/projects/a66fb4bd-7178-4787-967e-dcf09b41126a) and click on Share -> Publish.
