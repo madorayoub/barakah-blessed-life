@@ -50,11 +50,12 @@ const App = () => {
             <TooltipProvider>
               <Toaster />
               <BrowserRouter
-            future={{
-              v7_startTransition: true,
-              v7_relativeSplatPath: true
-            }}
-          >
+                basename={import.meta.env.BASE_URL}
+                future={{
+                  v7_startTransition: true,
+                  v7_relativeSplatPath: true,
+                }}
+              >
         <Routes>
           {/* Landing and Demo */}
           <Route path="/" element={<Index />} />
