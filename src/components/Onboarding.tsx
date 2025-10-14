@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { MapPin, Clock, Settings, Bell, CheckCircle2, ArrowRight, ArrowLeft, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -61,6 +61,28 @@ interface OnboardingProps {
   onComplete: () => void
 }
 
+function getDefaultMethodForCountry(countryCodeOrName?: string | null): string {
+  if (!countryCodeOrName) {
+    return 'MuslimWorldLeague'
+  }
+
+  const normalized = countryCodeOrName.trim().toUpperCase()
+
+  if (['US', 'USA', 'UNITED STATES', 'UNITED STATES OF AMERICA'].includes(normalized)) {
+    return 'ISNA'
+  }
+
+  if (['CA', 'CANADA'].includes(normalized)) {
+    return 'ISNA'
+  }
+
+  if (['SA', 'SAUDI ARABIA', 'SAUDI-ARABIA', 'KINGDOM OF SAUDI ARABIA'].includes(normalized)) {
+    return 'UmmAlQura'
+  }
+
+  return 'MuslimWorldLeague'
+}
+
 export function Onboarding({ onComplete }: OnboardingProps) {
   const { user } = useAuth()
   const { requestPermission } = useNotifications()
@@ -68,12 +90,35 @@ export function Onboarding({ onComplete }: OnboardingProps) {
   const [formData, setFormData] = useState({
     location_city: '',
     location_country: '',
+    country_code: '',
     calculation_method: 'ISNA',
     madhab: 'Shafi',
+    high_latitude_rule: 'MiddleOfTheNight',
     difficulty_mode: 'basic',
     coordinates: { latitude: 0, longitude: 0 }
   })
+  const [methodManuallySelected, setMethodManuallySelected] = useState(false)
   const [loading, setLoading] = useState(false)
+
+  const calculationMethodOptions = useMemo(
+    () => [
+      { value: 'ISNA', label: 'ISNA (North America)' },
+      { value: 'MuslimWorldLeague', label: 'Muslim World League' },
+      { value: 'Karachi', label: 'University of Karachi' },
+      { value: 'UmmAlQura', label: 'Umm Al-Qura (Makkah)' },
+      { value: 'Egyptian', label: 'Egyptian General Survey' },
+      { value: 'Tehran', label: 'Tehran' },
+      { value: 'Kuwait', label: 'Kuwait' },
+      { value: 'Qatar', label: 'Qatar' },
+      { value: 'Singapore', label: 'Singapore' }
+    ],
+    []
+  )
+
+  const recommendedMethod = useMemo(() => {
+    const countryHint = formData.country_code || formData.location_country || undefined
+    return getDefaultMethodForCountry(countryHint)
+  }, [formData.country_code, formData.location_country])
 
   const getCurrentLocation = () => {
     if (navigator.geolocation) {
@@ -93,11 +138,14 @@ export function Onboarding({ onComplete }: OnboardingProps) {
             const data = await response.json()
             const city = data.city || data.locality || ''
             const country = data.countryName || ''
+            const recommended = getDefaultMethodForCountry(data.countryCode || country)
 
             setFormData(prev => ({
               ...prev,
               location_city: city,
               location_country: country,
+              country_code: data.countryCode || '',
+              calculation_method: !methodManuallySelected ? recommended : prev.calculation_method,
               coordinates: {
                 latitude,
                 longitude
@@ -158,14 +206,14 @@ export function Onboarding({ onComplete }: OnboardingProps) {
         // Try to update profile if user exists
         const { error: profileError } = await supabase
           .from('profiles')
-          .update({
+          .upsert({
+            user_id: user.id,
             location_city: formData.location_city,
             location_country: formData.location_country,
             location_latitude: formData.coordinates.latitude,
             location_longitude: formData.coordinates.longitude,
             difficulty_mode: formData.difficulty_mode
           })
-          .eq('user_id', user.id)
 
         if (profileError) {
           console.error('Profile update error:', profileError)
@@ -179,6 +227,7 @@ export function Onboarding({ onComplete }: OnboardingProps) {
             user_id: user.id,
             calculation_method: formData.calculation_method,
             madhab: formData.madhab,
+            high_latitude_rule: formData.high_latitude_rule,
             notifications_enabled: true,
             notification_minutes_before: 10
           })
@@ -232,6 +281,7 @@ export function Onboarding({ onComplete }: OnboardingProps) {
   const IconComponent = currentStepData.icon
 
   const hasManualLocation = !!formData.location_city && !!formData.location_country
+  const hasCountry = !!formData.location_country
   const hasDetectedCoordinates = formData.coordinates.latitude !== 0
 
   return (
@@ -321,7 +371,7 @@ export function Onboarding({ onComplete }: OnboardingProps) {
                     className="w-full p-3 border rounded-lg"
                     placeholder="Your country"
                     value={formData.location_country}
-                    onChange={(e) => setFormData(prev => ({ ...prev, location_country: e.target.value }))}
+                    onChange={(e) => setFormData(prev => ({ ...prev, location_country: e.target.value, country_code: '' }))}
                   />
                 </div>
               </div>
@@ -331,6 +381,11 @@ export function Onboarding({ onComplete }: OnboardingProps) {
                   <MapPin className="h-4 w-4 mr-2" />
                   Auto-detect my location
                 </Button>
+                {(hasManualLocation || hasDetectedCoordinates) && (
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Detected: {[formData.location_city, formData.location_country].filter(Boolean).join(', ') || 'Coordinates saved'}
+                  </p>
+                )}
               </div>
             </div>
           )}
@@ -338,22 +393,30 @@ export function Onboarding({ onComplete }: OnboardingProps) {
           {/* Calculation Step */}
           {currentStep === 2 && (
             <div className="space-y-4">
+              {hasCountry && !methodManuallySelected && (
+                <div className="rounded-lg border border-emerald-100 bg-emerald-50 p-3 text-sm text-emerald-900">
+                  We recommend using the {calculationMethodOptions.find(option => option.value === recommendedMethod)?.label || 'default method'} based on your location. You can change this anytime.
+                </div>
+              )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Calculation Method</label>
                   <Select
                     value={formData.calculation_method}
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, calculation_method: value }))}
+                    onValueChange={(value) => {
+                      setMethodManuallySelected(true)
+                      setFormData(prev => ({ ...prev, calculation_method: value }))
+                    }}
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="ISNA">ISNA (North America)</SelectItem>
-                      <SelectItem value="MuslimWorldLeague">Muslim World League</SelectItem>
-                      <SelectItem value="Karachi">University of Karachi</SelectItem>
-                      <SelectItem value="UmmAlQura">Umm Al-Qura (Makkah)</SelectItem>
-                      <SelectItem value="Egyptian">Egyptian General Survey</SelectItem>
+                      {calculationMethodOptions.map(option => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -370,6 +433,23 @@ export function Onboarding({ onComplete }: OnboardingProps) {
                     <SelectContent>
                       <SelectItem value="Shafi">Shafi (Standard)</SelectItem>
                       <SelectItem value="Hanafi">Hanafi (Later Asr)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">High Latitude Rule</label>
+                  <Select
+                    value={formData.high_latitude_rule}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, high_latitude_rule: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="MiddleOfTheNight">Middle of the night</SelectItem>
+                      <SelectItem value="SeventhOfTheNight">1/7 of the night</SelectItem>
+                      <SelectItem value="TwilightAngle">Twilight angle</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

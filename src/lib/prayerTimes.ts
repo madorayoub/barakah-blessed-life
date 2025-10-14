@@ -26,6 +26,7 @@ export interface PrayerSettings {
 const methodMap: Record<string, () => CalculationParameters> = {
   'ISNA': CalculationMethod.NorthAmerica,
   'MuslimWorldLeague': CalculationMethod.MuslimWorldLeague,
+  'MWL': CalculationMethod.MuslimWorldLeague,
   'Karachi': CalculationMethod.Karachi,
   'UmmAlQura': CalculationMethod.UmmAlQura,
   'Egyptian': CalculationMethod.Egyptian,
@@ -53,18 +54,20 @@ export function calculatePrayerTimes(
   settings?: Partial<PrayerSettings>
 ): DailyPrayerTimes {
   const coordinates = new Coordinates(latitude, longitude)
-  
+
   // Get calculation parameters
-  const method = methodMap[settings?.calculation_method || 'ISNA']
-  let params = method()
-  
+  const methodFactory = methodMap[settings?.calculation_method || 'ISNA'] ?? CalculationMethod.NorthAmerica
+  const params = typeof methodFactory === 'function'
+    ? methodFactory()
+    : CalculationMethod.NorthAmerica()
+
   // Apply madhab
-  if (settings?.madhab) {
+  if (settings?.madhab && madhabMap[settings.madhab]) {
     params.madhab = madhabMap[settings.madhab]
   }
-  
+
   // Apply high latitude rule
-  if (settings?.high_latitude_rule) {
+  if (settings?.high_latitude_rule && highLatitudeRuleMap[settings.high_latitude_rule]) {
     params.highLatitudeRule = highLatitudeRuleMap[settings.high_latitude_rule]
   }
   
