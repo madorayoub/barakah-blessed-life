@@ -71,10 +71,22 @@ const Settings = () => {
           .maybeSingle()
 
         if (settingsData) {
+          const allowedMadhabs = ['Shafi', 'Hanafi']
+          const allowedHighLatitudeRules = ['MiddleOfTheNight', 'SeventhOfTheNight', 'TwilightAngle']
+          const normalizedMethod = settingsData.calculation_method === 'MWL'
+            ? 'MuslimWorldLeague'
+            : (settingsData.calculation_method || 'ISNA')
+          const normalizedMadhab = allowedMadhabs.includes(settingsData.madhab)
+            ? settingsData.madhab
+            : 'Shafi'
+          const normalizedHighLatitudeRule = allowedHighLatitudeRules.includes(settingsData.high_latitude_rule)
+            ? settingsData.high_latitude_rule
+            : 'MiddleOfTheNight'
+
           setPrayerSettings({
-            calculation_method: settingsData.calculation_method || 'ISNA',
-            madhab: settingsData.madhab || 'Shafi',
-            high_latitude_rule: settingsData.high_latitude_rule || 'MiddleOfTheNight',
+            calculation_method: normalizedMethod,
+            madhab: normalizedMadhab,
+            high_latitude_rule: normalizedHighLatitudeRule,
             fajr_adjustment: settingsData.fajr_adjustment || 0,
             dhuhr_adjustment: settingsData.dhuhr_adjustment || 0,
             asr_adjustment: settingsData.asr_adjustment || 0,
@@ -347,10 +359,14 @@ const Settings = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="ISNA">ISNA (Islamic Society of North America)</SelectItem>
-                      <SelectItem value="MWL">Muslim World League</SelectItem>
+                      <SelectItem value="MuslimWorldLeague">Muslim World League</SelectItem>
                       <SelectItem value="Karachi">University of Karachi</SelectItem>
                       <SelectItem value="UmmAlQura">Umm Al-Qura (Makkah)</SelectItem>
                       <SelectItem value="Egyptian">Egyptian General Survey</SelectItem>
+                      <SelectItem value="Tehran">Tehran</SelectItem>
+                      <SelectItem value="Kuwait">Kuwait</SelectItem>
+                      <SelectItem value="Qatar">Qatar</SelectItem>
+                      <SelectItem value="Singapore">Singapore</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -367,8 +383,23 @@ const Settings = () => {
                     <SelectContent>
                       <SelectItem value="Shafi">Shafi</SelectItem>
                       <SelectItem value="Hanafi">Hanafi</SelectItem>
-                      <SelectItem value="Maliki">Maliki</SelectItem>
-                      <SelectItem value="Hanbali">Hanbali</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>High Latitude Rule</Label>
+                  <Select
+                    value={prayerSettings.high_latitude_rule}
+                    onValueChange={(value) => updatePrayerSettings({ high_latitude_rule: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="MiddleOfTheNight">Middle of the night</SelectItem>
+                      <SelectItem value="SeventhOfTheNight">1/7 of the night</SelectItem>
+                      <SelectItem value="TwilightAngle">Twilight angle</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
