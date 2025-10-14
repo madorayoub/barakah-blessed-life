@@ -4,15 +4,37 @@ import { createClient } from "@supabase/supabase-js";
 const url = import.meta.env.VITE_SUPABASE_URL;
 const anon = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Fail fast in production if missing (avoids silent 401s)
+const missingEnvMessage = [
+  "Missing Supabase env:",
+  `VITE_SUPABASE_URL=${String(url)}`,
+  `VITE_SUPABASE_ANON_KEY=${anon ? "***set***" : "undefined"}`
+].join(" ");
+
 if (!url || !anon) {
-  const msg = [
-    "Missing Supabase env:",
-    `VITE_SUPABASE_URL=${String(url)}`,
-    `VITE_SUPABASE_ANON_KEY=${anon ? "***set***" : "undefined"}`
-  ].join(" ");
-  // Throwing here is OK — we want a clear error during runtime if CI didn't inject envs.
-  throw new Error(msg);
+  if (import.meta.env.PROD) {
+    throw new Error(missingEnvMessage);
+  }
+
+  console.warn(`${missingEnvMessage}. Falling back to mock Supabase client.`);
 }
 
-export const supabase = createClient(url, anon);
+type SupabaseClient = ReturnType<typeof createClient>;
+
+const createMockSupabaseClient = () =>
+  new Proxy({} as SupabaseClient, {
+    get(_target, prop) {
+      if (prop === "then") {
+        return undefined;
+      }
+
+      return () => {
+        throw new Error(
+          `Supabase client unavailable. ${missingEnvMessage}. ` +
+          "Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to enable Supabase features."
+        );
+      };
+    }
+  });
+
+export const supabase: SupabaseClient =
+  url && anon ? createClient(url, anon) : createMockSupabaseClient();
