@@ -78,18 +78,50 @@ export function Onboarding({ onComplete }: OnboardingProps) {
   const getCurrentLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setFormData(prev => ({
-            ...prev,
-            coordinates: {
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude
+        async (position) => {
+          const { latitude, longitude } = position.coords
+
+          try {
+            const response = await fetch(
+              `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
+            )
+
+            if (!response.ok) {
+              throw new Error('Reverse geocode failed')
             }
-          }))
-          toast({
-            title: "Location detected",
-            description: "Your location has been automatically detected"
-          })
+
+            const data = await response.json()
+            const city = data.city || data.locality || ''
+            const country = data.countryName || ''
+
+            setFormData(prev => ({
+              ...prev,
+              location_city: city,
+              location_country: country,
+              coordinates: {
+                latitude,
+                longitude
+              }
+            }))
+
+            toast({
+              title: "Location detected",
+              description: `${city ? `${city}, ` : ''}${country}`
+            })
+          } catch (error) {
+            console.error('Error reverse geocoding location:', error)
+            setFormData(prev => ({
+              ...prev,
+              coordinates: {
+                latitude,
+                longitude
+              }
+            }))
+            toast({
+              title: "Location detected",
+              description: "Coordinates saved. Please enter your city manually."
+            })
+          }
         },
         (error) => {
           console.error('Error getting location:', error)
@@ -198,6 +230,9 @@ export function Onboarding({ onComplete }: OnboardingProps) {
 
   const currentStepData = steps[currentStep]
   const IconComponent = currentStepData.icon
+
+  const hasManualLocation = !!formData.location_city && !!formData.location_country
+  const hasDetectedCoordinates = formData.coordinates.latitude !== 0
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-100 flex items-center justify-center p-4">
@@ -447,12 +482,9 @@ export function Onboarding({ onComplete }: OnboardingProps) {
             </Button>
 
             {currentStep < steps.length - 1 ? (
-              <Button 
+              <Button
                 onClick={currentStep === 4 ? handleNotificationSetup : nextStep}
-                disabled={
-                  (currentStep === 1 && !formData.location_city) ||
-                  (currentStep === 1 && !formData.location_country && formData.coordinates.latitude === 0)
-                }
+                disabled={currentStep === 1 && !(hasManualLocation || hasDetectedCoordinates)}
               >
                 {currentStep === 4 ? 'Continue' : 'Next'}
                 <ArrowRight className="h-4 w-4 ml-2" />
