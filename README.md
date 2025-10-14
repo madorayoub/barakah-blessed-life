@@ -60,6 +60,19 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
+## Supabase configuration
+
+This project ships with a set of public Supabase credentials so the app can boot even when `VITE_SUPABASE_URL` and
+`VITE_SUPABASE_ANON_KEY` environment variables are missing. To use your own project instead of the bundled defaults, create
+an `.env` file at the project root with the following values:
+
+```dotenv
+VITE_SUPABASE_URL=<your-supabase-url>
+VITE_SUPABASE_ANON_KEY=<your-supabase-anon-key>
+```
+
+Restart the dev server after updating the variables so Vite picks up the new configuration.
+
 ## How can I deploy this project?
 
 Simply open [Lovable](https://lovable.dev/projects/a66fb4bd-7178-4787-967e-dcf09b41126a) and click on Share -> Publish.
