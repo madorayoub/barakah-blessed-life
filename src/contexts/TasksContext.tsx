@@ -306,21 +306,18 @@ export function TasksProvider({ children }: { children: ReactNode }) {
         setTasks(prevTasks => {
           console.log('✅ CONTEXT NUCLEAR CREATE - Task:', newTask.title)
           console.log('✅ Tasks BEFORE create:', prevTasks.length)
-          
-          // Deep copy existing tasks + add new task
-          const deepCopiedTasks = JSON.parse(JSON.stringify(prevTasks))
-          const finalTasks = [newTask, ...deepCopiedTasks]
-          
+
+          const finalTasks = [newTask, ...prevTasks]
+
           console.log('✅ Tasks AFTER create:', finalTasks.length)
           console.log('✅ CONTEXT NUCLEAR: Created completely new array!')
-          
+
           return finalTasks
         })
       } else {
         // Handle subtask creation
-        setTasks(prevTasks => {
-          const deepCopiedTasks = JSON.parse(JSON.stringify(prevTasks))
-          const finalTasks = deepCopiedTasks.map((task: Task) => {
+        setTasks(prevTasks =>
+          prevTasks.map(task => {
             if (task.id === cleanTaskData.parent_task_id) {
               return {
                 ...task,
@@ -329,8 +326,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
             }
             return task
           })
-          return finalTasks
-        })
+        )
       }
 
       console.log('✅ CONTEXT CREATE COMPLETE')
@@ -355,23 +351,18 @@ export function TasksProvider({ children }: { children: ReactNode }) {
       // 🚀 CONTEXT NUCLEAR UPDATE: JSON Deep Copy for Delete
       setTasks(prevTasks => {
         console.log('🔥 CONTEXT Tasks BEFORE delete:', prevTasks.length)
-        
-        // Deep copy the entire array
-        const deepCopiedTasks = JSON.parse(JSON.stringify(prevTasks))
-        
-        // Filter out deleted task
-        const filteredTasks = deepCopiedTasks.filter((task: Task) => task.id !== taskId)
-        
-        // Remove from subtasks too
-        const finalTasks = filteredTasks.map((task: Task) => ({
-          ...task,
-          subtasks: (task.subtasks || []).filter(subtask => subtask.id !== taskId)
-        }))
-        
-        console.log('🔥 CONTEXT Tasks AFTER delete:', finalTasks.length)
+
+        const filteredTasks = prevTasks
+          .filter(task => task.id !== taskId)
+          .map(task => ({
+            ...task,
+            subtasks: (task.subtasks || []).filter(subtask => subtask.id !== taskId)
+          }))
+
+        console.log('🔥 CONTEXT Tasks AFTER delete:', filteredTasks.length)
         console.log('🔥 CONTEXT NUCLEAR: Created completely new array!')
-        
-        return finalTasks
+
+        return filteredTasks
       })
 
       const { error } = await supabase
@@ -432,20 +423,19 @@ export function TasksProvider({ children }: { children: ReactNode }) {
       } as Task
 
       // Nuclear update for task updates
-      setTasks(prev => {
-        const deepCopied = JSON.parse(JSON.stringify(prev))
-        return deepCopied.map((task: Task) => {
+      setTasks(prev =>
+        prev.map(task => {
           if (task.id === taskId) {
             return { ...task, ...updatedTask }
           }
           return {
             ...task,
-            subtasks: (task.subtasks || []).map(subtask => 
+            subtasks: (task.subtasks || []).map(subtask =>
               subtask.id === taskId ? { ...subtask, ...updatedTask } : subtask
             )
           }
         })
-      })
+      )
 
       return updatedTask
     } catch (error) {
@@ -457,22 +447,21 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     const completed_at = new Date().toISOString()
     
     // Nuclear optimistic update
-    setTasks(prev => {
-      const deepCopied = JSON.parse(JSON.stringify(prev))
-      return deepCopied.map((t: Task) => {
+    setTasks(prev =>
+      prev.map(t => {
         if (t.id === taskId) {
           return { ...t, status: 'completed' as Task['status'], completed_at }
         }
         return {
           ...t,
-          subtasks: (t.subtasks || []).map(subtask => 
-            subtask.id === taskId 
+          subtasks: (t.subtasks || []).map(subtask =>
+            subtask.id === taskId
               ? { ...subtask, status: 'completed' as Task['status'], completed_at }
               : subtask
           )
         }
       })
-    })
+    )
 
     const result = await updateTask(taskId, { 
       status: 'completed',
