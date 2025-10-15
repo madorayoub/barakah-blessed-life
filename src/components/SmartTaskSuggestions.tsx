@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useTasks } from '@/contexts/TasksContext'
 import { usePrayerTimes } from '@/hooks/usePrayerTimes'
+import { getLocalDateString } from '@/utils/date'
 
 interface SmartTaskSuggestionsProps {
   onTaskSuggested: (taskTitle: string) => void
@@ -17,7 +18,7 @@ export function SmartTaskSuggestions({ onTaskSuggested }: SmartTaskSuggestionsPr
   const [lastGeneratedTime, setLastGeneratedTime] = useState<number>(0)
 
   // Memoize today's date to prevent unnecessary recalculations
-  const today = useMemo(() => new Date().toISOString().split('T')[0], [])
+  const today = useMemo(() => getLocalDateString(new Date()), [])
   
   // Get today's completed tasks
   const todayCompleted = useMemo(() => 

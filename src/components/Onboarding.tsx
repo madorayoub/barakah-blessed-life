@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { MapPin, Clock, Settings, Bell, CheckCircle2, ArrowRight, ArrowLeft, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -61,6 +61,24 @@ const steps: OnboardingStep[] = [
   }
 ]
 
+const highLatitudeRuleOptions = [
+  {
+    value: 'MiddleOfTheNight',
+    label: 'Middle of the Night',
+    description: 'Splits the night in half for Fajr and Isha adjustments.'
+  },
+  {
+    value: 'SeventhOfTheNight',
+    label: '1/7 of the Night',
+    description: 'Uses one seventh of night length to balance timings.'
+  },
+  {
+    value: 'TwilightAngle',
+    label: 'Angle-based',
+    description: 'Keeps the calculation angles consistent year-round.'
+  }
+]
+
 interface OnboardingProps {
   onComplete: () => void
 }
@@ -104,9 +122,9 @@ export function Onboarding({ onComplete }: OnboardingProps) {
     coordinates: { latitude: 0, longitude: 0 }
   })
   const [methodManuallySelected, setMethodManuallySelected] = useState(false)
+  const [highLatitudeManuallySelected, setHighLatitudeManuallySelected] = useState(false)
   const [advancedOpen, setAdvancedOpen] = useState(false)
   const [loading, setLoading] = useState(false)
-  const methodSelectTriggerRef = useRef<HTMLButtonElement | null>(null)
 
   const calculationMethodOptions = useMemo(
     () => [
@@ -132,6 +150,10 @@ export function Onboarding({ onComplete }: OnboardingProps) {
     return calculationMethodOptions.find(option => option.value === recommendedMethod)?.label
   }, [calculationMethodOptions, recommendedMethod])
 
+  const currentMethodLabel = useMemo(() => {
+    return calculationMethodOptions.find(option => option.value === formData.calculation_method)?.label || formData.calculation_method
+  }, [calculationMethodOptions, formData.calculation_method])
+
   useEffect(() => {
     if (
       currentStep === 2 &&
@@ -152,6 +174,24 @@ export function Onboarding({ onComplete }: OnboardingProps) {
       setAdvancedOpen(true)
     }
   }, [formData.coordinates.latitude])
+
+  useEffect(() => {
+    const latitude = Math.abs(formData.coordinates.latitude)
+    if (!latitude) return
+
+    const recommendedRule = latitude >= 48 ? 'TwilightAngle' : 'MiddleOfTheNight'
+
+    if (!highLatitudeManuallySelected && formData.high_latitude_rule !== recommendedRule) {
+      setFormData(prev => ({
+        ...prev,
+        high_latitude_rule: recommendedRule
+      }))
+    }
+  }, [
+    formData.coordinates.latitude,
+    formData.high_latitude_rule,
+    highLatitudeManuallySelected
+  ])
 
   const prayerPreview = useMemo(() => {
     try {
@@ -454,44 +494,32 @@ export function Onboarding({ onComplete }: OnboardingProps) {
           {/* Calculation Step */}
           {currentStep === 2 && (
             <div className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex flex-wrap items-center gap-2">
-                  <label className="text-sm font-medium">Calculation Method</label>
-                  {hasCountry && !methodManuallySelected && recommendedMethodLabel && formData.calculation_method === recommendedMethod && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-xs text-emerald-700">
-                      Recommended for {formData.location_country || formData.country_code || 'your country'}: {recommendedMethodLabel}
-                      <button
-                        type="button"
-                        className="underline"
-                        onClick={() => {
-                          setMethodManuallySelected(true)
-                          methodSelectTriggerRef.current?.focus()
-                          methodSelectTriggerRef.current?.click()
-                        }}
-                      >
-                        Change
-                      </button>
-                    </span>
+              <div className="rounded-lg border p-4 space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-medium">Calculation Method</p>
+                    <p className="text-xs text-muted-foreground">
+                      {recommendedMethodLabel
+                        ? `Recommended for ${formData.location_country || formData.country_code || 'your region'}`
+                        : 'Choose the standard your local masjid follows.'}
+                    </p>
+                  </div>
+                  {recommendedMethodLabel && formData.calculation_method === recommendedMethod && (
+                    <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 border border-emerald-200">
+                      Recommended
+                    </Badge>
                   )}
                 </div>
-                <Select
-                  value={formData.calculation_method}
-                  onValueChange={(value) => {
-                    setMethodManuallySelected(true)
-                    setFormData(prev => ({ ...prev, calculation_method: value }))
-                  }}
-                >
-                  <SelectTrigger ref={methodSelectTriggerRef}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {calculationMethodOptions.map(option => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex flex-wrap items-center gap-2 text-sm">
+                  <span className="text-base font-semibold">{currentMethodLabel}</span>
+                  <button
+                    type="button"
+                    className="text-sm font-medium text-emerald-700 underline"
+                    onClick={() => setAdvancedOpen(true)}
+                  >
+                    Change
+                  </button>
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -504,17 +532,27 @@ export function Onboarding({ onComplete }: OnboardingProps) {
                   <div className={`flex items-start gap-3 rounded-lg border p-3 ${formData.madhab === 'Shafi' ? 'border-emerald-500 bg-emerald-50' : 'border-border'}`}>
                     <RadioGroupItem id="madhab-shafi" value="Shafi" className="mt-1" />
                     <label htmlFor="madhab-shafi" className="text-sm font-medium leading-none">
-                      Shafi (standard Asr)
+                      Shafi (1× shadow length)
                     </label>
                   </div>
                   <div className={`flex items-start gap-3 rounded-lg border p-3 ${formData.madhab === 'Hanafi' ? 'border-emerald-500 bg-emerald-50' : 'border-border'}`}>
                     <RadioGroupItem id="madhab-hanafi" value="Hanafi" className="mt-1" />
                     <label htmlFor="madhab-hanafi" className="text-sm font-medium leading-none">
-                      Hanafi (later Asr)
+                      Hanafi (2× shadow length)
                     </label>
                   </div>
                 </RadioGroup>
-                <p className="text-xs text-muted-foreground">Madhab only affects the Asr time.</p>
+                <p className="text-xs text-muted-foreground">
+                  Madhab only affects the Asr time.{' '}
+                  <a
+                    href="https://batoulapps.github.io/2014/09/15/calculating-prayer-times.html"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline"
+                  >
+                    Learn more
+                  </a>
+                </p>
               </div>
 
               <Accordion
@@ -524,47 +562,65 @@ export function Onboarding({ onComplete }: OnboardingProps) {
                 onValueChange={(value) => setAdvancedOpen(value === 'advanced')}
               >
                 <AccordionItem value="advanced">
-                  <AccordionTrigger>Advanced (rarely needed)</AccordionTrigger>
-                  <AccordionContent className="space-y-3">
+                  <AccordionTrigger>Advanced settings</AccordionTrigger>
+                  <AccordionContent className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Change calculation method</label>
+                      <Select
+                        value={formData.calculation_method}
+                        onValueChange={(value) => {
+                          setMethodManuallySelected(true)
+                          setFormData(prev => ({ ...prev, calculation_method: value }))
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a method" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {calculationMethodOptions.map(option => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
                     <div className="space-y-2">
                       <label className="text-sm font-medium">High Latitude Rule</label>
                       <TooltipProvider delayDuration={150}>
-                        <Select
+                        <RadioGroup
                           value={formData.high_latitude_rule}
-                          onValueChange={(value) => setFormData(prev => ({ ...prev, high_latitude_rule: value }))}
+                          onValueChange={(value) => {
+                            setHighLatitudeManuallySelected(true)
+                            setFormData(prev => ({ ...prev, high_latitude_rule: value }))
+                          }}
+                          className="space-y-2"
                         >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <Tooltip>
+                          {highLatitudeRuleOptions.map(option => (
+                            <Tooltip key={option.value}>
                               <TooltipTrigger asChild>
-                                <SelectItem value="MiddleOfTheNight">Middle of the night</SelectItem>
+                                <div
+                                  className={`flex items-start gap-3 rounded-lg border p-3 cursor-pointer ${
+                                    formData.high_latitude_rule === option.value
+                                      ? 'border-emerald-500 bg-emerald-50'
+                                      : 'border-border'
+                                  }`}
+                                >
+                                  <RadioGroupItem value={option.value} className="mt-1" />
+                                  <div>
+                                    <p className="text-sm font-medium leading-none">{option.label}</p>
+                                    <p className="text-xs text-muted-foreground">{option.description}</p>
+                                  </div>
+                                </div>
                               </TooltipTrigger>
-                              <TooltipContent>
-                                Splits the night in half for Fajr and Isha adjustments.
-                              </TooltipContent>
+                              <TooltipContent>{option.description}</TooltipContent>
                             </Tooltip>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <SelectItem value="SeventhOfTheNight">1/7 of the night</SelectItem>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                Uses one seventh of night length to balance timings.
-                              </TooltipContent>
-                            </Tooltip>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <SelectItem value="TwilightAngle">Twilight angle</SelectItem>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                Keeps the calculation angles consistent year-round.
-                              </TooltipContent>
-                            </Tooltip>
-                          </SelectContent>
-                        </Select>
+                          ))}
+                        </RadioGroup>
                       </TooltipProvider>
                     </div>
+
                     <a
                       href="https://praytimes.org/calculation"
                       target="_blank"

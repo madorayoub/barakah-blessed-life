@@ -17,6 +17,7 @@ import AgendaView from '@/components/calendar-themes/AgendaView'
 import CardsView from '@/components/calendar-themes/CardsView'
 import ZenView from '@/components/calendar-themes/ZenView'
 import BlocksView from '@/components/calendar-themes/BlocksView'
+import { getLocalDateString } from '@/utils/date'
 
 interface CalendarEvent {
   id: string
@@ -272,7 +273,7 @@ const CalendarDayView = () => {
       <CalendarTaskDialog
         open={showNewTaskDialog}
         onOpenChange={setShowNewTaskDialog}
-        defaultDueDate={currentDate.toISOString().split('T')[0]}
+        defaultDueDate={getLocalDateString(currentDate)}
         defaultDueTime={newTaskTime}
       />
     </Card>

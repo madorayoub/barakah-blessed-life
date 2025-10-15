@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from '@/hooks/use-toast'
+import { getLocalDateString } from '@/utils/date'
 
 interface PrayerTime {
   name: string
@@ -124,7 +125,7 @@ export function PrayerTimesFixed() {
       setLoading(true)
       try {
         const today = new Date()
-        const dateString = today.toISOString().split('T')[0]
+        const dateString = getLocalDateString(today)
         
         const response = await fetch(
           `https://api.aladhan.com/v1/timings/${dateString}?latitude=${location.latitude}&longitude=${location.longitude}&method=4`
@@ -171,7 +172,7 @@ export function PrayerTimesFixed() {
       if (!user) return
 
       try {
-        const today = new Date().toISOString().split('T')[0]
+        const today = getLocalDateString(new Date())
         const { data, error } = await supabase
           .from('prayer_completions')
           .select('*')
@@ -212,7 +213,7 @@ export function PrayerTimesFixed() {
     if (!user) return
 
     try {
-      const today = new Date().toISOString().split('T')[0]
+      const today = getLocalDateString(new Date())
       
       const { error } = await supabase
         .from('prayer_completions')
@@ -249,7 +250,7 @@ export function PrayerTimesFixed() {
     if (!user) return
 
     try {
-      const today = new Date().toISOString().split('T')[0]
+      const today = getLocalDateString(new Date())
       
       const { error } = await supabase
         .from('prayer_completions')

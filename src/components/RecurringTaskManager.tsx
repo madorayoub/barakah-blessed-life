@@ -2,17 +2,18 @@ import { useEffect } from 'react'
 import { useTasks } from '@/contexts/TasksContext'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/integrations/supabase/client'
+import { getLocalDateString } from '@/utils/date'
+import { determineRecurringWeekday, shouldCreateRecurringTask } from '@/lib/recurrence'
 
 export function RecurringTaskManager() {
   const { user } = useAuth()
-  const { tasks, createTask } = useTasks()
+  const { createTask } = useTasks()
 
   useEffect(() => {
     if (!user) return
 
     const checkAndCreateRecurringTasks = async () => {
       const today = new Date()
-      const todayStr = today.toISOString().split('T')[0]
       
       // Get all recurring tasks directly from database to avoid infinite loops
       const { data: recurringTasks } = await supabase
@@ -28,9 +29,9 @@ export function RecurringTaskManager() {
         const pattern = recurringTask.recurring_pattern
         
         if (pattern === 'daily') {
-          await checkDailyRecurrence(recurringTask, todayStr)
+          await checkDailyRecurrence(recurringTask, today)
         } else if (pattern === 'weekly') {
-          await checkWeeklyRecurrence(recurringTask, todayStr, today)
+          await checkWeeklyRecurrence(recurringTask, today)
         }
       }
     }
@@ -40,52 +41,50 @@ export function RecurringTaskManager() {
     const interval = setInterval(checkAndCreateRecurringTasks, 60 * 60 * 1000)
     
     return () => clearInterval(interval)
-  }, [user]) // Removed tasks dependency to prevent infinite loops
+  }, [user, createTask])
 
-  const checkDailyRecurrence = async (parentTask: any, todayStr: string) => {
-    // Check if task already exists for today using database query
+  const checkDailyRecurrence = async (parentTask: any, today: Date) => {
+    const todayString = getLocalDateString(today)
     const { data: existingTasks } = await supabase
       .from('tasks')
-      .select('id')
+      .select('id, due_date')
       .eq('parent_task_id', parentTask.id)
-      .eq('due_date', todayStr)
-      .limit(1)
+      .eq('due_date', todayString)
 
-    if (!existingTasks || existingTasks.length === 0) {
+    if (shouldCreateRecurringTask(existingTasks, today)) {
       await createTask({
         title: parentTask.title,
         description: parentTask.description,
         priority: parentTask.priority,
         status: 'pending',
         category_id: parentTask.category_id,
-        due_date: todayStr,
+        due_date: todayString,
         is_recurring: false,
         parent_task_id: parentTask.id
       })
     }
   }
 
-  const checkWeeklyRecurrence = async (parentTask: any, todayStr: string, today: Date) => {
-    const dayOfWeek = today.getDay() // 0 = Sunday, 1 = Monday, etc.
-    
-    // For Islamic tasks like Jummah, check if it's Friday (5)
-    if (parentTask.title.toLowerCase().includes('jummah') && dayOfWeek === 5) {
-      // Check if task already exists for today using database query
+  const checkWeeklyRecurrence = async (parentTask: any, today: Date) => {
+    const dayOfWeek = today.getDay()
+    const targetWeekday = determineRecurringWeekday(parentTask)
+
+    if (targetWeekday !== null && targetWeekday === dayOfWeek) {
+      const todayString = getLocalDateString(today)
       const { data: existingTasks } = await supabase
         .from('tasks')
-        .select('id')
+        .select('id, due_date')
         .eq('parent_task_id', parentTask.id)
-        .eq('due_date', todayStr)
-        .limit(1)
+        .eq('due_date', todayString)
 
-      if (!existingTasks || existingTasks.length === 0) {
+      if (shouldCreateRecurringTask(existingTasks, today)) {
         await createTask({
           title: parentTask.title,
           description: parentTask.description,
           priority: parentTask.priority,
           status: 'pending',
           category_id: parentTask.category_id,
-          due_date: todayStr,
+          due_date: todayString,
           is_recurring: false,
           parent_task_id: parentTask.id
         })
@@ -125,8 +124,8 @@ export function useRecurringTasks() {
 
   const createWeeklyTasks = async () => {
     const weeklyTasks = [
-      { name: 'Jummah Prayer', description: 'Friday congregational prayer' },
-      { name: 'Weekly Quran Review', description: 'Review memorized verses' }
+      { name: 'Jummah Prayer', description: 'Friday congregational prayer', weekday: 5 },
+      { name: 'Weekly Quran Review', description: 'Review memorized verses', weekday: 0 }
     ]
 
     for (const task of weeklyTasks) {
@@ -136,7 +135,8 @@ export function useRecurringTasks() {
         priority: 'medium',
         status: 'pending',
         is_recurring: true,
-        recurring_pattern: 'weekly'
+        recurring_pattern: 'weekly',
+        recurring_weekday: task.weekday
       })
     }
   }

@@ -12,6 +12,7 @@ import { useTaskStatuses } from '@/hooks/useTaskStatuses'
 import { SubtaskManager } from './SubtaskManager'
 import { cn } from '@/lib/utils'
 import { toast } from '@/hooks/use-toast'
+import { getLocalDateString } from '@/utils/date'
 
 interface TaskDetailPanelProps {
   task: Task | null
@@ -114,7 +115,7 @@ export function TaskDetailPanel({ task, isOpen, onClose, onUpdate, onDelete, onC
 
   const formatDate = (date: string | null) => {
     if (!date) return ''
-    return new Date(date).toISOString().split('T')[0]
+    return getLocalDateString(new Date(date))
   }
 
   const handleCreateSubtask = async (title: string) => {
