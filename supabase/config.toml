@@ -16,4 +16,4 @@ enabled = true
 enabled = true
 
 [functions.caldav-proxy]
-verify_jwt = false
+verify_jwt = true

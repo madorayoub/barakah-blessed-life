@@ -1,13 +1,37 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { usePrayerTimes } from '@/hooks/usePrayerTimes'
 import { useTasks } from '@/contexts/TasksContext'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import { getLocalDateString } from '@/utils/date'
+import { calculatePrayerTimes, PrayerSettings } from '@/lib/prayerTimes'
+
+type CalDAVConnection = {
+  id: string
+  provider: string
+  username: string
+  serverUrl: string
+  calendarUrl: string
+  calendarName: string
+  connected: boolean
+  lastSync: string
+  serverInfo: Record<string, unknown>
+}
+
+type CalDAVConnections = Record<string, CalDAVConnection>
+
+type CalDAVProvider = {
+  name: string
+  serverUrl: string
+  principalUrl: string
+  calendarHomeSet: string
+  icon: string
+  disabled?: boolean
+}
 
 // CalDAV endpoints for major providers
-const CALDAV_PROVIDERS = {
+const CALDAV_PROVIDERS: Record<string, CalDAVProvider> = {
   icloud: {
     name: 'iCloud Calendar',
     serverUrl: 'https://caldav.icloud.com',
@@ -15,33 +39,36 @@ const CALDAV_PROVIDERS = {
     calendarHomeSet: '/{{username}}/calendars/',
     icon: '🍎'
   },
-  google: {
-    name: 'Google Calendar (CalDAV)',
-    serverUrl: 'https://apidata.googleusercontent.com/caldav/v2',
-    principalUrl: '/{{username}}/user/',
-    calendarHomeSet: '/{{username}}/events/',
-    icon: '🌟'
-  },
   outlook: {
     name: 'Outlook Calendar',
     serverUrl: 'https://outlook.office365.com',
     principalUrl: '/ews/calendar/',
     calendarHomeSet: '/calendar/',
     icon: '📧'
+  },
+  google: {
+    name: 'Google Calendar (CalDAV)',
+    serverUrl: 'https://apidata.googleusercontent.com/caldav/v2',
+    principalUrl: '/{{username}}/user/',
+    calendarHomeSet: '/{{username}}/events/',
+    icon: '🌟',
+    disabled: true // Google CalDAV is not supported for consumer accounts; use OAuth integration instead.
   }
 }
 
 export function useCalDAV() {
   const [isConnecting, setIsConnecting] = useState(false)
-  const [connections, setConnections] = useState<Record<string, any>>({})
+  const [connections, setConnections] = useState<CalDAVConnections>({})
   const [isDiscovering, setIsDiscovering] = useState(false)
 
   const { user } = useAuth()
-  const { prayerTimes } = usePrayerTimes()
+  const { prayerTimes, settings } = usePrayerTimes()
   const { tasks } = useTasks()
   const { toast } = useToast()
+  const secretsRef = useRef<Record<string, { username: string; password: string }>>({})
 
   const getConnectionsStorageKey = (userId: string) => `caldav-connections-${userId}`
+  const getSecretsStorageKey = (userId: string) => `caldav-secrets-${userId}`
 
   const joinUrlSegments = (...segments: string[]) => {
     return segments
@@ -57,13 +84,86 @@ export function useCalDAV() {
 
   // Load existing connections from localStorage
   useEffect(() => {
-    if (user) {
-      const stored = localStorage.getItem(getConnectionsStorageKey(user.id))
-      if (stored) {
-        setConnections(JSON.parse(stored))
+    if (!user) {
+      setConnections({})
+      secretsRef.current = {}
+      if (typeof window !== 'undefined' && typeof window.sessionStorage !== 'undefined') {
+        Object.keys(window.sessionStorage)
+          .filter(key => key.startsWith('caldav-secrets-'))
+          .forEach(key => window.sessionStorage.removeItem(key))
       }
+      return
+    }
+
+    if (typeof window === 'undefined') {
+      return
+    }
+
+    const stored = window.localStorage.getItem(getConnectionsStorageKey(user.id))
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored) as Record<string, CalDAVConnection & { password?: string }>
+        const sanitizedEntries = Object.entries(parsed).map(([providerId, connection]) => {
+          const { password: _password, ...rest } = connection
+          return [providerId, rest as CalDAVConnection]
+        })
+        const sanitizedConnections = Object.fromEntries(sanitizedEntries) as CalDAVConnections
+        setConnections(sanitizedConnections)
+        // Ensure any legacy password fields are removed from storage.
+        window.localStorage.setItem(getConnectionsStorageKey(user.id), JSON.stringify(sanitizedConnections))
+      } catch (error) {
+        console.error('Failed to parse stored CalDAV connections', error)
+        setConnections({})
+      }
+    } else {
+      setConnections({})
+    }
+
+    const storedSecrets = typeof window.sessionStorage !== 'undefined'
+      ? window.sessionStorage.getItem(getSecretsStorageKey(user.id))
+      : null
+
+    if (storedSecrets) {
+      try {
+        secretsRef.current = JSON.parse(storedSecrets)
+      } catch (error) {
+        console.error('Failed to parse CalDAV secrets from sessionStorage', error)
+        secretsRef.current = {}
+      }
+    } else {
+      secretsRef.current = {}
     }
   }, [user])
+
+  /**
+   * Persist sanitized connection metadata (without secrets) to storage.
+   */
+  const persistConnections = (nextConnections: CalDAVConnections) => {
+    setConnections(nextConnections)
+    if (user && typeof window !== 'undefined') {
+      window.localStorage.setItem(getConnectionsStorageKey(user.id), JSON.stringify(nextConnections))
+    }
+  }
+
+  /**
+   * Persist the in-memory secrets to sessionStorage for this browser session.
+   */
+  const persistSecrets = () => {
+    if (user && typeof window !== 'undefined' && typeof window.sessionStorage !== 'undefined') {
+      window.sessionStorage.setItem(getSecretsStorageKey(user.id), JSON.stringify(secretsRef.current))
+    }
+  }
+
+  /**
+   * Retrieve credentials for the given provider or prompt the user to reconnect.
+   */
+  const getSecretOrThrow = (providerId: string) => {
+    const secret = secretsRef.current[providerId]
+    if (!secret?.password || !secret.username) {
+      throw new Error('Please reconnect to CalDAV to re-enter your password')
+    }
+    return secret
+  }
 
   const discoverCalDAVEndpoint = async (serverUrl: string, username: string, password: string) => {
     try {
@@ -126,6 +226,9 @@ export function useCalDAV() {
     headers?: Record<string, string>
     body?: string
   }) => {
+    if (!supabase) {
+      throw new Error('Supabase client is not configured')
+    }
     const { data, error } = await supabase.functions.invoke('caldav-proxy', {
       body: request
     })
@@ -137,17 +240,29 @@ export function useCalDAV() {
     return data
   }
 
-  const parsePrincipalUrl = (xmlResponse: string): string => {
-    // Simple XML parsing for principal URL
-    const match = xmlResponse.match(/<D:href[^>]*>([^<]+)<\/D:href>/)
-    return match ? match[1] : '/principal/'
+  /**
+   * Parse the first DAV:href value for the requested DAV node.
+   */
+  const parseHref = (xmlResponse: string, localName: string) => {
+    try {
+      const parser = new DOMParser()
+      const doc = parser.parseFromString(xmlResponse, 'application/xml')
+      const nodes = doc.getElementsByTagNameNS('DAV:', localName)
+      const href = nodes[0]?.getElementsByTagNameNS('DAV:', 'href')[0]?.textContent
+        ?? doc.getElementsByTagNameNS('DAV:', 'href')[0]?.textContent
+      if (href) {
+        return href
+      }
+    } catch (error) {
+      console.warn('Failed to parse CalDAV discovery response', error)
+    }
+
+    return localName === 'current-user-principal' ? '/principal/' : '/calendars/'
   }
 
-  const parseCalendarHomeSet = (xmlResponse: string): string => {
-    // Simple XML parsing for calendar home set
-    const match = xmlResponse.match(/<D:href[^>]*>([^<]+)<\/D:href>/)
-    return match ? match[1] : '/calendars/'
-  }
+  const parsePrincipalUrl = (xmlResponse: string): string => parseHref(xmlResponse, 'current-user-principal')
+
+  const parseCalendarHomeSet = (xmlResponse: string): string => parseHref(xmlResponse, 'calendar-home-set')
 
   const testCalDAVConnection = async (config: {
     provider: string
@@ -206,7 +321,7 @@ export function useCalDAV() {
       setIsConnecting(true)
       
       const provider = CALDAV_PROVIDERS[config.provider as keyof typeof CALDAV_PROVIDERS]
-      if (!provider) {
+      if (!provider || provider.disabled) {
         throw new Error('Unsupported CalDAV provider')
       }
 
@@ -220,16 +335,21 @@ export function useCalDAV() {
         throw new Error(testResult.error || 'Connection test failed')
       }
 
+      secretsRef.current[config.provider] = {
+        username: config.username,
+        password: config.password
+      }
+      persistSecrets()
+
       // Create or find Barakah Tasks calendar
       const calendarUrl = await createBarakahTasksCalendar(config)
-      
+
       // Store connection info (in real app, encrypt the password)
       const connectionInfo = {
         id: `${config.provider}-${Date.now()}`,
         provider: config.provider,
         username: config.username,
         serverUrl: provider.serverUrl,
-        password: config.password,
         calendarUrl,
         calendarName: config.calendarName || 'Barakah Tasks',
         connected: true,
@@ -241,12 +361,8 @@ export function useCalDAV() {
         ...connections,
         [config.provider]: connectionInfo
       }
-      
-      setConnections(newConnections)
-      
-      if (user) {
-        localStorage.setItem(getConnectionsStorageKey(user.id), JSON.stringify(newConnections))
-      }
+
+      persistConnections(newConnections)
 
       toast({
         title: "CalDAV Connected",
@@ -266,15 +382,20 @@ export function useCalDAV() {
     }
   }
 
-  const createBarakahTasksCalendar = async (config: any) => {
+  const createBarakahTasksCalendar = async (config: { provider: string; calendarName?: string }) => {
     const provider = CALDAV_PROVIDERS[config.provider as keyof typeof CALDAV_PROVIDERS]
-    const calendarUrl = `${provider.serverUrl}${provider.calendarHomeSet.replace('{{username}}', config.username)}barakah-tasks-${Date.now()}/`
-    
+    if (!provider) {
+      throw new Error('Unsupported CalDAV provider')
+    }
+
+    const secret = getSecretOrThrow(config.provider)
+    const calendarUrl = `${provider.serverUrl}${provider.calendarHomeSet.replace('{{username}}', secret.username)}barakah-tasks-${Date.now()}/`
+
     // Create calendar using MKCALENDAR
     const createResponse = await makeCalDAVRequest({
       method: 'MKCALENDAR',
       url: calendarUrl,
-      credentials: { username: config.username, password: config.password },
+      credentials: { username: secret.username, password: secret.password },
       body: `<?xml version="1.0" encoding="utf-8" ?>
 <C:mkcalendar xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav">
   <D:set>
@@ -305,35 +426,55 @@ export function useCalDAV() {
 
     try {
       setIsConnecting(true)
-      
+
+      const secret = getSecretOrThrow(providerId)
+      const coordinates = prayerTimes?.coordinates
+      const syncSettings = settings as PrayerSettings | null
+      const daysToSync = typeof (prayerTimes as { days?: number } | null)?.days === 'number'
+        ? Math.max(1, (prayerTimes as { days?: number }).days ?? 30)
+        : 30
+
       // Prepare events for sync
-      const events = []
-      
-      // Add prayer times as recurring events
-      if (prayerTimes) {
-        for (const prayer of prayerTimes.prayers) {
-          const startTime = new Date(prayer.time)
-          const endTime = new Date(startTime.getTime() + 30 * 60000)
+      const events: { uid: string; icalData: string }[] = []
 
-          const icalEvent = [
-            'BEGIN:VCALENDAR',
-            'VERSION:2.0',
-            'PRODID:-//Barakah Tasks//EN',
-            'BEGIN:VEVENT',
-            `UID:prayer-${prayer.name}-${getLocalDateString(new Date())}@barakah-tasks.app`,
-            `DTSTART:${formatICalDate(startTime)}`,
-            `DTEND:${formatICalDate(endTime)}`,
-            'RRULE:FREQ=DAILY',
-            `SUMMARY:${prayer.displayName} Prayer`,
-            `DESCRIPTION:Time for ${prayer.displayName} prayer - Barakah Tasks`,
-            'CATEGORIES:Prayer,Barakah Tasks',
-            'END:VEVENT',
-            'END:VCALENDAR'
-          ].join('\n')
+      // Add prayer times as single events per day to avoid drift
+      if (prayerTimes && coordinates) {
+        for (let dayOffset = 0; dayOffset < daysToSync; dayOffset++) {
+          const date = new Date()
+          date.setHours(0, 0, 0, 0)
+          date.setDate(date.getDate() + dayOffset)
 
-          events.push({
-            uid: `prayer-${prayer.name}-${getLocalDateString(new Date())}`,
-            icalData: icalEvent
+          const dailyPrayers = calculatePrayerTimes(
+            coordinates.latitude,
+            coordinates.longitude,
+            new Date(date),
+            syncSettings ?? undefined
+          )
+
+          dailyPrayers.prayers.forEach(prayer => {
+            const startTime = new Date(prayer.time)
+            const endTime = new Date(startTime.getTime() + 30 * 60000)
+            const uidDate = formatUIDDate(date)
+
+            const icalEvent = [
+              'BEGIN:VCALENDAR',
+              'VERSION:2.0',
+              'PRODID:-//Barakah Tasks//EN',
+              'BEGIN:VEVENT',
+              `UID:prayer-${prayer.name}-${uidDate}@barakah-tasks.app`,
+              `DTSTART:${formatICalDate(startTime)}`,
+              `DTEND:${formatICalDate(endTime)}`,
+              `SUMMARY:${prayer.displayName} Prayer`,
+              `DESCRIPTION:Time for ${prayer.displayName} prayer - Barakah Tasks`,
+              'CATEGORIES:Prayer,Barakah Tasks',
+              'END:VEVENT',
+              'END:VCALENDAR'
+            ].join('\n')
+
+            events.push({
+              uid: `prayer-${prayer.name}-${uidDate}`,
+              icalData: icalEvent
+            })
           })
         }
       }
@@ -367,11 +508,11 @@ export function useCalDAV() {
       // Sync events to CalDAV server
       for (const event of events) {
         const eventUrl = `${connection.calendarUrl}${event.uid}.ics`
-        
+
         await makeCalDAVRequest({
           method: 'PUT',
           url: eventUrl,
-          credentials: { username: connection.username, password: connection.password },
+          credentials: { username: secret.username, password: secret.password },
           headers: { 'Content-Type': 'text/calendar; charset=utf-8' },
           body: event.icalData
         })
@@ -387,16 +528,16 @@ export function useCalDAV() {
         ...connections,
         [providerId]: updatedConnection
       }
-      
-      setConnections(newConnections)
-      
-      if (user) {
-        localStorage.setItem(getConnectionsStorageKey(user.id), JSON.stringify(newConnections))
-      }
+
+      persistConnections(newConnections)
+
+      const serverDisplayName = typeof (connection.serverInfo as { displayName?: unknown })?.displayName === 'string'
+        ? (connection.serverInfo as { displayName: string }).displayName
+        : connection.calendarName
 
       toast({
         title: "CalDAV Sync Complete",
-        description: `Synced ${events.length} events to ${connection.serverInfo.displayName}`,
+        description: `Synced ${events.length} events to ${serverDisplayName}`,
       })
 
       return { success: true, eventCount: events.length }
@@ -415,11 +556,11 @@ export function useCalDAV() {
   const disconnectCalDAV = async (providerId: string) => {
     const newConnections = { ...connections }
     delete newConnections[providerId]
-    
-    setConnections(newConnections)
-    
-    if (user) {
-      localStorage.setItem(getConnectionsStorageKey(user.id), JSON.stringify(newConnections))
+
+    persistConnections(newConnections)
+    if (secretsRef.current[providerId]) {
+      delete secretsRef.current[providerId]
+      persistSecrets()
     }
 
     toast({
@@ -432,6 +573,17 @@ export function useCalDAV() {
     return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
   }
 
+  /**
+   * Format a UID-safe date stamp (YYYYMMDD) for per-day prayer events.
+   */
+  const formatUIDDate = (date: Date): string => {
+    return getLocalDateString(date).replace(/-/g, '')
+  }
+
+  const availableProviders = Object.fromEntries(
+    Object.entries(CALDAV_PROVIDERS).filter(([, provider]) => !provider.disabled)
+  ) as Record<string, CalDAVProvider>
+
   return {
     connections,
     isConnecting,
@@ -440,6 +592,6 @@ export function useCalDAV() {
     syncEventsToCalDAV,
     disconnectCalDAV,
     testCalDAVConnection,
-    providers: CALDAV_PROVIDERS
+    providers: availableProviders
   }
 }
