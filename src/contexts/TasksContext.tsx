@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/hooks/useAuth'
 import { toast } from '@/hooks/use-toast'
+import { getLocalDateString } from '@/utils/date'
 
 export interface Task {
   id: string
@@ -15,6 +16,7 @@ export interface Task {
   category_id?: string
   is_recurring?: boolean
   recurring_pattern?: string
+  recurring_weekday?: number | null
   parent_task_id?: string
   completed_at?: string
   created_at: string
@@ -521,17 +523,17 @@ export function TasksProvider({ children }: { children: ReactNode }) {
   }
 
   const getTodaysTasks = () => {
-    const today = new Date().toISOString().split('T')[0]
-    return tasks.filter(task => 
+    const today = getLocalDateString(new Date())
+    return tasks.filter(task =>
       task.due_date === today && task.status !== 'completed'
     )
   }
 
   const getCompletedTasksToday = () => {
-    const today = new Date().toISOString().split('T')[0]
+    const today = getLocalDateString(new Date())
     return tasks.filter(task => {
       if (!task.completed_at) return false
-      const completedDate = new Date(task.completed_at).toISOString().split('T')[0]
+      const completedDate = getLocalDateString(new Date(task.completed_at))
       return completedDate === today
     })
   }
@@ -548,10 +550,10 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     currentDate.setHours(0, 0, 0, 0)
     
     while (true) {
-      const dateStr = currentDate.toISOString().split('T')[0]
+      const dateStr = getLocalDateString(currentDate)
       const tasksOnDate = tasks.filter(task => {
         if (!task.completed_at) return false
-        const completedDate = new Date(task.completed_at).toISOString().split('T')[0]
+        const completedDate = getLocalDateString(new Date(task.completed_at))
         return completedDate === dateStr
       })
       

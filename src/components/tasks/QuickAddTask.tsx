@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { useTasks } from '@/contexts/TasksContext'
+import { getLocalDateString } from '@/utils/date'
 
 interface QuickAddTaskProps {
   groupId?: string
@@ -27,11 +28,11 @@ export function QuickAddTask({ groupId, columnStatus }: QuickAddTaskProps) {
     const today = new Date()
     
     if (groupId === 'today') {
-      dueDate = today.toISOString().split('T')[0]
+      dueDate = getLocalDateString(today)
     } else if (groupId === 'tomorrow') {
       const tomorrow = new Date(today)
       tomorrow.setDate(tomorrow.getDate() + 1)
-      dueDate = tomorrow.toISOString().split('T')[0]
+      dueDate = getLocalDateString(tomorrow)
     }
 
     // Determine status based on column

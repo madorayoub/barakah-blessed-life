@@ -4,6 +4,7 @@ import { usePrayerTimes } from '@/hooks/usePrayerTimes'
 import { useTasks } from '@/contexts/TasksContext'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
+import { getLocalDateString } from '@/utils/date'
 
 // CalDAV endpoints for major providers
 const CALDAV_PROVIDERS = {
@@ -303,7 +304,7 @@ export function useCalDAV() {
 VERSION:2.0
 PRODID:-//Barakah Tasks//EN
 BEGIN:VEVENT
-UID:prayer-${prayer.name}-${new Date().toISOString().split('T')[0]}@barakah-tasks.app
+UID:prayer-${prayer.name}-${getLocalDateString(new Date())}@barakah-tasks.app
 DTSTART:${formatICalDate(startTime)}
 DTEND:${formatICalDate(endTime)}
 RRULE:FREQ=DAILY
@@ -314,7 +315,7 @@ END:VEVENT
 END:VCALENDAR`
 
           events.push({
-            uid: `prayer-${prayer.name}-${new Date().toISOString().split('T')[0]}`,
+            uid: `prayer-${prayer.name}-${getLocalDateString(new Date())}`,
             icalData: icalEvent
           })
         }

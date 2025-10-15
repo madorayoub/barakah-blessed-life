@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/hooks/useAuth'
 import { useNotifications } from '@/hooks/useNotifications'
 import { calculatePrayerTimes, DailyPrayerTimes, PrayerSettings } from '@/lib/prayerTimes'
+import { getLocalDateString } from '@/utils/date'
 import { toast } from '@/hooks/use-toast'
 
 interface PrayerCompletion {
@@ -143,7 +144,7 @@ export function usePrayerTimes() {
       if (!user) return
 
       try {
-        const today = new Date().toISOString().split('T')[0]
+        const today = getLocalDateString(new Date())
         
         const { data, error } = await supabase
           .from('prayer_completions')
@@ -169,7 +170,7 @@ export function usePrayerTimes() {
     if (!user) return
 
     try {
-      const today = new Date().toISOString().split('T')[0]
+      const today = getLocalDateString(new Date())
       
       const { error } = await supabase
         .from('prayer_completions')
@@ -214,7 +215,7 @@ export function usePrayerTimes() {
     if (!user) return
 
     try {
-      const today = new Date().toISOString().split('T')[0]
+      const today = getLocalDateString(new Date())
       
       const { error } = await supabase
         .from('prayer_completions')

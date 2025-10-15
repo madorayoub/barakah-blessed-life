@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { toast } from '@/hooks/use-toast'
+import { isPrayerNotificationTag, PRAYER_NOTIFICATION_PREFIX } from '@/utils/notifications'
 
 export interface NotificationPreferences {
   enabled: boolean
@@ -18,6 +19,20 @@ export function useNotifications() {
     dailyGoals: true,
     minutesBefore: 10
   })
+  const prayerTimeoutsRef = useRef<number[]>([])
+
+  const getServiceWorkerRegistration = async (): Promise<ServiceWorkerRegistration | null> => {
+    if (!('serviceWorker' in navigator)) {
+      return null
+    }
+
+    try {
+      return await navigator.serviceWorker.ready
+    } catch (error) {
+      console.error('Service worker not ready:', error)
+      return null
+    }
+  }
 
   // Check notification permission on mount
   useEffect(() => {
@@ -64,48 +79,39 @@ export function useNotifications() {
     }
   }
 
-  const sendNotification = (title: string, options?: {
-    body?: string
-    icon?: string
-    tag?: string
-    requireInteraction?: boolean
-    silent?: boolean
-  }) => {
+  const sendNotification = async (title: string, options?: NotificationOptions) => {
     if (!preferences.enabled || Notification.permission !== 'granted') {
       return
     }
 
     try {
-      const notification = new Notification(title, {
-        body: options?.body,
+      const registration = await getServiceWorkerRegistration()
+      if (!registration) {
+        console.warn('Service worker registration unavailable; notification skipped')
+        return
+      }
+
+      await registration.showNotification(title, {
+        badge: '/favicon.ico',
         icon: options?.icon || '/favicon.ico',
-        tag: options?.tag,
-        requireInteraction: options?.requireInteraction || false,
-        silent: options?.silent || false,
-        badge: '/favicon.ico'
+        renotify: true,
+        ...options
       })
-
-      // Auto-close notification after 10 seconds
-      setTimeout(() => {
-        notification.close()
-      }, 10000)
-
-      return notification
     } catch (error) {
       console.error('Error sending notification:', error)
     }
   }
 
-  const sendPrayerReminder = (prayerName: string, timeUntil: string) => {
+  const sendPrayerReminder = async (prayerName: string) => {
     if (!preferences.prayerReminders) return
 
     return sendNotification(
       `${prayerName} Prayer Reminder`,
       {
-        body: `${prayerName} prayer is in ${timeUntil}. Prepare for prayer.`,
-        tag: `prayer-${prayerName.toLowerCase()}`,
-        requireInteraction: true,
-        icon: '/favicon.ico'
+        body: `It's almost time for ${prayerName} prayer. Take a moment to prepare.`,
+        tag: `${PRAYER_NOTIFICATION_PREFIX}${prayerName.toLowerCase()}`,
+        requireInteraction: false,
+        silent: false
       }
     )
   }
@@ -116,7 +122,7 @@ export function useNotifications() {
     return sendNotification(
       'Task Reminder',
       {
-        body: dueTime 
+        body: dueTime
           ? `"${taskTitle}" is due ${dueTime}`
           : `Don't forget: "${taskTitle}"`,
         tag: 'task-reminder',
@@ -151,28 +157,41 @@ export function useNotifications() {
     })
   }
 
+  const clearScheduledPrayerTimeouts = () => {
+    prayerTimeoutsRef.current.forEach(timeoutId => clearTimeout(timeoutId))
+    prayerTimeoutsRef.current = []
+  }
+
+  const clearPrayerNotifications = async () => {
+    const registration = await getServiceWorkerRegistration()
+    if (!registration) return
+
+    try {
+      const notifications = await registration.getNotifications({ includeTriggered: true })
+      notifications
+        .filter(notification => isPrayerNotificationTag(notification.tag))
+        .forEach(notification => notification.close())
+    } catch (error) {
+      console.error('Error clearing prayer notifications:', error)
+    }
+  }
+
   const schedulePrayerNotifications = (prayerTimes: Array<{name: string, time: Date, displayName: string}>) => {
     if (!preferences.enabled || !preferences.prayerReminders) return
 
-    // Clear existing prayer notifications
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.ready.then(registration => {
-        registration.getNotifications({ tag: 'prayer' }).then(notifications => {
-          notifications.forEach(notification => notification.close())
-        })
-      })
-    }
+    clearScheduledPrayerTimeouts()
+    void clearPrayerNotifications()
 
     prayerTimes.forEach(prayer => {
       const notificationTime = new Date(prayer.time.getTime() - preferences.minutesBefore * 60000)
       const now = new Date()
 
       if (notificationTime > now) {
-        const timeUntil = Math.ceil((prayer.time.getTime() - notificationTime.getTime()) / 60000)
-        
-        setTimeout(() => {
-          sendPrayerReminder(prayer.displayName, `${timeUntil} minutes`)
-        }, notificationTime.getTime() - now.getTime())
+        const delay = notificationTime.getTime() - now.getTime()
+        const timeoutId = window.setTimeout(() => {
+          void sendPrayerReminder(prayer.displayName)
+        }, delay)
+        prayerTimeoutsRef.current.push(timeoutId)
       }
     })
   }
