@@ -35,16 +35,30 @@ export function useCalDAV() {
   const [isConnecting, setIsConnecting] = useState(false)
   const [connections, setConnections] = useState<Record<string, any>>({})
   const [isDiscovering, setIsDiscovering] = useState(false)
-  
+
   const { user } = useAuth()
   const { prayerTimes } = usePrayerTimes()
   const { tasks } = useTasks()
   const { toast } = useToast()
 
+  const getConnectionsStorageKey = (userId: string) => `caldav-connections-${userId}`
+
+  const joinUrlSegments = (...segments: string[]) => {
+    return segments
+      .filter(Boolean)
+      .map((segment, index) => {
+        if (index === 0) {
+          return segment.replace(/\/+$/, '')
+        }
+        return segment.replace(/^\/+/, '').replace(/\/+$/, '')
+      })
+      .join('/')
+  }
+
   // Load existing connections from localStorage
   useEffect(() => {
     if (user) {
-      const stored = localStorage.getItem(`caldav-connections-${user.id}`)
+      const stored = localStorage.getItem(getConnectionsStorageKey(user.id))
       if (stored) {
         setConnections(JSON.parse(stored))
       }
@@ -79,7 +93,7 @@ export function useCalDAV() {
       // Discover calendar home set
       const calendarHomeResponse = await makeCalDAVRequest({
         method: 'PROPFIND',
-        url: `${serverUrl}${principalUrl}`,
+        url: joinUrlSegments(serverUrl, principalUrl),
         credentials: { username, password },
         headers: { 'Depth': '0' },
         body: `<?xml version="1.0" encoding="utf-8" ?>
@@ -215,6 +229,7 @@ export function useCalDAV() {
         provider: config.provider,
         username: config.username,
         serverUrl: provider.serverUrl,
+        password: config.password,
         calendarUrl,
         calendarName: config.calendarName || 'Barakah Tasks',
         connected: true,
@@ -230,7 +245,7 @@ export function useCalDAV() {
       setConnections(newConnections)
       
       if (user) {
-        localStorage.setItem(`caldav-connections-${user.id}`, JSON.stringify(newConnections))
+        localStorage.setItem(getConnectionsStorageKey(user.id), JSON.stringify(newConnections))
       }
 
       toast({
@@ -299,20 +314,22 @@ export function useCalDAV() {
         for (const prayer of prayerTimes.prayers) {
           const startTime = new Date(prayer.time)
           const endTime = new Date(startTime.getTime() + 30 * 60000)
-          
-          const icalEvent = `BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//Barakah Tasks//EN
-BEGIN:VEVENT
-UID:prayer-${prayer.name}-${getLocalDateString(new Date())}@barakah-tasks.app
-DTSTART:${formatICalDate(startTime)}
-DTEND:${formatICalDate(endTime)}
-RRULE:FREQ=DAILY
-SUMMARY:${prayer.displayName} Prayer
-DESCRIPTION:Time for ${prayer.displayName} prayer - Barakah Tasks
-CATEGORIES:Prayer,Barakah Tasks
-END:VEVENT
-END:VCALENDAR`
+
+          const icalEvent = [
+            'BEGIN:VCALENDAR',
+            'VERSION:2.0',
+            'PRODID:-//Barakah Tasks//EN',
+            'BEGIN:VEVENT',
+            `UID:prayer-${prayer.name}-${getLocalDateString(new Date())}@barakah-tasks.app`,
+            `DTSTART:${formatICalDate(startTime)}`,
+            `DTEND:${formatICalDate(endTime)}`,
+            'RRULE:FREQ=DAILY',
+            `SUMMARY:${prayer.displayName} Prayer`,
+            `DESCRIPTION:Time for ${prayer.displayName} prayer - Barakah Tasks`,
+            'CATEGORIES:Prayer,Barakah Tasks',
+            'END:VEVENT',
+            'END:VCALENDAR'
+          ].join('\n')
 
           events.push({
             uid: `prayer-${prayer.name}-${getLocalDateString(new Date())}`,
@@ -324,20 +341,22 @@ END:VCALENDAR`
       // Add tasks with due dates
       tasks.filter(task => task.due_date).forEach(task => {
         const dueDate = new Date(task.due_date + (task.due_time ? 'T' + task.due_time : 'T09:00:00'))
-        
-        const icalEvent = `BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//Barakah Tasks//EN
-BEGIN:VEVENT
-UID:task-${task.id}@barakah-tasks.app
-DTSTART:${formatICalDate(dueDate)}
-DTEND:${formatICalDate(new Date(dueDate.getTime() + 60 * 60000))}
-SUMMARY:${task.title}
-DESCRIPTION:${task.description || ''}
-CATEGORIES:Task,Barakah Tasks
-PRIORITY:${task.priority === 'urgent' ? '1' : task.priority === 'high' ? '2' : '3'}
-END:VEVENT
-END:VCALENDAR`
+
+        const icalEvent = [
+          'BEGIN:VCALENDAR',
+          'VERSION:2.0',
+          'PRODID:-//Barakah Tasks//EN',
+          'BEGIN:VEVENT',
+          `UID:task-${task.id}@barakah-tasks.app`,
+          `DTSTART:${formatICalDate(dueDate)}`,
+          `DTEND:${formatICalDate(new Date(dueDate.getTime() + 60 * 60000))}`,
+          `SUMMARY:${task.title}`,
+          `DESCRIPTION:${task.description || ''}`,
+          'CATEGORIES:Task,Barakah Tasks',
+          `PRIORITY:${task.priority === 'urgent' ? '1' : task.priority === 'high' ? '2' : '3'}`,
+          'END:VEVENT',
+          'END:VCALENDAR'
+        ].join('\n')
 
         events.push({
           uid: `task-${task.id}`,
@@ -372,7 +391,7 @@ END:VCALENDAR`
       setConnections(newConnections)
       
       if (user) {
-        localStorage.setItem(`caldav-connections-${user.id}`, JSON.stringify(newConnections))
+        localStorage.setItem(getConnectionsStorageKey(user.id), JSON.stringify(newConnections))
       }
 
       toast({
@@ -400,7 +419,7 @@ END:VCALENDAR`
     setConnections(newConnections)
     
     if (user) {
-      localStorage.setItem(`caldav-connections-${user.id}`, JSON.stringify(newConnections))
+      localStorage.setItem(getConnectionsStorageKey(user.id), JSON.stringify(newConnections))
     }
 
     toast({
