@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useTasks } from '@/contexts/TasksContext'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/integrations/supabase/client'
-import { getLocalDateString } from '@/utils/date'
+import { yyyyMmDd } from '@/lib/dateLocal'
 import { determineRecurringWeekday, shouldCreateRecurringTask } from '@/lib/recurrence'
 
 export function RecurringTaskManager() {
@@ -14,25 +14,18 @@ export function RecurringTaskManager() {
 
     const checkAndCreateRecurringTasks = async () => {
       const today = new Date()
-      
-      // Get all recurring tasks directly from database to avoid infinite loops
+
       const { data: recurringTasks } = await supabase
         .from('tasks')
         .select('*')
         .eq('user_id', user.id)
         .eq('is_recurring', true)
         .is('parent_task_id', null)
-      
+
       if (!recurringTasks) return
-      
+
       for (const recurringTask of recurringTasks) {
-        const pattern = recurringTask.recurring_pattern
-        
-        if (pattern === 'daily') {
-          await checkDailyRecurrence(recurringTask, today)
-        } else if (pattern === 'weekly') {
-          await checkWeeklyRecurrence(recurringTask, today)
-        }
+        await processRecurringParent(recurringTask, today)
       }
     }
 
@@ -43,53 +36,52 @@ export function RecurringTaskManager() {
     return () => clearInterval(interval)
   }, [user, createTask])
 
-  const checkDailyRecurrence = async (parentTask: any, today: Date) => {
-    const todayString = getLocalDateString(today)
+  const getNextOccurrence = (parentTask: any, referenceDate: Date) => {
+    const pattern = parentTask.recurring_pattern
+    const dueDate = yyyyMmDd(referenceDate)
+
+    if (pattern === 'daily') {
+      return { dueDate }
+    }
+
+    if (pattern === 'weekly') {
+      const storedWeekday = typeof parentTask.recurring_weekday === 'number'
+        ? parentTask.recurring_weekday
+        : determineRecurringWeekday(parentTask)
+
+      if (storedWeekday !== null && storedWeekday === referenceDate.getDay()) {
+        return { dueDate }
+      }
+    }
+
+    return null
+  }
+
+  const processRecurringParent = async (parentTask: any, referenceDate: Date) => {
+    const occurrence = getNextOccurrence(parentTask, referenceDate)
+    if (!occurrence) return
+
+    const { dueDate } = occurrence
     const { data: existingTasks } = await supabase
       .from('tasks')
       .select('id, due_date')
       .eq('parent_task_id', parentTask.id)
-      .eq('due_date', todayString)
+      .eq('due_date', dueDate)
 
-    if (shouldCreateRecurringTask(existingTasks, today)) {
-      await createTask({
-        title: parentTask.title,
-        description: parentTask.description,
-        priority: parentTask.priority,
-        status: 'pending',
-        category_id: parentTask.category_id,
-        due_date: todayString,
-        is_recurring: false,
-        parent_task_id: parentTask.id
-      })
+    if (!shouldCreateRecurringTask(existingTasks, referenceDate)) {
+      return
     }
-  }
 
-  const checkWeeklyRecurrence = async (parentTask: any, today: Date) => {
-    const dayOfWeek = today.getDay()
-    const targetWeekday = determineRecurringWeekday(parentTask)
-
-    if (targetWeekday !== null && targetWeekday === dayOfWeek) {
-      const todayString = getLocalDateString(today)
-      const { data: existingTasks } = await supabase
-        .from('tasks')
-        .select('id, due_date')
-        .eq('parent_task_id', parentTask.id)
-        .eq('due_date', todayString)
-
-      if (shouldCreateRecurringTask(existingTasks, today)) {
-        await createTask({
-          title: parentTask.title,
-          description: parentTask.description,
-          priority: parentTask.priority,
-          status: 'pending',
-          category_id: parentTask.category_id,
-          due_date: todayString,
-          is_recurring: false,
-          parent_task_id: parentTask.id
-        })
-      }
-    }
+    await createTask({
+      title: parentTask.title,
+      description: parentTask.description,
+      priority: parentTask.priority,
+      status: 'pending',
+      category_id: parentTask.category_id,
+      due_date: dueDate,
+      is_recurring: false,
+      parent_task_id: parentTask.id
+    })
   }
 
   // This component doesn't render anything

@@ -9,7 +9,8 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('notificationclick', (event) => {
   event.notification.close()
 
-  const urlToOpen = new URL('/', self.location.origin).href
+  const targetHref = event.notification?.data?.href || '/'
+  const urlToOpen = new URL(targetHref, self.location.origin).href
 
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
@@ -25,6 +26,7 @@ self.addEventListener('notificationclick', (event) => {
       if (self.clients.openWindow) {
         return self.clients.openWindow(urlToOpen)
       }
+      return undefined
     })
   )
 })

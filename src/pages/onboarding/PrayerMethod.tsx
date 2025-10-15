@@ -1,3 +1,4 @@
+// @deprecated Legacy onboarding page. Use src/components/Onboarding.tsx instead.
 import { useState } from "react"
 import { Clock } from "lucide-react"
 import { Link } from "react-router-dom"

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { toast } from '@/hooks/use-toast'
-import { isPrayerNotificationTag, PRAYER_NOTIFICATION_PREFIX } from '@/utils/notifications'
+import { PRAYER_NOTIFICATION_TAG } from '@/utils/notifications'
 
 export interface NotificationPreferences {
   enabled: boolean
@@ -91,11 +91,14 @@ export function useNotifications() {
         return
       }
 
+      const { data, ...restOptions } = options ?? {}
+
       await registration.showNotification(title, {
         badge: '/favicon.ico',
-        icon: options?.icon || '/favicon.ico',
+        icon: restOptions.icon || '/favicon.ico',
         renotify: true,
-        ...options
+        data: { href: '/', ...(data as Record<string, unknown> | undefined) },
+        ...restOptions
       })
     } catch (error) {
       console.error('Error sending notification:', error)
@@ -108,10 +111,11 @@ export function useNotifications() {
     return sendNotification(
       `${prayerName} Prayer Reminder`,
       {
-        body: `It's almost time for ${prayerName} prayer. Take a moment to prepare.`,
-        tag: `${PRAYER_NOTIFICATION_PREFIX}${prayerName.toLowerCase()}`,
+        body: `It's almost time for ${prayerName}.`,
+        tag: PRAYER_NOTIFICATION_TAG,
         requireInteraction: false,
-        silent: false
+        silent: false,
+        data: { href: '/prayers' }
       }
     )
   }
@@ -126,7 +130,8 @@ export function useNotifications() {
           ? `"${taskTitle}" is due ${dueTime}`
           : `Don't forget: "${taskTitle}"`,
         tag: 'task-reminder',
-        icon: '/favicon.ico'
+        icon: '/favicon.ico',
+        data: { href: '/tasks' }
       }
     )
   }
@@ -153,7 +158,8 @@ export function useNotifications() {
     return sendNotification(message.title, {
       body: message.body,
       tag: `daily-goal-${goalType}`,
-      icon: '/favicon.ico'
+      icon: '/favicon.ico',
+      data: { href: '/dashboard' }
     })
   }
 
@@ -169,7 +175,10 @@ export function useNotifications() {
     try {
       const notifications = await registration.getNotifications({ includeTriggered: true })
       notifications
-        .filter(notification => isPrayerNotificationTag(notification.tag))
+        .filter(notification => {
+          const tag = notification.tag || ''
+          return tag === PRAYER_NOTIFICATION_TAG || tag.startsWith('prayer-')
+        })
         .forEach(notification => notification.close())
     } catch (error) {
       console.error('Error clearing prayer notifications:', error)
