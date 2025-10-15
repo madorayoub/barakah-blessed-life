@@ -1,35 +1,32 @@
 import { TaskViews } from '@/components/tasks/TaskViews'
-import { TaskDetailSidebar } from '@/components/TaskDetailSidebar'
+import { TaskDetailPanel } from '@/components/tasks/TaskDetailPanel'
 import { TaskCompletionReward } from '@/components/TaskCompletionReward'
 import { RecurringTaskManager } from '@/components/RecurringTaskManager'
 import { useTasks } from '@/contexts/TasksContext'
 import { useState } from 'react'
 import { AppHeader } from '@/components/AppHeader'
+import type { Task } from '@/contexts/TasksContext'
 
 const Tasks = () => {
   const { tasks, updateTask, completeTask, deleteTask, createTask, loading, calculateTaskStreak } = useTasks()
-  
-  // DEBUG: Log task count changes to track UI updates
-  console.log('📋 TASKS COMPONENT RENDER - Tasks count:', tasks.length)
-  console.log('📋 First few task IDs:', tasks.slice(0, 3).map(t => t.id))
-  console.log('📋 Tasks component re-rendered at:', new Date().toISOString())
-  const [selectedTask, setSelectedTask] = useState<any>(null)
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null)
+  const [isPanelOpen, setIsPanelOpen] = useState(false)
   const [showReward, setShowReward] = useState(false)
   const [completedTaskInfo, setCompletedTaskInfo] = useState<any>(null)
 
-  const handleTaskClick = (task: any) => {
-    setSelectedTask(task)
-    setIsSidebarOpen(true)
-  }
-
   const handleSidebarClose = () => {
-    setIsSidebarOpen(false)
+    setIsPanelOpen(false)
     setSelectedTask(null)
   }
 
-  const handleTaskEdit = async (updatedTask: any) => {
-    await updateTask(updatedTask.id, updatedTask)
+  const handleTaskSelect = (task: Task) => {
+    setSelectedTask(task)
+    setIsPanelOpen(true)
+  }
+
+  const handleTaskEdit = async (updatedTask: Task) => {
+    return updateTask(updatedTask.id, updatedTask)
   }
 
   const handleTaskComplete = async (taskId: string) => {
@@ -66,27 +63,35 @@ const Tasks = () => {
       
       {/* Smart Suggestions temporarily disabled due to infinite loop */}
 
-      {/* Main Task Views - Force re-render when tasks change */}
+      {/* Main Task Views */}
       <TaskViews
-        key={tasks.length} // Simple key to force re-render
         tasks={tasks}
         onTaskComplete={handleTaskComplete}
         onTaskDelete={deleteTask}
         onTaskEdit={handleTaskEdit}
         onTaskCreate={createTask}
         loading={loading}
+        onTaskSelect={handleTaskSelect}
       />
 
-      {/* Task Detail Sidebar */}
-      <TaskDetailSidebar
+      {/* Task Detail Panel */}
+      <TaskDetailPanel
         task={selectedTask}
-        isOpen={isSidebarOpen}
+        isOpen={isPanelOpen}
         onClose={handleSidebarClose}
-        onComplete={handleTaskComplete}
+        onUpdate={async (task) => {
+          if (!task) return
+          const saved = await updateTask(task.id, task)
+          if (saved) {
+            setSelectedTask(saved)
+          }
+          return saved
+        }}
         onDelete={(taskId) => {
           deleteTask(taskId)
           handleSidebarClose()
         }}
+        onCreate={createTask}
       />
 
       {/* Completion Reward Animation */}

@@ -13,12 +13,26 @@ import { SubtaskManager } from './SubtaskManager'
 import { cn } from '@/lib/utils'
 import { toast } from '@/hooks/use-toast'
 import { getLocalDateString } from '@/utils/date'
+import { usePrayerTimes } from '@/hooks/usePrayerTimes'
+import type { PrayerTime } from '@/lib/prayerTimes'
+
+const parseLocalDateString = (dateString: string) => {
+  const [year, month, day] = dateString.split('-').map(Number)
+  return new Date(year, (month ?? 1) - 1, day ?? 1)
+}
+
+const createLocalDateTime = (dateString: string, timeString: string) => {
+  const [hours, minutes] = timeString.split(':').map(Number)
+  const date = parseLocalDateString(dateString)
+  date.setHours(hours ?? 0, minutes ?? 0, 0, 0)
+  return date
+}
 
 interface TaskDetailPanelProps {
   task: Task | null
   isOpen: boolean
   onClose: () => void
-  onUpdate: (task: Task) => void
+  onUpdate: (task: Task) => Promise<Task | void>
   onDelete: (taskId: string) => void
   onCreate: (taskData: Omit<Task, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => void
 }
@@ -28,6 +42,8 @@ export function TaskDetailPanel({ task, isOpen, onClose, onUpdate, onDelete, onC
   const [hasChanges, setHasChanges] = useState(false)
   const [isAutoSaving, setIsAutoSaving] = useState(false)
   const { statuses } = useTaskStatuses()
+  const { prayerTimes } = usePrayerTimes()
+  const [prayerConflict, setPrayerConflict] = useState<PrayerTime | null>(null)
 
   // Auto-save functionality
   const autoSave = useCallback(async (taskToSave: Task) => {
@@ -35,7 +51,10 @@ export function TaskDetailPanel({ task, isOpen, onClose, onUpdate, onDelete, onC
     
     setIsAutoSaving(true)
     try {
-      await onUpdate(taskToSave)
+      const savedTask = await onUpdate(taskToSave)
+      if (savedTask) {
+        setEditedTask(savedTask)
+      }
       setHasChanges(false)
       toast({
         title: "Auto-saved",
@@ -66,6 +85,29 @@ export function TaskDetailPanel({ task, isOpen, onClose, onUpdate, onDelete, onC
     }
   }, [task])
 
+  useEffect(() => {
+    if (!editedTask?.due_date || !editedTask?.due_time || !prayerTimes) {
+      setPrayerConflict(null)
+      return
+    }
+
+    const selectedDate = editedTask.due_date
+    const todayPrayerDate = getLocalDateString(prayerTimes.date)
+
+    if (selectedDate !== todayPrayerDate) {
+      setPrayerConflict(null)
+      return
+    }
+
+    const dueDateTime = createLocalDateTime(editedTask.due_date, editedTask.due_time)
+    const conflict = prayerTimes.prayers.find((prayer) => {
+      const diff = Math.abs(dueDateTime.getTime() - prayer.time.getTime())
+      return diff <= 10 * 60 * 1000
+    })
+
+    setPrayerConflict(conflict ?? null)
+  }, [editedTask?.due_date, editedTask?.due_time, prayerTimes])
+
   if (!isOpen || !task || !editedTask) return null
 
   const handleFieldChange = (field: keyof Task, value: any) => {
@@ -77,7 +119,10 @@ export function TaskDetailPanel({ task, isOpen, onClose, onUpdate, onDelete, onC
     if (editedTask && hasChanges && !isAutoSaving) {
       setIsAutoSaving(true)
       try {
-        await onUpdate(editedTask)
+        const savedTask = await onUpdate(editedTask)
+        if (savedTask) {
+          setEditedTask(savedTask)
+        }
         setHasChanges(false)
         toast({
           title: "Changes saved",
@@ -115,12 +160,12 @@ export function TaskDetailPanel({ task, isOpen, onClose, onUpdate, onDelete, onC
 
   const formatDate = (date: string | null) => {
     if (!date) return ''
-    return getLocalDateString(new Date(date))
+    return getLocalDateString(parseLocalDateString(date))
   }
 
   const handleCreateSubtask = async (title: string) => {
     if (!task) return
-    
+
     const subtaskData: Omit<Task, 'id' | 'user_id' | 'created_at' | 'updated_at'> = {
       title,
       description: '',
@@ -141,8 +186,8 @@ export function TaskDetailPanel({ task, isOpen, onClose, onUpdate, onDelete, onC
     try {
       // Update the subtask directly in the database using the same update function
       // This prevents the infinite loop and ensures proper state management
-      const updatedSubtask = await onUpdate({ id: subtaskId, ...updates } as Task)
-      
+      await onUpdate({ id: subtaskId, ...updates } as Task)
+
       // The real-time subscription will handle updating the parent task's subtasks array
     } catch (error) {
       console.error('Error updating subtask:', error)
@@ -302,6 +347,15 @@ export function TaskDetailPanel({ task, isOpen, onClose, onUpdate, onDelete, onC
                 placeholder="Set due date (optional)"
                 className="w-full"
               />
+              {prayerConflict && (
+                <div className="flex items-center gap-2 text-sm text-red-600">
+                  <Clock className="h-4 w-4" />
+                  <span>
+                    Heads up: this due time overlaps with {prayerConflict.displayName} prayer around{' '}
+                    {prayerConflict.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.
+                  </span>
+                </div>
+              )}
             </div>
             
             {/* Description */}
