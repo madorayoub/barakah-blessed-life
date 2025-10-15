@@ -1,16 +1,27 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 
+type Bucket = {
+  tokens: number
+  lastRefill: number
+}
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
-type Bucket = {
-  tokens: number
-  lastRefill: number
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL')
+const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')
+
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+  console.error('Supabase environment variables are not configured for the CalDAV proxy')
 }
+
+const supabase = SUPABASE_URL && SUPABASE_ANON_KEY
+  ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null
 
 const rateLimitBuckets = new Map<string, Bucket>()
 const MAX_TOKENS = 30
@@ -27,6 +38,21 @@ interface CalDAVRequest {
   headers?: Record<string, string>
 }
 
+const getUser = async (req: Request) => {
+  if (!supabase) {
+    return null
+  }
+
+  const auth = req.headers.get('Authorization') || ''
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : null
+  if (!token) {
+    return null
+  }
+
+  const { data: { user }, error } = await supabase.auth.getUser(token)
+  return error ? null : user
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -35,38 +61,22 @@ serve(async (req) => {
 
   try {
     if (req.method !== 'POST') {
-      return new Response('Method not allowed', { 
+      return new Response('Method not allowed', {
         status: 405,
-        headers: corsHeaders 
+        headers: corsHeaders
       })
     }
 
-    const authHeader = req.headers.get('Authorization')
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: 'Missing authorization header' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
-    }
-
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')
-
-    if (!supabaseUrl || !supabaseAnonKey) {
-      console.error('Supabase environment variables are not configured for the CalDAV proxy')
+    if (!supabase) {
       return new Response(JSON.stringify({ error: 'Server configuration error' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
     }
 
-    const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } }
-    })
+    const user = await getUser(req)
 
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
-
-    if (authError || !user) {
+    if (!user) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -99,7 +109,7 @@ serve(async (req) => {
     if (!method || !url || !credentials?.username || !credentials?.password) {
       return new Response('Missing required fields', {
         status: 400,
-        headers: corsHeaders 
+        headers: corsHeaders
       })
     }
 
@@ -135,7 +145,7 @@ serve(async (req) => {
 
     // Get response body
     const responseBody = await caldavResponse.text()
-    
+
     // Log response for debugging
     if (!caldavResponse.ok) {
       console.error('CalDAV Error Response:', responseBody)
@@ -158,7 +168,7 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('CalDAV Proxy Error:', error)
-    
+
     return new Response(JSON.stringify({
       error: 'CalDAV proxy failed',
       message: error instanceof Error ? error.message : 'Unknown error',

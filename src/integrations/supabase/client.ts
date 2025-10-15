@@ -8,19 +8,14 @@ const envSupabaseAnon = sanitizeEnv(import.meta.env.VITE_SUPABASE_ANON_KEY as st
 
 const DEV = import.meta.env.DEV;
 
-let fallbackSupabaseUrl: string | undefined;
-let fallbackSupabaseAnonKey: string | undefined;
-
-if (DEV) {
-  fallbackSupabaseUrl = "https://blsecepdbtdbkpptqrxe.supabase.co";
-  fallbackSupabaseAnonKey =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJsc2VjZXBkYnRkYmtwcHRxcnhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUyOTczODYsImV4cCI6MjA3MDg3MzM4Nn0.ERUp68jam__LphqaDFmmJlPjvwz5lui0zthLrkZasHU";
-}
+const FALLBACK_SUPABASE_URL = "https://blsecepdbtdbkpptqrxe.supabase.co";
+const FALLBACK_SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJsc2VjZXBkYnRkYmtwcHRxcnhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUyOTczODYsImV4cCI6MjA3MDg3MzM4Nn0.ERUp68jam__LphqaDFmmJlPjvwz5lui0zthLrkZasHU";
 
 export const SUPABASE_READY = Boolean(envSupabaseUrl && envSupabaseAnon);
 
-export const SUPABASE_URL = envSupabaseUrl ?? fallbackSupabaseUrl;
-export const SUPABASE_ANON = envSupabaseAnon ?? fallbackSupabaseAnonKey;
+export const SUPABASE_URL = envSupabaseUrl ?? (DEV ? FALLBACK_SUPABASE_URL : undefined);
+export const SUPABASE_ANON = envSupabaseAnon ?? (DEV ? FALLBACK_SUPABASE_ANON_KEY : undefined);
 const shouldCreateClient = Boolean(SUPABASE_URL && SUPABASE_ANON);
 export const SUPABASE_USING_FALLBACK = DEV && (!envSupabaseUrl || !envSupabaseAnon);
 
@@ -39,6 +34,6 @@ if (!SUPABASE_READY && DEV && !SUPABASE_USING_FALLBACK) {
 }
 
 type SupabaseClient = ReturnType<typeof createClient>;
-export const supabase = shouldCreateClient
+export const supabase: SupabaseClient | null = shouldCreateClient
   ? createClient(SUPABASE_URL!, SUPABASE_ANON!)
-  : (null as unknown as SupabaseClient);
+  : null;

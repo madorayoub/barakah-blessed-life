@@ -52,7 +52,7 @@ const CALDAV_PROVIDERS: Record<string, CalDAVProvider> = {
     principalUrl: '/{{username}}/user/',
     calendarHomeSet: '/{{username}}/events/',
     icon: '🌟',
-    disabled: true // Google CalDAV is not supported for consumer accounts; use OAuth integration instead.
+    disabled: true // Google CalDAV is not supported; use the OAuth flow in useGoogleCalendar.tsx instead.
   }
 }
 
@@ -160,7 +160,7 @@ export function useCalDAV() {
   const getSecretOrThrow = (providerId: string) => {
     const secret = secretsRef.current[providerId]
     if (!secret?.password || !secret.username) {
-      throw new Error('Please reconnect to CalDAV to re-enter your password')
+      throw new Error('Please reconnect CalDAV to re-enter your password.')
     }
     return secret
   }
@@ -430,9 +430,7 @@ export function useCalDAV() {
       const secret = getSecretOrThrow(providerId)
       const coordinates = prayerTimes?.coordinates
       const syncSettings = settings as PrayerSettings | null
-      const daysToSync = typeof (prayerTimes as { days?: number } | null)?.days === 'number'
-        ? Math.max(1, (prayerTimes as { days?: number }).days ?? 30)
-        : 30
+      const daysToSync = 30
 
       // Prepare events for sync
       const events: { uid: string; icalData: string }[] = []
