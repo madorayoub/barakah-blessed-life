@@ -125,6 +125,8 @@ export function Onboarding({ onComplete }: OnboardingProps) {
   const [highLatitudeManuallySelected, setHighLatitudeManuallySelected] = useState(false)
   const [advancedOpen, setAdvancedOpen] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [detectedLocationMessage, setDetectedLocationMessage] = useState<string | null>(null)
+  const [useDetectedCoordinatesConfirmed, setUseDetectedCoordinatesConfirmed] = useState(false)
 
   const calculationMethodOptions = useMemo(
     () => [
@@ -153,6 +155,13 @@ export function Onboarding({ onComplete }: OnboardingProps) {
   const currentMethodLabel = useMemo(() => {
     return calculationMethodOptions.find(option => option.value === formData.calculation_method)?.label || formData.calculation_method
   }, [calculationMethodOptions, formData.calculation_method])
+
+  const detectedCoordinateLabel = useMemo(() => {
+    const { latitude, longitude } = formData.coordinates
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return ''
+    if (latitude === 0 && longitude === 0) return ''
+    return `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`
+  }, [formData.coordinates.latitude, formData.coordinates.longitude])
 
   useEffect(() => {
     if (
@@ -227,6 +236,11 @@ export function Onboarding({ onComplete }: OnboardingProps) {
         async (position) => {
           const { latitude, longitude } = position.coords
 
+          setUseDetectedCoordinatesConfirmed(false)
+          setDetectedLocationMessage(
+            `Detected coordinates: ${latitude.toFixed(4)}, ${longitude.toFixed(4)} (resolving city...)`
+          )
+
           try {
             const response = await fetch(
               `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
@@ -241,6 +255,8 @@ export function Onboarding({ onComplete }: OnboardingProps) {
             const country = data.countryName || ''
             const recommended = getDefaultMethodForCountry(data.countryCode || country)
 
+            const locationDisplay = [city, country].filter(Boolean).join(', ')
+
             setFormData(prev => ({
               ...prev,
               location_city: city,
@@ -252,6 +268,12 @@ export function Onboarding({ onComplete }: OnboardingProps) {
                 longitude
               }
             }))
+            setUseDetectedCoordinatesConfirmed(false)
+            setDetectedLocationMessage(
+              locationDisplay
+                ? `Detected: ${locationDisplay}`
+                : `Detected coordinates: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`
+            )
 
             toast({
               title: "Location detected",
@@ -266,6 +288,10 @@ export function Onboarding({ onComplete }: OnboardingProps) {
                 longitude
               }
             }))
+            setUseDetectedCoordinatesConfirmed(false)
+            setDetectedLocationMessage(
+              `Detected coordinates: ${latitude.toFixed(4)}, ${longitude.toFixed(4)} (enter your city manually or confirm below)`
+            )
             toast({
               title: "Location detected",
               description: "Coordinates saved. Please enter your city manually."
@@ -274,6 +300,7 @@ export function Onboarding({ onComplete }: OnboardingProps) {
         },
         (error) => {
           console.error('Error getting location:', error)
+          setDetectedLocationMessage(null)
           toast({
             variant: "destructive",
             title: "Location access denied",
@@ -382,8 +409,7 @@ export function Onboarding({ onComplete }: OnboardingProps) {
   const IconComponent = currentStepData.icon
 
   const hasManualLocation = !!formData.location_city && !!formData.location_country
-  const hasCountry = !!formData.location_country
-  const hasDetectedCoordinates = formData.coordinates.latitude !== 0
+  const hasDetectedCoordinates = formData.coordinates.latitude !== 0 || formData.coordinates.longitude !== 0
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-100 flex items-center justify-center p-4">
@@ -462,7 +488,18 @@ export function Onboarding({ onComplete }: OnboardingProps) {
                     className="w-full p-3 border rounded-lg"
                     placeholder="Your city"
                     value={formData.location_city}
-                    onChange={(e) => setFormData(prev => ({ ...prev, location_city: e.target.value }))}
+                    onChange={(e) => {
+                      setUseDetectedCoordinatesConfirmed(false)
+                      setDetectedLocationMessage(prev => {
+                        if (prev?.includes('using detected coordinates')) {
+                          return detectedCoordinateLabel
+                            ? `Detected coordinates: ${detectedCoordinateLabel}`
+                            : prev.replace(' (using detected coordinates)', '')
+                        }
+                        return prev
+                      })
+                      setFormData(prev => ({ ...prev, location_city: e.target.value }))
+                    }}
                   />
                 </div>
                 <div className="space-y-2">
@@ -472,20 +509,57 @@ export function Onboarding({ onComplete }: OnboardingProps) {
                     className="w-full p-3 border rounded-lg"
                     placeholder="Your country"
                     value={formData.location_country}
-                    onChange={(e) => setFormData(prev => ({ ...prev, location_country: e.target.value, country_code: '' }))}
+                    onChange={(e) => {
+                      setUseDetectedCoordinatesConfirmed(false)
+                      setDetectedLocationMessage(prev => {
+                        if (prev?.includes('using detected coordinates')) {
+                          return detectedCoordinateLabel
+                            ? `Detected coordinates: ${detectedCoordinateLabel}`
+                            : prev.replace(' (using detected coordinates)', '')
+                        }
+                        return prev
+                      })
+                      setFormData(prev => ({ ...prev, location_country: e.target.value, country_code: '' }))
+                    }}
                   />
                 </div>
               </div>
-              
+
               <div className="text-center">
                 <Button onClick={getCurrentLocation} variant="outline" className="w-full">
                   <MapPin className="h-4 w-4 mr-2" />
                   Auto-detect my location
                 </Button>
-                {(hasManualLocation || hasDetectedCoordinates) && (
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    Detected: {[formData.location_city, formData.location_country].filter(Boolean).join(', ') || 'Coordinates saved'}
-                  </p>
+                {detectedLocationMessage && (
+                  <div className="mt-3 rounded-md border border-dashed border-emerald-200 bg-emerald-50/40 p-3 text-sm text-emerald-900">
+                    <p>{detectedLocationMessage}</p>
+                    {hasDetectedCoordinates && detectedCoordinateLabel && !hasManualLocation && (
+                      <div className="mt-3 flex flex-wrap items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant={useDetectedCoordinatesConfirmed ? 'default' : 'outline'}
+                          onClick={() => {
+                            if (!detectedCoordinateLabel) return
+                            setUseDetectedCoordinatesConfirmed(true)
+                            setDetectedLocationMessage(
+                              `Detected coordinates: ${detectedCoordinateLabel} (using detected coordinates)`
+                            )
+                            toast({
+                              title: "Coordinates selected",
+                              description: "We'll use the detected coordinates for prayer times."
+                            })
+                          }}
+                        >
+                          Use detected coordinates
+                        </Button>
+                        {useDetectedCoordinatesConfirmed && (
+                          <Badge variant="outline" className="border-emerald-300 text-emerald-700">
+                            Confirmed
+                          </Badge>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
@@ -495,30 +569,26 @@ export function Onboarding({ onComplete }: OnboardingProps) {
           {currentStep === 2 && (
             <div className="space-y-4">
               <div className="rounded-lg border p-4 space-y-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <p className="text-sm font-medium">Calculation Method</p>
-                    <p className="text-xs text-muted-foreground">
-                      {recommendedMethodLabel
-                        ? `Recommended for ${formData.location_country || formData.country_code || 'your region'}`
-                        : 'Choose the standard your local masjid follows.'}
-                    </p>
-                  </div>
-                  {recommendedMethodLabel && formData.calculation_method === recommendedMethod && (
-                    <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 border border-emerald-200">
-                      Recommended
-                    </Badge>
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Calculation Method</p>
+                  <p className="text-xs text-muted-foreground">
+                    Start with the recommended standard for your location. You can adjust it anytime.
+                  </p>
+                  {recommendedMethodLabel && (
+                    <div className="flex flex-wrap items-center gap-2 text-sm">
+                      <Badge className="bg-emerald-100 text-emerald-700 border border-emerald-200">
+                        Recommended for {formData.location_country || formData.country_code || 'your region'}: {recommendedMethodLabel}
+                      </Badge>
+                      <button
+                        type="button"
+                        className="text-sm font-medium text-emerald-700 underline"
+                        onClick={() => setAdvancedOpen(true)}
+                      >
+                        Change
+                      </button>
+                    </div>
                   )}
-                </div>
-                <div className="flex flex-wrap items-center gap-2 text-sm">
-                  <span className="text-base font-semibold">{currentMethodLabel}</span>
-                  <button
-                    type="button"
-                    className="text-sm font-medium text-emerald-700 underline"
-                    onClick={() => setAdvancedOpen(true)}
-                  >
-                    Change
-                  </button>
+                  <div className="text-base font-semibold text-emerald-900">{currentMethodLabel}</div>
                 </div>
               </div>
 
@@ -532,13 +602,13 @@ export function Onboarding({ onComplete }: OnboardingProps) {
                   <div className={`flex items-start gap-3 rounded-lg border p-3 ${formData.madhab === 'Shafi' ? 'border-emerald-500 bg-emerald-50' : 'border-border'}`}>
                     <RadioGroupItem id="madhab-shafi" value="Shafi" className="mt-1" />
                     <label htmlFor="madhab-shafi" className="text-sm font-medium leading-none">
-                      Shafi (1× shadow length)
+                      Shafi (standard Asr)
                     </label>
                   </div>
                   <div className={`flex items-start gap-3 rounded-lg border p-3 ${formData.madhab === 'Hanafi' ? 'border-emerald-500 bg-emerald-50' : 'border-border'}`}>
                     <RadioGroupItem id="madhab-hanafi" value="Hanafi" className="mt-1" />
                     <label htmlFor="madhab-hanafi" className="text-sm font-medium leading-none">
-                      Hanafi (2× shadow length)
+                      Hanafi (later Asr)
                     </label>
                   </div>
                 </RadioGroup>
@@ -562,7 +632,7 @@ export function Onboarding({ onComplete }: OnboardingProps) {
                 onValueChange={(value) => setAdvancedOpen(value === 'advanced')}
               >
                 <AccordionItem value="advanced">
-                  <AccordionTrigger>Advanced settings</AccordionTrigger>
+                  <AccordionTrigger>Advanced high-latitude settings</AccordionTrigger>
                   <AccordionContent className="space-y-4">
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Change calculation method</label>
@@ -764,7 +834,7 @@ export function Onboarding({ onComplete }: OnboardingProps) {
             {currentStep < steps.length - 1 ? (
               <Button
                 onClick={currentStep === 4 ? handleNotificationSetup : nextStep}
-                disabled={currentStep === 1 && !(hasManualLocation || hasDetectedCoordinates)}
+                disabled={currentStep === 1 && !(hasManualLocation || (hasDetectedCoordinates && useDetectedCoordinatesConfirmed))}
               >
                 {currentStep === 4 ? 'Continue' : 'Next'}
                 <ArrowRight className="h-4 w-4 ml-2" />

@@ -1,3 +1,4 @@
+// @deprecated Legacy onboarding page. Use src/components/Onboarding.tsx instead.
 import { useState, useEffect } from "react"
 import { MapPin, Navigation, Loader2, AlertCircle } from "lucide-react"
 import { Link } from "react-router-dom"

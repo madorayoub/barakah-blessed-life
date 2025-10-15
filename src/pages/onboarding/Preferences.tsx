@@ -1,3 +1,4 @@
+// @deprecated Legacy onboarding page. Use src/components/Onboarding.tsx instead.
 import { useState } from "react"
 import { Bell, Volume2, Smartphone } from "lucide-react"
 import { Link } from "react-router-dom"

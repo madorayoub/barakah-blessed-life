@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from '@/hooks/use-toast'
+import { SUPABASE_USING_FALLBACK } from '@/integrations/supabase/client'
 
 interface AuthContextType {
   user: User | null
@@ -21,8 +22,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    if (SUPABASE_USING_FALLBACK) {
+      setLoading(false)
+      setUser(null)
+      setSession(null)
+      return
+    }
+
     let isMounted = true
-    
+
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -80,8 +88,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const signUp = async (email: string, password: string, displayName?: string) => {
+    if (SUPABASE_USING_FALLBACK) {
+      const error = new Error('Authentication is disabled in demo mode')
+      toast({
+        variant: 'destructive',
+        title: 'Unavailable in demo mode',
+        description: 'Add Supabase credentials to enable account creation.'
+      })
+      return { error }
+    }
+
     const redirectUrl = `${window.location.origin}${import.meta.env.BASE_URL}`
-    
+
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -110,6 +128,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signIn = async (email: string, password: string) => {
+    if (SUPABASE_USING_FALLBACK) {
+      const error = new Error('Authentication is disabled in demo mode')
+      toast({
+        variant: "destructive",
+        title: "Unavailable in demo mode",
+        description: "Add Supabase credentials to enable sign-in."
+      })
+      return { error }
+    }
+
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password
@@ -132,8 +160,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signOut = async () => {
+    if (SUPABASE_USING_FALLBACK) {
+      toast({
+        variant: "destructive",
+        title: "Unavailable in demo mode",
+        description: "Authentication is disabled when running with local fallback."
+      })
+      return
+    }
+
     const { error } = await supabase.auth.signOut()
-    
+
     if (error) {
       toast({
         variant: "destructive",
@@ -149,8 +186,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const resetPassword = async (email: string) => {
+    if (SUPABASE_USING_FALLBACK) {
+      const error = new Error('Authentication is disabled in demo mode')
+      toast({
+        variant: "destructive",
+        title: "Unavailable in demo mode",
+        description: "Password resets require Supabase credentials."
+      })
+      return { error }
+    }
+
     const redirectUrl = `${window.location.origin}${import.meta.env.BASE_URL}auth/reset-password`
-    
+
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: redirectUrl
     })

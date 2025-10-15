@@ -262,7 +262,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     if (!user) return
 
     // Clean and validate task data
-    const cleanTaskData = { ...taskData }
+    const cleanTaskData: Record<string, any> = { ...taskData }
     
     // Remove undefined/null fields that shouldn't be sent to database
     Object.keys(cleanTaskData).forEach(key => {
@@ -287,6 +287,11 @@ export function TasksProvider({ children }: { children: ReactNode }) {
         .single()
 
       if (error) {
+        if ((error as any)?.code === '23505') {
+          console.info('Skipping duplicate recurring child task due to unique constraint')
+          return
+        }
+
         console.error('Error creating task:', error)
         toast({
           variant: "destructive",
