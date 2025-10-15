@@ -1,13 +1,17 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { MapPin, Clock, Settings, Bell, CheckCircle2, ArrowRight, ArrowLeft, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useAuth } from '@/hooks/useAuth'
 import { useNotifications } from '@/hooks/useNotifications'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from '@/hooks/use-toast'
+import { calculatePrayerTimes, formatPrayerTime } from '@/lib/prayerTimes'
 
 // Onboarding component - manages initial app setup flow
 
@@ -83,6 +87,8 @@ function getDefaultMethodForCountry(countryCodeOrName?: string | null): string {
   return 'MuslimWorldLeague'
 }
 
+const DEFAULT_CALCULATION_METHOD = getDefaultMethodForCountry(undefined)
+
 export function Onboarding({ onComplete }: OnboardingProps) {
   const { user } = useAuth()
   const { requestPermission } = useNotifications()
@@ -91,14 +97,16 @@ export function Onboarding({ onComplete }: OnboardingProps) {
     location_city: '',
     location_country: '',
     country_code: '',
-    calculation_method: 'ISNA',
+    calculation_method: DEFAULT_CALCULATION_METHOD,
     madhab: 'Shafi',
     high_latitude_rule: 'MiddleOfTheNight',
     difficulty_mode: 'basic',
     coordinates: { latitude: 0, longitude: 0 }
   })
   const [methodManuallySelected, setMethodManuallySelected] = useState(false)
+  const [advancedOpen, setAdvancedOpen] = useState(false)
   const [loading, setLoading] = useState(false)
+  const methodSelectTriggerRef = useRef<HTMLButtonElement | null>(null)
 
   const calculationMethodOptions = useMemo(
     () => [
@@ -119,6 +127,59 @@ export function Onboarding({ onComplete }: OnboardingProps) {
     const countryHint = formData.country_code || formData.location_country || undefined
     return getDefaultMethodForCountry(countryHint)
   }, [formData.country_code, formData.location_country])
+
+  const recommendedMethodLabel = useMemo(() => {
+    return calculationMethodOptions.find(option => option.value === recommendedMethod)?.label
+  }, [calculationMethodOptions, recommendedMethod])
+
+  useEffect(() => {
+    if (
+      currentStep === 2 &&
+      !methodManuallySelected &&
+      (!formData.calculation_method || formData.calculation_method === DEFAULT_CALCULATION_METHOD) &&
+      recommendedMethod &&
+      formData.calculation_method !== recommendedMethod
+    ) {
+      setFormData(prev => ({
+        ...prev,
+        calculation_method: recommendedMethod
+      }))
+    }
+  }, [currentStep, formData.calculation_method, methodManuallySelected, recommendedMethod])
+
+  useEffect(() => {
+    if (Math.abs(formData.coordinates.latitude) >= 48) {
+      setAdvancedOpen(true)
+    }
+  }, [formData.coordinates.latitude])
+
+  const prayerPreview = useMemo(() => {
+    try {
+      if (!formData.coordinates || (formData.coordinates.latitude === 0 && formData.coordinates.longitude === 0)) {
+        return null
+      }
+
+      return calculatePrayerTimes(
+        formData.coordinates.latitude,
+        formData.coordinates.longitude,
+        new Date(),
+        {
+          calculation_method: formData.calculation_method,
+          madhab: formData.madhab,
+          high_latitude_rule: formData.high_latitude_rule
+        }
+      )
+    } catch (error) {
+      console.error('Error generating prayer preview:', error)
+      return null
+    }
+  }, [
+    formData.calculation_method,
+    formData.coordinates.latitude,
+    formData.coordinates.longitude,
+    formData.high_latitude_rule,
+    formData.madhab
+  ])
 
   const getCurrentLocation = () => {
     if (navigator.geolocation) {
@@ -393,66 +454,149 @@ export function Onboarding({ onComplete }: OnboardingProps) {
           {/* Calculation Step */}
           {currentStep === 2 && (
             <div className="space-y-4">
-              {hasCountry && !methodManuallySelected && (
-                <div className="rounded-lg border border-emerald-100 bg-emerald-50 p-3 text-sm text-emerald-900">
-                  We recommend using the {calculationMethodOptions.find(option => option.value === recommendedMethod)?.label || 'default method'} based on your location. You can change this anytime.
-                </div>
-              )}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <label className="text-sm font-medium">Calculation Method</label>
-                  <Select
-                    value={formData.calculation_method}
-                    onValueChange={(value) => {
-                      setMethodManuallySelected(true)
-                      setFormData(prev => ({ ...prev, calculation_method: value }))
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {calculationMethodOptions.map(option => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
+                  {hasCountry && !methodManuallySelected && recommendedMethodLabel && formData.calculation_method === recommendedMethod && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-xs text-emerald-700">
+                      Recommended for {formData.location_country || formData.country_code || 'your country'}: {recommendedMethodLabel}
+                      <button
+                        type="button"
+                        className="underline"
+                        onClick={() => {
+                          setMethodManuallySelected(true)
+                          methodSelectTriggerRef.current?.focus()
+                          methodSelectTriggerRef.current?.click()
+                        }}
+                      >
+                        Change
+                      </button>
+                    </span>
+                  )}
+                </div>
+                <Select
+                  value={formData.calculation_method}
+                  onValueChange={(value) => {
+                    setMethodManuallySelected(true)
+                    setFormData(prev => ({ ...prev, calculation_method: value }))
+                  }}
+                >
+                  <SelectTrigger ref={methodSelectTriggerRef}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {calculationMethodOptions.map(option => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Madhab (Asr Calculation)</label>
+                <RadioGroup
+                  value={formData.madhab}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, madhab: value }))}
+                  className="grid gap-3 md:grid-cols-2"
+                >
+                  <div className={`flex items-start gap-3 rounded-lg border p-3 ${formData.madhab === 'Shafi' ? 'border-emerald-500 bg-emerald-50' : 'border-border'}`}>
+                    <RadioGroupItem id="madhab-shafi" value="Shafi" className="mt-1" />
+                    <label htmlFor="madhab-shafi" className="text-sm font-medium leading-none">
+                      Shafi (standard Asr)
+                    </label>
+                  </div>
+                  <div className={`flex items-start gap-3 rounded-lg border p-3 ${formData.madhab === 'Hanafi' ? 'border-emerald-500 bg-emerald-50' : 'border-border'}`}>
+                    <RadioGroupItem id="madhab-hanafi" value="Hanafi" className="mt-1" />
+                    <label htmlFor="madhab-hanafi" className="text-sm font-medium leading-none">
+                      Hanafi (later Asr)
+                    </label>
+                  </div>
+                </RadioGroup>
+                <p className="text-xs text-muted-foreground">Madhab only affects the Asr time.</p>
+              </div>
+
+              <Accordion
+                type="single"
+                collapsible
+                value={advancedOpen ? 'advanced' : undefined}
+                onValueChange={(value) => setAdvancedOpen(value === 'advanced')}
+              >
+                <AccordionItem value="advanced">
+                  <AccordionTrigger>Advanced (rarely needed)</AccordionTrigger>
+                  <AccordionContent className="space-y-3">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">High Latitude Rule</label>
+                      <TooltipProvider delayDuration={150}>
+                        <Select
+                          value={formData.high_latitude_rule}
+                          onValueChange={(value) => setFormData(prev => ({ ...prev, high_latitude_rule: value }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <SelectItem value="MiddleOfTheNight">Middle of the night</SelectItem>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                Splits the night in half for Fajr and Isha adjustments.
+                              </TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <SelectItem value="SeventhOfTheNight">1/7 of the night</SelectItem>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                Uses one seventh of night length to balance timings.
+                              </TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <SelectItem value="TwilightAngle">Twilight angle</SelectItem>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                Keeps the calculation angles consistent year-round.
+                              </TooltipContent>
+                            </Tooltip>
+                          </SelectContent>
+                        </Select>
+                      </TooltipProvider>
+                    </div>
+                    <a
+                      href="https://praytimes.org/calculation"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-muted-foreground underline"
+                    >
+                      Learn more about high latitude rules
+                    </a>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+
+              <p className="text-xs text-muted-foreground">You can change these later in Settings.</p>
+
+              <div className="space-y-2">
+                <div className="text-sm font-medium">Today's prayer times</div>
+                {prayerPreview ? (
+                  <div className="rounded-lg border p-3 text-sm">
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                      {prayerPreview.prayers.map(prayer => (
+                        <div key={prayer.name} className="flex items-center justify-between">
+                          <span>{prayer.displayName}</span>
+                          <span className="font-medium">{formatPrayerTime(prayer.time)}</span>
+                        </div>
                       ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Madhab (Asr Calculation)</label>
-                  <Select
-                    value={formData.madhab}
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, madhab: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Shafi">Shafi (Standard)</SelectItem>
-                      <SelectItem value="Hanafi">Hanafi (Later Asr)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">High Latitude Rule</label>
-                  <Select
-                    value={formData.high_latitude_rule}
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, high_latitude_rule: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="MiddleOfTheNight">Middle of the night</SelectItem>
-                      <SelectItem value="SeventhOfTheNight">1/7 of the night</SelectItem>
-                      <SelectItem value="TwilightAngle">Twilight angle</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    Set your location to preview today's Fajr through Isha times.
+                  </p>
+                )}
               </div>
             </div>
           )}
