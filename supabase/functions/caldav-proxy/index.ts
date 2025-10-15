@@ -1,9 +1,20 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
+
+type Bucket = {
+  tokens: number
+  lastRefill: number
+}
+
+const rateLimitBuckets = new Map<string, Bucket>()
+const MAX_TOKENS = 30
+const REFILL_MS = 60_000
 
 interface CalDAVRequest {
   method: string
@@ -30,12 +41,63 @@ serve(async (req) => {
       })
     }
 
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: 'Missing authorization header' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.error('Supabase environment variables are not configured for the CalDAV proxy')
+      return new Response(JSON.stringify({ error: 'Server configuration error' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    })
+
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
+
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    const bucket = rateLimitBuckets.get(user.id) ?? { tokens: MAX_TOKENS, lastRefill: Date.now() }
+    const now = Date.now()
+    const elapsed = now - bucket.lastRefill
+    if (elapsed > REFILL_MS) {
+      bucket.tokens = MAX_TOKENS
+      bucket.lastRefill = now
+    }
+
+    if (bucket.tokens <= 0) {
+      rateLimitBuckets.set(user.id, bucket)
+      return new Response(JSON.stringify({ error: 'Rate limit exceeded' }), {
+        status: 429,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    bucket.tokens -= 1
+    rateLimitBuckets.set(user.id, bucket)
+
     const requestData: CalDAVRequest = await req.json()
     const { method, url, credentials, body, headers = {} } = requestData
 
     // Validate required fields
     if (!method || !url || !credentials?.username || !credentials?.password) {
-      return new Response('Missing required fields', { 
+      return new Response('Missing required fields', {
         status: 400,
         headers: corsHeaders 
       })

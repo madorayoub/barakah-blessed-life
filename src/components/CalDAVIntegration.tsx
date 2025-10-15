@@ -71,7 +71,7 @@ export function CalDAVIntegration() {
           CalDAV Integration
         </CardTitle>
         <CardDescription>
-          Connect to any CalDAV-compatible calendar service (iCloud, Google, Outlook, etc.)
+          Connect to any CalDAV-compatible calendar service (iCloud, Outlook, etc.)
         </CardDescription>
       </CardHeader>
       <CardContent>
