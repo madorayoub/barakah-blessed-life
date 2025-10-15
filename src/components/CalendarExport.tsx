@@ -3,8 +3,19 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { usePrayerTimes } from '@/hooks/usePrayerTimes'
 import { useTasks } from '@/contexts/TasksContext'
-import { formatPrayerTime } from '@/lib/prayerTimes'
 import { format, addDays } from 'date-fns'
+
+const parseLocalDateString = (dateString: string) => {
+  const [year, month, day] = dateString.split('-').map(Number)
+  return new Date(year, (month ?? 1) - 1, day ?? 1)
+}
+
+const createLocalDateTime = (dateString: string, timeString: string) => {
+  const [hours, minutes] = timeString.split(':').map(Number)
+  const date = parseLocalDateString(dateString)
+  date.setHours(hours ?? 0, minutes ?? 0, 0, 0)
+  return date
+}
 
 export function CalendarExport() {
   const { prayerTimes } = usePrayerTimes()
@@ -45,15 +56,14 @@ export function CalendarExport() {
     // Add tasks with due dates
     tasks.forEach(task => {
       if (task.due_date) {
-        const dueDate = new Date(task.due_date)
+        const dueDate = parseLocalDateString(task.due_date)
         const dateStr = format(dueDate, 'yyyyMMdd')
-        
+
         let startTimeStr, endTimeStr
         if (task.due_time) {
-          const [hours, minutes] = task.due_time.split(':')
-          dueDate.setHours(parseInt(hours), parseInt(minutes))
-          startTimeStr = format(dueDate, "yyyyMMdd'T'HHmmss")
-          const endTime = new Date(dueDate.getTime() + 60 * 60000) // 1 hour later
+          const dueDateTime = createLocalDateTime(task.due_date, task.due_time)
+          startTimeStr = format(dueDateTime, "yyyyMMdd'T'HHmmss")
+          const endTime = new Date(dueDateTime.getTime() + 60 * 60000) // 1 hour later
           endTimeStr = format(endTime, "yyyyMMdd'T'HHmmss")
         } else {
           startTimeStr = dateStr

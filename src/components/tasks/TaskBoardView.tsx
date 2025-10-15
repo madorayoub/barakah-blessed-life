@@ -18,7 +18,7 @@ interface TaskBoardViewProps {
   tasks: Task[]
   onTaskComplete: (taskId: string) => void
   onTaskDelete: (taskId: string) => void
-  onTaskEdit: (task: Task) => void
+  onTaskEdit: (task: Task) => Promise<Task | void> | void
   onTaskCreate: (taskData: Omit<Task, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => void
   loading: boolean
 }
@@ -48,11 +48,10 @@ export function TaskBoardView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit,
   // Create status mapping for filtering
   const statusMapping: Record<string, string[]> = {
     'pending': ['pending'],
-    'to_do': ['pending'], 
+    'to_do': ['pending'],
     'in_progress': ['in_progress'],
     'completed': ['completed'],
-    'done': ['completed'],
-    'tests': ['pending', 'in_progress', 'completed'] // Show all tasks in tests column
+    'done': ['completed']
   }
 
   const getTasksByStatus = (statusId: string) => {
@@ -63,7 +62,6 @@ export function TaskBoardView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit,
 
   // Use useCallback for event handlers to prevent unnecessary re-renders
   const handleTaskClick = useCallback((task: Task) => {
-    console.log('TaskBoardView - task clicked:', task.id)
     setSelectedTask(task)
     setIsPanelOpen(true)
   }, [])
@@ -73,10 +71,11 @@ export function TaskBoardView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit,
     setSelectedTask(null)
   }, [])
 
-  const handleTaskUpdate = useCallback((updatedTask: Task) => {
-    console.log('TaskBoardView - task updated:', updatedTask.id)
-    onTaskEdit(updatedTask)
-    setSelectedTask(updatedTask)
+  const handleTaskUpdate = useCallback(async (updatedTask: Task) => {
+    const result = await onTaskEdit(updatedTask)
+    const taskToPersist = (result as Task | undefined) ?? updatedTask
+    setSelectedTask(taskToPersist)
+    return taskToPersist
   }, [onTaskEdit])
 
   const toggleColumnExpansion = useCallback((columnId: string) => {
@@ -172,9 +171,9 @@ export function TaskBoardView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit,
         <div className="flex gap-6 overflow-x-auto pb-6">
           {columns.map(column => {
             const columnTasks = getTasksByStatus(column.status)
-          const isExpanded = expandedColumns[column.id] || false
-          const visibleTasks = isExpanded ? columnTasks : columnTasks.slice(0, INITIAL_TASK_LIMIT)
-          const hasMoreTasks = columnTasks.length > INITIAL_TASK_LIMIT
+            const isExpanded = expandedColumns[column.id] || false
+            const visibleTasks = isExpanded ? columnTasks : columnTasks.slice(0, INITIAL_TASK_LIMIT)
+            const hasMoreTasks = columnTasks.length > INITIAL_TASK_LIMIT
             
             return (
               <DroppableColumn

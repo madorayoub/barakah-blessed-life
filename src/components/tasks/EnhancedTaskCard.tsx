@@ -1,4 +1,4 @@
-import { Calendar, Clock, User, CheckCircle2, Circle, MoreHorizontal } from 'lucide-react'
+import { Calendar, Clock, CheckCircle2, Circle, MoreHorizontal } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -6,11 +6,14 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Task } from '@/contexts/TasksContext'
+import { Task, useTasks } from '@/contexts/TasksContext'
 import { cn } from '@/lib/utils'
-import { memo, useCallback } from 'react'
+import { memo, useCallback, useState } from 'react'
+import { toast } from '@/hooks/use-toast'
+import { getLocalDateString } from '@/utils/date'
 
 interface EnhancedTaskCardProps {
   task: Task
@@ -20,48 +23,90 @@ interface EnhancedTaskCardProps {
   onClick?: (task: Task) => void
 }
 
+const parseLocalDateString = (dateString: string) => {
+  const [year, month, day] = dateString.split('-').map(Number)
+  return new Date(year, (month ?? 1) - 1, day ?? 1)
+}
+
 const EnhancedTaskCard = memo(function EnhancedTaskCard({ task, onComplete, onDelete, onEdit, onClick }: EnhancedTaskCardProps) {
+  const { updateTask } = useTasks()
+  const [isSnoozing, setIsSnoozing] = useState(false)
+
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'border-l-red-500'
-      case 'medium': return 'border-l-primary'
-      case 'low': return 'border-l-gray-400'
-      default: return 'border-l-gray-300'
+      case 'high':
+        return 'border-l-red-500'
+      case 'medium':
+        return 'border-l-primary'
+      case 'low':
+        return 'border-l-gray-400'
+      default:
+        return 'border-l-gray-300'
     }
   }
 
   const formatDueDate = () => {
     if (!task.due_date) return null
-    
-    const dueDate = new Date(task.due_date)
-    const today = new Date()
+
+    const dueDate = parseLocalDateString(task.due_date)
+    const today = parseLocalDateString(getLocalDateString(new Date()))
     const diffTime = dueDate.getTime() - today.getTime()
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    
+
     if (diffDays === 0) return 'Today'
     if (diffDays === 1) return 'Tomorrow'
     if (diffDays === -1) return 'Yesterday'
     if (diffDays < 0) return `${Math.abs(diffDays)} days overdue`
     if (diffDays <= 7) return `${diffDays} days`
-    
-    return dueDate.toLocaleDateString()
+
+    return getLocalDateString(dueDate)
   }
 
   const getDueDateColor = () => {
     if (!task.due_date) return 'text-muted-foreground'
-    
-    const dueDate = new Date(task.due_date)
-    const today = new Date()
+
+    const dueDate = parseLocalDateString(task.due_date)
+    const today = parseLocalDateString(getLocalDateString(new Date()))
     const diffTime = dueDate.getTime() - today.getTime()
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    
+
     if (diffDays < 0) return 'text-red-600 bg-red-50'
     if (diffDays === 0) return 'text-orange-600 bg-orange-50'
     if (diffDays <= 3) return 'text-yellow-600 bg-yellow-50'
     return 'text-muted-foreground bg-muted'
   }
 
-  // Use useCallback to prevent unnecessary re-renders
+  const snoozeTask = useCallback(async (days: number) => {
+    if (isSnoozing) return
+
+    setIsSnoozing(true)
+    try {
+      const baseDateString = task.due_date ?? getLocalDateString(new Date())
+      const baseDate = parseLocalDateString(baseDateString)
+      baseDate.setDate(baseDate.getDate() + days)
+      const newDueDate = getLocalDateString(baseDate)
+
+      await updateTask(task.id, {
+        due_date: newDueDate,
+        due_time: task.due_time ?? null
+      })
+
+      toast({
+        title: `Snoozed to ${days === 1 ? 'tomorrow' : 'next week'}`,
+        description: `Due ${newDueDate}${task.due_time ? ` at ${task.due_time}` : ''}`
+      })
+    } catch (error) {
+      console.error('Failed to snooze task:', error)
+      toast({
+        variant: 'destructive',
+        title: 'Failed to snooze task',
+        description: 'Please try again.'
+      })
+    } finally {
+      setIsSnoozing(false)
+    }
+  }, [isSnoozing, task, updateTask])
+
   const handleCardClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
     onClick?.(task)
@@ -69,20 +114,17 @@ const EnhancedTaskCard = memo(function EnhancedTaskCard({ task, onComplete, onDe
 
   const handleComplete = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
-    console.log('EnhancedTaskCard - calling onComplete for task:', task.id)
     onComplete(task.id)
   }, [onComplete, task.id])
 
   const handleAction = useCallback((action: string, e: React.MouseEvent) => {
     e.stopPropagation()
-    
-    console.log('EnhancedTaskCard - action:', action, 'for task:', task.id)
+
     switch (action) {
       case 'edit':
         onEdit(task)
         break
       case 'delete':
-        console.log('EnhancedTaskCard - calling onDelete for task:', task.id)
         onDelete(task.id)
         break
     }
@@ -91,7 +133,7 @@ const EnhancedTaskCard = memo(function EnhancedTaskCard({ task, onComplete, onDe
   const isCompleted = task.status === 'completed'
 
   return (
-    <Card 
+    <Card
       className={cn(
         "w-full min-h-[88px] max-h-[120px] p-4 mb-3 cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-1 border-l-4",
         getPriorityColor(task.priority),
@@ -113,17 +155,19 @@ const EnhancedTaskCard = memo(function EnhancedTaskCard({ task, onComplete, onDe
               <Circle className="h-4 w-4 text-muted-foreground hover:text-primary" />
             )}
           </Button>
-          
+
           <div className="flex-1 min-w-0">
-            <h4 className={cn(
-              "font-medium text-sm line-clamp-2 mb-1",
-              isCompleted && "line-through text-muted-foreground"
-            )}>
+            <h4
+              className={cn(
+                "font-medium text-sm line-clamp-2 mb-1",
+                isCompleted && "line-through text-muted-foreground"
+              )}
+            >
               {task.title}
             </h4>
           </div>
         </div>
-        
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="h-6 w-6 p-0">
@@ -134,7 +178,27 @@ const EnhancedTaskCard = memo(function EnhancedTaskCard({ task, onComplete, onDe
             <DropdownMenuItem onClick={(e) => handleAction('edit', e)}>
               Edit task
             </DropdownMenuItem>
-            <DropdownMenuItem 
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation()
+                snoozeTask(1)
+              }}
+              disabled={isSnoozing}
+            >
+              Snooze → Tomorrow
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation()
+                snoozeTask(7)
+              }}
+              disabled={isSnoozing}
+            >
+              Snooze → Next Week
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
               onClick={(e) => handleAction('delete', e)}
               className="text-red-600"
             >
@@ -143,21 +207,21 @@ const EnhancedTaskCard = memo(function EnhancedTaskCard({ task, onComplete, onDe
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      
-      {/* Task metadata */}
+
       <div className="flex items-center justify-between text-xs">
         <div className="flex items-center gap-2">
-          {/* Priority indicator */}
           {task.priority !== 'medium' && (
-            <Badge variant="outline" className={cn(
-              "text-xs px-1.5 py-0.5",
-              task.priority === 'high' ? 'text-red-600 border-red-200' : 'text-gray-500 border-gray-200'
-            )}>
+            <Badge
+              variant="outline"
+              className={cn(
+                "text-xs px-1.5 py-0.5",
+                task.priority === 'high' ? 'text-red-600 border-red-200' : 'text-gray-500 border-gray-200'
+              )}
+            >
               {task.priority}
             </Badge>
           )}
-          
-          {/* Category indicator */}
+
           {task.category_id && (
             <div className="flex items-center gap-1">
               <div className="w-2 h-2 rounded-full bg-primary"></div>
@@ -167,20 +231,21 @@ const EnhancedTaskCard = memo(function EnhancedTaskCard({ task, onComplete, onDe
             </div>
           )}
         </div>
-        
-        {/* Due date */}
+
         {task.due_date && (
-          <Badge variant="outline" className={cn(
-            "text-xs px-2 py-0.5 flex items-center gap-1",
-            getDueDateColor()
-          )}>
+          <Badge
+            variant="outline"
+            className={cn(
+              "text-xs px-2 py-0.5 flex items-center gap-1",
+              getDueDateColor()
+            )}
+          >
             <Calendar className="h-3 w-3" />
             {formatDueDate()}
           </Badge>
         )}
       </div>
-      
-      {/* Subtask progress */}
+
       {task.subtasks && task.subtasks.length > 0 && (
         <div className="mt-2 text-xs text-muted-foreground">
           <span className="text-primary font-medium">
@@ -188,8 +253,7 @@ const EnhancedTaskCard = memo(function EnhancedTaskCard({ task, onComplete, onDe
           </span>
         </div>
       )}
-      
-      {/* Description */}
+
       {task.description && !task.subtasks?.length && (
         <div className="mt-2 text-xs text-muted-foreground">
           <span className="line-clamp-1">{task.description}</span>
@@ -198,7 +262,6 @@ const EnhancedTaskCard = memo(function EnhancedTaskCard({ task, onComplete, onDe
     </Card>
   )
 }, (prevProps, nextProps) => {
-  // Only re-render if task properties that affect display have changed
   return (
     prevProps.task.id === nextProps.task.id &&
     prevProps.task.status === nextProps.task.status &&

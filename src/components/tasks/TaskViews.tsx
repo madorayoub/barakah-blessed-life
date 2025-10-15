@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { List, Columns, Calendar, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -6,71 +6,93 @@ import { TaskListView } from './TaskListView'
 import { TaskBoardView } from './TaskBoardView'
 import { TaskCalendarView } from './TaskCalendarView'
 import { Task } from '@/contexts/TasksContext'
+import { getLocalDateString } from '@/utils/date'
 
 interface TaskViewsProps {
   tasks: Task[]
   onTaskComplete: (taskId: string) => void
   onTaskDelete: (taskId: string) => void
-  onTaskEdit: (task: Task) => void
+  onTaskEdit: (task: Task) => Promise<Task | void> | void
   onTaskCreate: (taskData: Omit<Task, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => void
   loading: boolean
+  onTaskSelect?: (task: Task) => void
 }
 
 export type TaskViewType = 'list' | 'board' | 'calendar'
 
-export function TaskViews({ tasks, onTaskComplete, onTaskDelete, onTaskEdit, onTaskCreate, loading }: TaskViewsProps) {
+export function TaskViews({ tasks, onTaskComplete, onTaskDelete, onTaskEdit, onTaskCreate, loading, onTaskSelect }: TaskViewsProps) {
   const [currentView, setCurrentView] = useState<TaskViewType>('board')
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState<'all' | 'today' | 'this-week' | 'overdue'>('all')
 
-  // Smart filtering logic
-  const getFilteredTasks = () => {
-    let filtered = tasks.filter(task => 
-      task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      task.description?.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+  const parseLocalDateString = (dateString: string) => {
+    const [year, month, day] = dateString.split('-').map(Number)
+    return new Date(year, (month ?? 1) - 1, day ?? 1)
+  }
 
-    const now = new Date()
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-    const thisWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
+  const addDaysToDateString = (dateString: string, days: number) => {
+    const date = parseLocalDateString(dateString)
+    date.setDate(date.getDate() + days)
+    return getLocalDateString(date)
+  }
+
+  const filteredTasks = useMemo(() => {
+    const normalizedSearch = searchTerm.toLowerCase()
+    const todayStr = getLocalDateString(new Date())
+    const weekEndStr = addDaysToDateString(todayStr, 7)
+
+    const matchesSearch = (task: Task) => {
+      const normalizedTitle = task.title.toLowerCase()
+      const normalizedDescription = task.description?.toLowerCase() ?? ''
+      return normalizedTitle.includes(normalizedSearch) || normalizedDescription.includes(normalizedSearch)
+    }
+
+    const baseFiltered = tasks.filter(matchesSearch)
 
     switch (filterStatus) {
       case 'today':
-        return filtered.filter(task => {
-          if (!task.due_date) return false
-          const dueDate = new Date(task.due_date)
-          return dueDate >= today && dueDate < new Date(today.getTime() + 24 * 60 * 60 * 1000)
-        })
+        return baseFiltered.filter(task => task.due_date === todayStr)
       case 'this-week':
-        return filtered.filter(task => {
-          if (!task.due_date) return false
-          const dueDate = new Date(task.due_date)
-          return dueDate >= today && dueDate < thisWeek
-        })
+        return baseFiltered.filter(task =>
+          Boolean(task.due_date) &&
+          (task.due_date as string) >= todayStr &&
+          (task.due_date as string) < weekEndStr
+        )
       case 'overdue':
-        return filtered.filter(task => {
-          if (!task.due_date || task.status === 'completed') return false
-          return new Date(task.due_date) < today
-        })
+        return baseFiltered.filter(task =>
+          Boolean(task.due_date) &&
+          task.status !== 'completed' &&
+          (task.due_date as string) < todayStr
+        )
       default:
-        return filtered
+        return baseFiltered
     }
-  }
+  }, [tasks, searchTerm, filterStatus])
 
-  const filteredTasks = getFilteredTasks()
-  
-  // DEBUG: Log task counts to identify UI update issues
-  console.log('👁️ TASKVIEWS RENDER - Received tasks:', tasks.length)
-  console.log('👁️ TASKVIEWS RENDER - Filtered tasks:', filteredTasks.length)
-  console.log('👁️ TASKVIEWS RENDER - First few received task IDs:', tasks.slice(0, 3).map(t => t.id))
-  console.log('👁️ TaskViews component re-rendered at:', new Date().toISOString())
+  const handleTaskEditProxy = useCallback(async (task: Task) => {
+    const result = await Promise.resolve(onTaskEdit(task))
+
+    if (onTaskSelect && currentView !== 'board') {
+      const resolvedTask = (result as Task | undefined) ?? task
+      onTaskSelect(resolvedTask)
+    }
+
+    return result
+  }, [onTaskEdit, onTaskSelect, currentView])
+
+  if (import.meta.env.DEV) {
+    console.log('👁️ TASKVIEWS RENDER - Received tasks:', tasks.length)
+    console.log('👁️ TASKVIEWS RENDER - Filtered tasks:', filteredTasks.length)
+    console.log('👁️ TASKVIEWS RENDER - First few received task IDs:', tasks.slice(0, 3).map(t => t.id))
+    console.log('👁️ TaskViews component re-rendered at:', new Date().toISOString())
+  }
 
   const renderCurrentView = () => {
     const props = {
       tasks: filteredTasks,
       onTaskComplete,
       onTaskDelete,
-      onTaskEdit,
+      onTaskEdit: handleTaskEditProxy,
       onTaskCreate,
       loading
     }
