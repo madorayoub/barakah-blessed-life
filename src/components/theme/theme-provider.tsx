@@ -1,17 +1,20 @@
 import * as React from "react"
-import { ThemeProvider as NextThemesProvider } from "next-themes"
+import { ThemeProvider as NextThemeProvider } from "next-themes"
 
-type Props = { children: React.ReactNode }
+type ThemeProviderProps = {
+  children: React.ReactNode
+}
 
-export function ThemeProvider({ children }: Props) {
+export function ThemeProvider({ children }: ThemeProviderProps) {
   return (
-    <NextThemesProvider
+    <NextThemeProvider
       attribute="class"
       defaultTheme="system"
       enableSystem
+      storageKey="theme"
       disableTransitionOnChange
     >
       {children}
-    </NextThemesProvider>
+    </NextThemeProvider>
   )
 }

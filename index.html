@@ -2,27 +2,38 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Barakah Tasks - Islamic Productivity App</title>
     <script>
-      // Avoid flash-of-incorrect-theme before React mounts
-      (function() {
+      (function () {
         try {
-          var stored = localStorage.getItem('theme')
-          var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-          var wantDark = stored ? stored === 'dark' || (stored === 'system' && systemDark) : systemDark
-          if (wantDark) document.documentElement.classList.add('dark')
-        } catch (_) {}
+          var ls = localStorage.getItem("theme")
+          var systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches
+          if (ls === "dark" || (!ls && systemDark)) {
+            document.documentElement.classList.add("dark")
+          } else {
+            document.documentElement.classList.remove("dark")
+          }
+        } catch (e) {}
       })()
     </script>
-    <meta name="description" content="A blessed productivity app that harmonizes spiritual practices with daily tasks, guided by Islamic principles" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Barakah Tasks - Islamic Productivity App</title>
+    <meta
+      name="description"
+      content="A blessed productivity app that harmonizes spiritual practices with daily tasks, guided by Islamic principles"
+    />
     <meta name="author" content="Barakah Tasks Team" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    >
 
     <meta property="og:title" content="Barakah Tasks - Islamic Productivity App" />
-    <meta property="og:description" content="A blessed productivity app that harmonizes spiritual practices with daily tasks, guided by Islamic principles" />
+    <meta
+      property="og:description"
+      content="A blessed productivity app that harmonizes spiritual practices with daily tasks, guided by Islamic principles"
+    />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
 

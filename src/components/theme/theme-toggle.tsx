@@ -1,25 +1,42 @@
-import * as React from "react"
+import { useEffect, useState } from "react"
+import { Moon, Sun, Laptop } from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Button } from "@/components/ui/button"
 import { useTheme } from "next-themes"
-import { Sun, Moon } from "lucide-react"
 
 export function ThemeToggle() {
-  const { theme, setTheme, systemTheme } = useTheme()
-  const current = theme === "system" ? systemTheme : theme
+  const { setTheme, theme } = useTheme()
+  const [mounted, setMounted] = useState(false)
 
-  const cycle = () => {
-    if (theme === "light") setTheme("dark")
-    else if (theme === "dark") setTheme("system")
-    else setTheme("light")
-  }
+  useEffect(() => setMounted(true), [])
+
+  if (!mounted) return null
+
+  const Icon = theme === "dark" ? Moon : theme === "light" ? Sun : Laptop
 
   return (
-    <button
-      type="button"
-      onClick={cycle}
-      aria-label="Toggle theme"
-      className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border/60 bg-background/80 backdrop-blur text-foreground hover:bg-muted transition"
-    >
-      {current === "dark" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-    </button>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" aria-label="Toggle theme">
+          <Icon className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={() => setTheme("light")}>
+          <Sun className="mr-2 h-4 w-4" /> Light
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("dark")}>
+          <Moon className="mr-2 h-4 w-4" /> Dark
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("system")}>
+          <Laptop className="mr-2 h-4 w-4" /> System
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
