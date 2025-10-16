@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
+import { ThemeToggle } from '@/components/theme/theme-toggle'
 
 interface AppHeaderProps {
   title: string
@@ -37,8 +38,8 @@ export function AppHeader({ title, subtitle }: AppHeaderProps) {
             )}
           </div>
 
-          {/* Right: Navigation */}
-          <nav className="hidden md:flex items-center">
+          {/* Right: Navigation + Theme */}
+          <nav className="hidden md:flex items-center gap-3">
             <div className="flex items-center bg-gray-50 dark:bg-gray-800 rounded-xl p-1 gap-1">
               <Link 
                 to="/dashboard" 
@@ -121,6 +122,7 @@ export function AppHeader({ title, subtitle }: AppHeaderProps) {
                 </Link>
               )}
             </div>
+            <ThemeToggle />
           </nav>
         </div>
         

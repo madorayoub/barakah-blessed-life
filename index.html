@@ -4,6 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Barakah Tasks - Islamic Productivity App</title>
+    <script>
+      // Avoid flash-of-incorrect-theme before React mounts
+      (function() {
+        try {
+          var stored = localStorage.getItem('theme')
+          var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+          var wantDark = stored ? stored === 'dark' || (stored === 'system' && systemDark) : systemDark
+          if (wantDark) document.documentElement.classList.add('dark')
+        } catch (_) {}
+      })()
+    </script>
     <meta name="description" content="A blessed productivity app that harmonizes spiritual practices with daily tasks, guided by Islamic principles" />
     <meta name="author" content="Barakah Tasks Team" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
