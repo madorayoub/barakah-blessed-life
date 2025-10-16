@@ -35,9 +35,9 @@ const queryClient = new QueryClient();
 const App = () => {
   if (!SUPABASE_READY && !SUPABASE_USING_FALLBACK) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-6 text-center">
-        <h1 className="text-2xl font-semibold text-gray-900">Missing Supabase env</h1>
-        <p className="mt-2 max-w-xl text-gray-600">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-6 text-center dark:bg-gray-950">
+        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Missing Supabase env</h1>
+        <p className="mt-2 max-w-xl text-gray-600 dark:text-gray-300">
           Add <code>VITE_SUPABASE_URL</code> and <code>VITE_SUPABASE_ANON_KEY</code> to Actions → Secrets, then redeploy.
         </p>
       </div>
@@ -59,7 +59,7 @@ const App = () => {
               }}
             >
               {SUPABASE_USING_FALLBACK && (
-                <div className="bg-amber-50 border-b border-amber-200 px-4 py-3 text-sm text-amber-800">
+                <div className="bg-amber-50 border-b border-amber-200 px-4 py-3 text-sm text-amber-800 dark:bg-amber-950/40 dark:border-amber-900/60 dark:text-amber-200">
                   Running with local fallback (demo). Add env secrets for production.
                 </div>
               )}
