@@ -3,11 +3,10 @@ import { useTasks } from '@/contexts/TasksContext'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/integrations/supabase/client'
 import { yyyyMmDd } from '@/lib/dateLocal'
-import { determineRecurringWeekday, shouldCreateRecurringTask } from '@/lib/recurrence'
+import { determineRecurringWeekday } from '@/lib/recurrence'
 
 export function RecurringTaskManager() {
   const { user } = useAuth()
-  const { createTask } = useTasks()
 
   useEffect(() => {
     if (!user) return
@@ -32,9 +31,9 @@ export function RecurringTaskManager() {
     // Check immediately and then every hour
     checkAndCreateRecurringTasks()
     const interval = setInterval(checkAndCreateRecurringTasks, 60 * 60 * 1000)
-    
+
     return () => clearInterval(interval)
-  }, [user, createTask])
+  }, [user])
 
   const getNextOccurrence = (parentTask: any, referenceDate: Date) => {
     const pattern = parentTask.recurring_pattern
@@ -62,26 +61,14 @@ export function RecurringTaskManager() {
     if (!occurrence) return
 
     const { dueDate } = occurrence
-    const { data: existingTasks } = await supabase
-      .from('tasks')
-      .select('id, due_date')
-      .eq('parent_task_id', parentTask.id)
-      .eq('due_date', dueDate)
-
-    if (!shouldCreateRecurringTask(existingTasks, referenceDate)) {
-      return
-    }
-
-    await createTask({
-      title: parentTask.title,
-      description: parentTask.description,
-      priority: parentTask.priority,
-      status: 'pending',
-      category_id: parentTask.category_id,
-      due_date: dueDate,
-      is_recurring: false,
-      parent_task_id: parentTask.id
+    const { error } = await supabase.rpc('create_recurring_child', {
+      p_parent: parentTask.id,
+      p_due: dueDate
     })
+
+    if (error) {
+      console.error('Error creating recurring child task:', error)
+    }
   }
 
   // This component doesn't render anything

@@ -70,6 +70,119 @@ interface TasksContextType {
 
 const TasksContext = createContext<TasksContextType | undefined>(undefined)
 
+interface RawTask extends Partial<Task> {
+  [key: string]: unknown
+  subtasks?: RawTask[]
+}
+
+const normalizeTask = (task: RawTask): Task => {
+  const rawSubtasks = Array.isArray(task.subtasks) ? (task.subtasks as RawTask[]) : []
+
+  return {
+    ...task,
+    priority: task.priority as Task['priority'],
+    status: task.status as Task['status'],
+    subtasks: rawSubtasks.map(sub => normalizeTask({ ...sub, subtasks: [] } as RawTask))
+  } as Task
+}
+
+const isNewer = (
+  existing?: { updated_at?: string },
+  incoming?: { updated_at?: string }
+) => {
+  if (!incoming?.updated_at) return true
+  if (!existing?.updated_at) return true
+  return new Date(incoming.updated_at).getTime() >= new Date(existing.updated_at).getTime()
+}
+
+const insertOrReplaceParent = (prev: Task[], incoming: Task) => {
+  const formatted = normalizeTask({ ...incoming, subtasks: [] } as RawTask)
+  const existingIndex = prev.findIndex(task => task.id === formatted.id)
+
+  if (existingIndex !== -1) {
+    const existing = prev[existingIndex]
+    if (!isNewer(existing, formatted)) {
+      return prev
+    }
+
+    const updatedTask: Task = {
+      ...existing,
+      ...formatted,
+      category: formatted.category ?? existing.category,
+      subtasks: existing.subtasks || []
+    }
+
+    const next = [...prev]
+    next[existingIndex] = updatedTask
+    return next
+  }
+
+  return [
+    {
+      ...formatted,
+      category: formatted.category,
+      subtasks: formatted.subtasks || []
+    },
+    ...prev
+  ]
+}
+
+const insertOrReplaceSubtask = (prev: Task[], incoming: Task) => {
+  if (!incoming.parent_task_id) return prev
+
+  const parentIndex = prev.findIndex(task => task.id === incoming.parent_task_id)
+  if (parentIndex === -1) return prev
+
+  const parent = prev[parentIndex]
+  const subtasks = parent.subtasks || []
+  const formattedSubtask = normalizeTask({ ...incoming, subtasks: [] } as RawTask)
+  const existingSubtaskIndex = subtasks.findIndex(subtask => subtask.id === formattedSubtask.id)
+
+  if (existingSubtaskIndex !== -1) {
+    const existingSubtask = subtasks[existingSubtaskIndex]
+    if (!isNewer(existingSubtask, formattedSubtask)) {
+      return prev
+    }
+
+    const newSubtasks = [...subtasks]
+    newSubtasks[existingSubtaskIndex] = {
+      ...existingSubtask,
+      ...formattedSubtask,
+      category: formattedSubtask.category ?? existingSubtask.category,
+      subtasks: []
+    }
+
+    const next = [...prev]
+    next[parentIndex] = {
+      ...parent,
+      subtasks: newSubtasks
+    }
+    return next
+  }
+
+  const next = [...prev]
+  next[parentIndex] = {
+    ...parent,
+    subtasks: [
+      ...subtasks,
+      {
+        ...formattedSubtask,
+        category: formattedSubtask.category,
+        subtasks: []
+      }
+    ]
+  }
+  return next
+}
+
+const removeById = (prev: Task[], id: string) =>
+  prev
+    .filter(task => task.id !== id)
+    .map(task => ({
+      ...task,
+      subtasks: (task.subtasks || []).filter(subtask => subtask.id !== id)
+    }))
+
 export function TasksProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth()
   const [tasks, setTasks] = useState<Task[]>([])
@@ -143,42 +256,24 @@ export function TasksProvider({ children }: { children: ReactNode }) {
         },
         (payload) => {
           console.log('🔄 CONTEXT: Real-time task change:', payload.eventType)
-          
+
           if (payload.eventType === 'INSERT') {
-            const newTask = payload.new as any
-            // Only add if it's a parent task (not a subtask) and not already in state
-            if (!newTask.parent_task_id) {
-              setTasks(prev => {
-                // Check if task already exists (from optimistic update)
-                const exists = prev.some(task => task.id === newTask.id)
-                if (exists) return prev
-                
-                const formattedTask = {
-                  ...newTask,
-                  priority: newTask.priority as Task['priority'],
-                  status: newTask.status as Task['status'],
-                  subtasks: []
-                } as Task
-                return [formattedTask, ...prev]
-              })
-            }
+            const newTask = normalizeTask(payload.new as RawTask)
+            setTasks(prev =>
+              newTask.parent_task_id
+                ? insertOrReplaceSubtask(prev, newTask)
+                : insertOrReplaceParent(prev, newTask)
+            )
           } else if (payload.eventType === 'UPDATE') {
-            const updatedTask = payload.new as any
-            setTasks(prev => prev.map(task => {
-              if (task.id === updatedTask.id) {
-                return {
-                  ...task,
-                  ...updatedTask,
-                  priority: updatedTask.priority as Task['priority'],
-                  status: updatedTask.status as Task['status'],
-                  subtasks: task.subtasks || []
-                } as Task
-              }
-              return task
-            }))
+            const updatedTask = normalizeTask(payload.new as RawTask)
+            setTasks(prev =>
+              updatedTask.parent_task_id
+                ? insertOrReplaceSubtask(prev, updatedTask)
+                : insertOrReplaceParent(prev, updatedTask)
+            )
           } else if (payload.eventType === 'DELETE') {
-            const deletedTask = payload.old as any
-            setTasks(prev => prev.filter(task => task.id !== deletedTask.id))
+            const deletedTask = payload.old as Task
+            setTasks(prev => removeById(prev, deletedTask.id))
           }
         }
       )
@@ -301,12 +396,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
         return
       }
 
-      const newTask = {
-        ...data,
-        priority: data.priority as Task['priority'],
-        status: data.status as Task['status'],
-        subtasks: Array.isArray(data.subtasks) ? data.subtasks : []
-      } as Task
+      const newTask = normalizeTask(data as RawTask)
 
       // 🚀 CONTEXT NUCLEAR UPDATE: JSON Deep Copy for Create
       if (!cleanTaskData.parent_task_id) {
@@ -314,7 +404,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
           console.log('✅ CONTEXT NUCLEAR CREATE - Task:', newTask.title)
           console.log('✅ Tasks BEFORE create:', prevTasks.length)
 
-          const finalTasks = [newTask, ...prevTasks]
+          const finalTasks = insertOrReplaceParent(prevTasks, newTask)
 
           console.log('✅ Tasks AFTER create:', finalTasks.length)
           console.log('✅ CONTEXT NUCLEAR: Created completely new array!')
@@ -323,17 +413,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
         })
       } else {
         // Handle subtask creation
-        setTasks(prevTasks =>
-          prevTasks.map(task => {
-            if (task.id === cleanTaskData.parent_task_id) {
-              return {
-                ...task,
-                subtasks: [...(task.subtasks || []), newTask]
-              }
-            }
-            return task
-          })
-        )
+        setTasks(prevTasks => insertOrReplaceSubtask(prevTasks, newTask))
       }
 
       console.log('✅ CONTEXT CREATE COMPLETE')
@@ -350,6 +430,8 @@ export function TasksProvider({ children }: { children: ReactNode }) {
 
   const deleteTask = async (taskId: string) => {
     if (!user) return
+
+    const snapshot = tasks
 
     try {
       console.log('🔥 CONTEXT DELETE START - Task ID:', taskId)
@@ -380,13 +462,24 @@ export function TasksProvider({ children }: { children: ReactNode }) {
 
       if (error) {
         console.error('Error deleting task:', error)
-        // Could revert optimistic update here if needed
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Failed to delete task'
+        })
+        setTasks(snapshot)
         return
       }
 
       console.log('🔥 CONTEXT DELETE COMPLETE')
     } catch (error) {
       console.error('Error deleting task:', error)
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to delete task'
+      })
+      setTasks(snapshot)
     }
   }
 
