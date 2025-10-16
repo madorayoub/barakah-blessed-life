@@ -1,18 +1,21 @@
-import { createRoot } from 'react-dom/client'
-import App from './App.tsx'
-import './index.css'
-import { ThemeProvider } from '@/components/theme/theme-provider'
+import React from "react"
+import ReactDOM from "react-dom/client"
+import App from "./App.tsx"
+import "./index.css"
+import { ThemeProvider } from "@/components/theme/theme-provider"
 
-createRoot(document.getElementById('root')!).render(
-  <ThemeProvider>
-    <App />
-  </ThemeProvider>,
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <ThemeProvider>
+      <App />
+    </ThemeProvider>
+  </React.StrictMode>,
 )
 
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
     navigator.serviceWorker
-      .register('/sw.js')
-      .catch(error => console.error('Service worker registration failed:', error))
+      .register("/sw.js")
+      .catch(error => console.error("Service worker registration failed:", error))
   })
 }
