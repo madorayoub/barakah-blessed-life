@@ -1,5 +1,4 @@
-import { ArrowLeft, Calendar, Download, Clock, Bell, Star } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Calendar, Download, Clock, Bell, Star } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -10,26 +9,25 @@ import CalendarDayView from '@/components/CalendarDayView'
 import { GoogleCalendarConnect } from '@/components/GoogleCalendarConnect'
 import { AppleCalendarExport } from '@/components/AppleCalendarExport'
 import { CalDAVIntegration } from '@/components/CalDAVIntegration'
-import { useNavigate } from 'react-router-dom'
 import { AppHeader } from '@/components/AppHeader'
 
 const CalendarView = () => {
-  const navigate = useNavigate()
-
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader 
-        title="Barakah Calendar" 
-        subtitle="Your Islamic schedule and prayer times" 
+      <AppHeader
+        title="Barakah Calendar"
+        subtitle="Your Islamic schedule and prayer times"
       />
 
       <main className="container mx-auto px-4 py-8 max-w-6xl">
         <Tabs defaultValue="week" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-2 gap-2 md:grid-cols-6">
             <TabsTrigger value="day">Day</TabsTrigger>
             <TabsTrigger value="week">Week</TabsTrigger>
             <TabsTrigger value="month">Month</TabsTrigger>
             <TabsTrigger value="sync">Sync</TabsTrigger>
+            <TabsTrigger value="export">Export</TabsTrigger>
+            <TabsTrigger value="caldav">CalDAV</TabsTrigger>
           </TabsList>
 
           <TabsContent value="day" className="space-y-6">
@@ -53,7 +51,7 @@ const CalendarView = () => {
                   Connect your external calendars to sync prayer times and tasks automatically
                 </p>
               </div>
-              
+
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-4xl mx-auto">
                 <GoogleCalendarConnect />
                 <AppleCalendarExport />
@@ -75,148 +73,138 @@ const CalendarView = () => {
               </CardHeader>
             </Card>
 
-          {/* Benefits */}
-          <section>
-            <h2 className="text-xl font-bold mb-6">Why Sync Your Calendar?</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <Clock className="h-5 w-5 text-emerald-600" />
-                    Visual Schedule
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    See your prayer times alongside work meetings, appointments, and personal events in one unified view.
-                  </p>
-                </CardContent>
-              </Card>
+            {/* Benefits */}
+            <section>
+              <h2 className="text-xl font-bold mb-6">Why Sync Your Calendar?</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <Clock className="h-5 w-5 text-emerald-600" />
+                      Visual Schedule
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground">
+                      See your prayer times alongside work meetings, appointments, and personal events in one unified view.
+                    </p>
+                  </CardContent>
+                </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <Bell className="h-5 w-5 text-blue-600" />
-                    Smart Reminders
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Use your existing calendar's notification system to get prayer reminders exactly when you need them.
-                  </p>
-                </CardContent>
-              </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <Bell className="h-5 w-5 text-blue-600" />
+                      Smart Reminders
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground">
+                      Use your existing calendar's notification system to get prayer reminders exactly when you need them.
+                    </p>
+                  </CardContent>
+                </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <Star className="h-5 w-5 text-amber-600" />
-                    Islamic Events
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Includes major Islamic holidays, Ramadan dates, and special occasions automatically calculated for each year.
-                  </p>
-                </CardContent>
-              </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <Star className="h-5 w-5 text-amber-600" />
+                      Islamic Events
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground">
+                      Includes major Islamic holidays, Ramadan dates, and special occasions automatically calculated for each year.
+                    </p>
+                  </CardContent>
+                </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <Download className="h-5 w-5 text-purple-600" />
-                    Universal Format
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Export in standard .ics format that works with Google Calendar, Apple Calendar, Outlook, and more.
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-          </section>
-
-          {/* Calendar Integration Components */}
-          <section>
-            <h2 className="text-xl font-bold mb-6">Real-Time Calendar Integration</h2>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <GoogleCalendarConnect />
-              <AppleCalendarExport />
-            </div>
-          </section>
-
-          {/* Legacy Export */}
-          <section>
-            <h2 className="text-xl font-bold mb-6">Universal Calendar Export</h2>
-            <CalendarExport />
-          </section>
-
-          {/* Instructions */}
-          <Card>
-            <CardHeader>
-              <CardTitle>How to Import to Your Calendar</CardTitle>
-              <CardDescription>
-                Step-by-step instructions for popular calendar apps
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <h4 className="font-semibold mb-3 flex items-center gap-2">
-                  <Badge variant="outline" className="bg-blue-50 text-blue-700">Google</Badge>
-                  Google Calendar
-                </h4>
-                <ol className="text-sm text-muted-foreground space-y-1 ml-4">
-                  <li>1. Download the .ics file from above</li>
-                  <li>2. Go to calendar.google.com</li>
-                  <li>3. Click the + next to "Other calendars"</li>
-                  <li>4. Select "Import" and choose your downloaded file</li>
-                  <li>5. Your prayer times will appear in your calendar!</li>
-                </ol>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <Download className="h-5 w-5 text-purple-600" />
+                      Universal Format
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground">
+                      Export in standard .ics format that works with Google Calendar, Apple Calendar, Outlook, and more.
+                    </p>
+                  </CardContent>
+                </Card>
               </div>
+            </section>
 
-              <div>
-                <h4 className="font-semibold mb-3 flex items-center gap-2">
-                  <Badge variant="outline" className="bg-gray-50 text-gray-700">Apple</Badge>
-                  Apple Calendar (Mac/iPhone)
-                </h4>
-                <ol className="text-sm text-muted-foreground space-y-1 ml-4">
-                  <li>1. Download the .ics file from above</li>
-                  <li>2. Double-click the file (Mac) or tap it (iPhone)</li>
-                  <li>3. Choose which calendar to import to</li>
-                  <li>4. Click "Import" to add prayer times</li>
-                </ol>
-              </div>
+            {/* Legacy Export */}
+            <section>
+              <h2 className="text-xl font-bold mb-6">Universal Calendar Export</h2>
+              <CalendarExport />
+            </section>
 
-              <div>
-                <h4 className="font-semibold mb-3 flex items-center gap-2">
-                  <Badge variant="outline" className="bg-blue-50 text-blue-700">Outlook</Badge>
-                  Microsoft Outlook
-                </h4>
-                <ol className="text-sm text-muted-foreground space-y-1 ml-4">
-                  <li>1. Download the .ics file from above</li>
-                  <li>2. Open Outlook and go to File → Open & Export</li>
-                  <li>3. Select "Import/Export" then "Import an iCalendar (.ics) file"</li>
-                  <li>4. Choose your downloaded file and import</li>
-                </ol>
-              </div>
-            </CardContent>
-          </Card>
+            {/* Instructions */}
+            <Card>
+              <CardHeader>
+                <CardTitle>How to Import to Your Calendar</CardTitle>
+                <CardDescription>
+                  Step-by-step instructions for popular calendar apps
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div>
+                  <h4 className="font-semibold mb-3 flex items-center gap-2">
+                    <Badge variant="outline" className="bg-blue-50 text-blue-700">Google</Badge>
+                    Google Calendar
+                  </h4>
+                  <ol className="text-sm text-muted-foreground space-y-1 ml-4">
+                    <li>1. Download the .ics file from above</li>
+                    <li>2. Go to calendar.google.com</li>
+                    <li>3. Click the + next to "Other calendars"</li>
+                    <li>4. Select "Import" and choose your downloaded file</li>
+                    <li>5. Your prayer times will appear in your calendar!</li>
+                  </ol>
+                </div>
 
-          {/* Important Note */}
-          <Card className="border-amber-200 bg-amber-50">
-            <CardHeader>
-              <CardTitle className="text-amber-800">Important Note</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-amber-700 text-sm">
-                <strong>Regular Updates:</strong> When you change your location or prayer settings, 
-                you'll need to export and import the calendar again to get updated prayer times. 
-                We're working on automatic syncing for future versions.
-              </p>
-            </CardContent>
-          </Card>
+                <div>
+                  <h4 className="font-semibold mb-3 flex items-center gap-2">
+                    <Badge variant="outline" className="bg-gray-50 text-gray-700">Apple</Badge>
+                    Apple Calendar (Mac/iPhone)
+                  </h4>
+                  <ol className="text-sm text-muted-foreground space-y-1 ml-4">
+                    <li>1. Download the .ics file from above</li>
+                    <li>2. Double-click the file (Mac) or tap it (iPhone)</li>
+                    <li>3. Choose which calendar to import to</li>
+                    <li>4. Click "Import" to add prayer times</li>
+                  </ol>
+                </div>
 
+                <div>
+                  <h4 className="font-semibold mb-3 flex items-center gap-2">
+                    <Badge variant="outline" className="bg-blue-50 text-blue-700">Outlook</Badge>
+                    Microsoft Outlook
+                  </h4>
+                  <ol className="text-sm text-muted-foreground space-y-1 ml-4">
+                    <li>1. Download the .ics file from above</li>
+                    <li>2. Open Outlook and go to File → Open & Export</li>
+                    <li>3. Select "Import/Export" then "Import an iCalendar (.ics) file"</li>
+                    <li>4. Choose your downloaded file and import</li>
+                  </ol>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Important Note */}
+            <Card className="border-amber-200 bg-amber-50">
+              <CardHeader>
+                <CardTitle className="text-amber-800">Important Note</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-amber-700 text-sm">
+                  <strong>Regular Updates:</strong> When you change your location or prayer settings,
+                  you'll need to export and import the calendar again to get updated prayer times.
+                  We're working on automatic syncing for future versions.
+                </p>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="caldav" className="space-y-8">
@@ -262,7 +250,6 @@ const CalendarView = () => {
                 </div>
               </CardContent>
             </Card>
-
           </TabsContent>
         </Tabs>
       </main>

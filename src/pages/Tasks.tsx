@@ -7,13 +7,19 @@ import { useState } from 'react'
 import { AppHeader } from '@/components/AppHeader'
 import type { Task } from '@/contexts/TasksContext'
 
+type CompletedTaskInfo = {
+  taskTitle: string
+  streak: number
+  isIslamicTask: boolean
+} | null
+
 const Tasks = () => {
   const { tasks, updateTask, completeTask, deleteTask, createTask, loading, calculateTaskStreak } = useTasks()
 
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [isPanelOpen, setIsPanelOpen] = useState(false)
   const [showReward, setShowReward] = useState(false)
-  const [completedTaskInfo, setCompletedTaskInfo] = useState<any>(null)
+  const [completedTaskInfo, setCompletedTaskInfo] = useState<CompletedTaskInfo>(null)
 
   const handleSidebarClose = () => {
     setIsPanelOpen(false)
@@ -32,13 +38,13 @@ const Tasks = () => {
   const handleTaskComplete = async (taskId: string) => {
     const task = tasks.find(t => t.id === taskId)
     await completeTask(taskId)
-    
+
     if (task) {
       const streak = calculateTaskStreak()
-      const isIslamicTask = task.title.toLowerCase().includes('prayer') || 
+      const isIslamicTask = task.title.toLowerCase().includes('prayer') ||
                           task.title.toLowerCase().includes('dhikr') ||
                           task.title.toLowerCase().includes('quran')
-      
+
       setCompletedTaskInfo({
         taskTitle: task.title,
         streak,
@@ -48,19 +54,15 @@ const Tasks = () => {
     }
   }
 
-  const handleTaskSuggested = (taskTitle: string) => {
-    // Optional: focus on the suggested task or show a notification
-  }
-
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader 
-        title="Barakah Tasks" 
-        subtitle="Organize your spiritual and daily tasks" 
+      <AppHeader
+        title="Barakah Tasks"
+        subtitle="Organize your spiritual and daily tasks"
       />
-      
+
       <RecurringTaskManager />
-      
+
       {/* Smart Suggestions temporarily disabled due to infinite loop */}
 
       {/* Main Task Views */}

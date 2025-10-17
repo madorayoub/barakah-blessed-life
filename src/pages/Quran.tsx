@@ -6,11 +6,9 @@ import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Progress } from '@/components/ui/progress'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
-import { ArrowLeft, BookOpen, Search, Bookmark, BookmarkX, Volume2, Play, Pause, BarChart3, Settings } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { BookOpen, Bookmark, BookmarkX, Volume2 } from 'lucide-react'
 import { useQuran } from '@/hooks/useQuran'
 import { useToast } from '@/hooks/use-toast'
 import { AppHeader } from '@/components/AppHeader'
@@ -397,10 +395,12 @@ export default function Quran() {
                 <Button variant="outline" onClick={() => setSelectedVerse(null)}>
                   Cancel
                 </Button>
-                <Button onClick={() => {
-                  handleBookmark(selectedVerse.surah, selectedVerse.verse)
-                  setSelectedVerse(null)
-                }}>
+                <Button
+                  onClick={() => {
+                    handleBookmark(selectedVerse.surah, selectedVerse.verse)
+                    setSelectedVerse(null)
+                  }}
+                >
                   Save Bookmark
                 </Button>
               </div>
