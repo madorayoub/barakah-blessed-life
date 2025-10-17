@@ -166,7 +166,7 @@ const CalendarView = () => {
 
                 <div>
                   <h4 className="font-semibold mb-3 flex items-center gap-2">
-                    <Badge variant="outline" className="bg-gray-50 text-gray-700">Apple</Badge>
+                    <Badge variant="outline" className="bg-muted text-muted-foreground">Apple</Badge>
                     Apple Calendar (Mac/iPhone)
                   </h4>
                   <ol className="text-sm text-muted-foreground space-y-1 ml-4">

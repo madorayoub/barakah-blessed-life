@@ -55,7 +55,7 @@ export function ModernDatePicker({
   return (
     <div className={`w-full max-w-sm ${className}`}>
       {label && (
-        <Label className="text-sm font-semibold text-gray-800 mb-3 block">
+        <Label className="text-sm font-semibold text-foreground mb-3 block">
           {label}
         </Label>
       )}
@@ -68,13 +68,13 @@ export function ModernDatePicker({
             value={value || ""}
             onChange={(e) => onChange(e.target.value)}
             placeholder={placeholder}
-            className="w-full h-12 px-4 pr-12 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium text-gray-900 placeholder-gray-500 cursor-pointer transition-all duration-200 hover:bg-gray-100 hover:border-gray-300 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
+            className="w-full h-12 px-4 pr-12 bg-muted border border-border rounded-lg text-sm font-medium text-foreground placeholder:text-muted-foreground cursor-pointer transition-all duration-200 hover:bg-muted/80 hover:border-primary/40 focus:bg-card focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
           />
-          <Calendar className="absolute right-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none group-hover:text-gray-500 transition-colors" />
+          <Calendar className="absolute right-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none group-hover:text-foreground transition-colors" />
           
           {/* Smart Label Display */}
           {value && displayValue && (
-            <div className="absolute left-4 -bottom-6 text-xs font-medium text-primary bg-white px-2 py-1 rounded-md shadow-sm border border-primary/20">
+            <div className="absolute left-4 -bottom-6 text-xs font-medium text-primary bg-card px-2 py-1 rounded-md shadow-sm border border-primary/20">
               ✨ {displayValue}
             </div>
           )}
@@ -87,17 +87,17 @@ export function ModernDatePicker({
               type="time"
               value={timeValue || ""}
               onChange={(e) => onTimeChange?.(e.target.value)}
-              className="w-full h-12 px-4 pr-12 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium text-gray-900 cursor-pointer transition-all duration-200 hover:bg-gray-100 hover:border-gray-300 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
+              className="w-full h-12 px-4 pr-12 bg-muted border border-border rounded-lg text-sm font-medium text-foreground cursor-pointer transition-all duration-200 hover:bg-muted/80 hover:border-primary/40 focus:bg-card focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
             />
-            <Clock className="absolute right-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none group-hover:text-gray-500 transition-colors" />
+            <Clock className="absolute right-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none group-hover:text-foreground transition-colors" />
             
             {/* Time Display Helper */}
             {timeValue && (
-              <div className="absolute right-14 top-1/2 transform -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
-                {new Date(`2000-01-01T${timeValue}`).toLocaleTimeString('en-US', { 
-                  hour: 'numeric', 
-                  minute: '2-digit', 
-                  hour12: true 
+              <div className="absolute right-14 top-1/2 transform -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
+                {new Date(`2000-01-01T${timeValue}`).toLocaleTimeString('en-US', {
+                  hour: 'numeric',
+                  minute: '2-digit',
+                  hour12: true
                 })}
               </div>
             )}

@@ -242,20 +242,24 @@ export function SmartTaskSuggestions({ onTaskSuggested }: SmartTaskSuggestionsPr
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'urgent': return 'bg-red-100 text-red-700 border-red-200'
-      case 'high': return 'bg-orange-100 text-orange-700 border-orange-200'
-      case 'medium': return 'bg-blue-100 text-blue-700 border-blue-200'
-      default: return 'bg-gray-100 text-gray-700 border-gray-200'
+      case 'urgent':
+        return 'bg-destructive/10 text-destructive border-destructive/20'
+      case 'high':
+        return 'bg-accent/10 text-accent-foreground border-accent/30'
+      case 'medium':
+        return 'bg-primary/10 text-primary border-primary/20'
+      default:
+        return 'bg-muted text-muted-foreground border-border'
     }
   }
 
   if (suggestions.length === 0) return null
 
   return (
-    <Card className="mb-6 bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+    <Card className="mb-6 bg-card dark:bg-muted border border-border">
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg flex items-center gap-2">
-          <Lightbulb className="h-5 w-5 text-yellow-500" />
+        <CardTitle className="text-lg flex items-center gap-2 text-foreground">
+          <Lightbulb className="h-5 w-5 text-primary" />
           Smart Suggestions
         </CardTitle>
       </CardHeader>
@@ -263,20 +267,24 @@ export function SmartTaskSuggestions({ onTaskSuggested }: SmartTaskSuggestionsPr
         {suggestions.map((suggestion, index) => {
           const IconComponent = suggestion.icon
           return (
-            <div 
+            <div
               key={index}
-              className="flex items-center justify-between p-3 bg-white rounded-lg border border-blue-100 hover:border-blue-200 transition-colors"
+              className="flex items-center justify-between p-3 bg-card rounded-lg border border-border hover:border-primary/40 transition-colors"
             >
               <div className="flex items-center gap-3">
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                  suggestion.isIslamic ? 'bg-green-100' : 'bg-blue-100'
-                }`}>
-                  <IconComponent className={`h-4 w-4 ${
-                    suggestion.isIslamic ? 'text-green-600' : 'text-blue-600'
-                  }`} />
+                <div
+                  className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                    suggestion.isIslamic ? 'bg-primary/10' : 'bg-accent/10'
+                  }`}
+                >
+                  <IconComponent
+                    className={`h-4 w-4 ${
+                      suggestion.isIslamic ? 'text-primary' : 'text-accent-foreground'
+                    }`}
+                  />
                 </div>
                 <div>
-                  <h4 className="font-medium text-sm">{suggestion.title}</h4>
+                  <h4 className="font-medium text-sm text-foreground">{suggestion.title}</h4>
                   <p className="text-xs text-muted-foreground">{suggestion.reason}</p>
                 </div>
               </div>

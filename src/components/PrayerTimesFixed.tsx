@@ -306,8 +306,8 @@ export function PrayerTimesFixed() {
           <div className="space-y-3">
             {[1,2,3,4,5].map(i => (
               <div key={i} className="flex justify-between animate-pulse">
-                <div className="h-4 w-16 bg-gray-200 rounded"></div>
-                <div className="h-4 w-20 bg-gray-200 rounded"></div>
+                <div className="h-4 w-16 bg-muted rounded"></div>
+                <div className="h-4 w-20 bg-muted rounded"></div>
               </div>
             ))}
           </div>
@@ -348,15 +348,15 @@ export function PrayerTimesFixed() {
               <span>Prayers Completed</span>
               <span>{completedCount}/{totalPrayers}</span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
-                className="bg-emerald-500 h-2 rounded-full transition-all duration-300" 
+            <div className="w-full bg-muted rounded-full h-2">
+              <div
+                className="bg-primary h-2 rounded-full transition-all duration-300"
                 style={{width: `${(completedCount / totalPrayers) * 100}%`}}
               />
             </div>
-            <div className="text-xs text-gray-600 text-center">
-              {completedCount === totalPrayers 
-                ? "🎉 All prayers completed today! Masha'Allah!" 
+            <div className="text-xs text-muted-foreground text-center">
+              {completedCount === totalPrayers
+                ? "🎉 All prayers completed today! Masha'Allah!"
                 : `${totalPrayers - completedCount} prayers remaining`
               }
             </div>
@@ -371,7 +371,7 @@ export function PrayerTimesFixed() {
             <Clock className="h-5 w-5" />
             Prayer Times
             {location && (
-              <div className="flex items-center gap-1 text-xs text-gray-500 ml-auto">
+              <div className="flex items-center gap-1 text-xs text-muted-foreground ml-auto">
                 <MapPin className="h-3 w-3" />
                 {location.latitude.toFixed(2)}, {location.longitude.toFixed(2)}
               </div>
@@ -388,11 +388,11 @@ export function PrayerTimesFixed() {
                 <div 
                   key={prayer.name}
                   className={`flex items-center justify-between p-3 rounded-lg border transition-all ${
-                    isNext 
-                      ? 'bg-emerald-50 border-emerald-200' 
+                    isNext
+                      ? 'bg-primary/10 border-primary/40'
                       : isCompleted
-                      ? 'bg-green-50 border-green-200'
-                      : 'hover:bg-gray-50'
+                      ? 'bg-primary/5 border-primary/30'
+                      : 'hover:bg-muted'
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -403,22 +403,22 @@ export function PrayerTimesFixed() {
                       className="p-1 h-8 w-8"
                     >
                       {isCompleted ? (
-                        <CheckCircle className="h-5 w-5 text-green-600" />
+                        <CheckCircle className="h-5 w-5 text-primary" />
                       ) : (
-                        <Circle className="h-5 w-5 text-gray-400" />
+                        <Circle className="h-5 w-5 text-muted-foreground" />
                       )}
                     </Button>
-                    
+
                     <div>
                       <div className={`font-medium ${
-                        isNext ? 'text-emerald-900' : 
-                        isCompleted ? 'text-green-700' : 
-                        'text-gray-900'
+                        isNext ? 'text-primary' :
+                        isCompleted ? 'text-primary' :
+                        'text-foreground'
                       }`}>
                         {prayer.displayName}
                       </div>
                       {isNext && (
-                        <div className="text-xs text-emerald-600">
+                        <div className="text-xs text-primary">
                           {getTimeUntil(prayer.timestamp)}
                         </div>
                       )}
@@ -427,14 +427,14 @@ export function PrayerTimesFixed() {
 
                   <div className="text-right">
                     <div className={`font-medium ${
-                      isNext ? 'text-emerald-900' : 
-                      isCompleted ? 'text-green-700' : 
-                      'text-gray-900'
+                      isNext ? 'text-primary' :
+                      isCompleted ? 'text-primary' :
+                      'text-foreground'
                     }`}>
                       {formatTime(prayer.time)}
                     </div>
                     {isNext && (
-                      <Badge variant="outline" className="text-xs bg-emerald-100 text-emerald-800 border-emerald-300">
+                      <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/30">
                         Next
                       </Badge>
                     )}

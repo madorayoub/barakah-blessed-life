@@ -89,11 +89,16 @@ export function CalendarTaskDialog({
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'urgent': return 'text-red-600 bg-red-50'
-      case 'high': return 'text-orange-600 bg-orange-50'
-      case 'medium': return 'text-blue-600 bg-blue-50'
-      case 'low': return 'text-gray-600 bg-gray-50'
-      default: return 'text-gray-600 bg-gray-50'
+      case 'urgent':
+        return 'text-destructive bg-destructive/10'
+      case 'high':
+        return 'text-accent-foreground bg-accent/10'
+      case 'medium':
+        return 'text-primary bg-primary/10'
+      case 'low':
+        return 'text-muted-foreground bg-muted'
+      default:
+        return 'text-muted-foreground bg-muted'
     }
   }
 

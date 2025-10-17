@@ -197,11 +197,11 @@ const AppInfo = () => {
           <div className="space-y-4">
             <h4 className="text-xl font-semibold text-foreground">Primary Brand Colors</h4>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              <ColorSwatch color="bg-emerald-50" name="Emerald 50" hex="#ecfdf5" />
-              <ColorSwatch color="bg-emerald-100" name="Emerald 100" hex="#d1fae5" />
-              <ColorSwatch color="bg-emerald-600" name="Emerald 600" hex="#059669" />
-              <ColorSwatch color="bg-emerald-700" name="Emerald 700" hex="#047857" />
-              <ColorSwatch color="bg-emerald-900" name="Emerald 900" hex="#064e3b" />
+              <ColorSwatch name="Emerald 50" hex="#ecfdf5" />
+              <ColorSwatch name="Emerald 100" hex="#d1fae5" />
+              <ColorSwatch name="Emerald 600" hex="#059669" />
+              <ColorSwatch name="Emerald 700" hex="#047857" />
+              <ColorSwatch name="Emerald 900" hex="#064e3b" />
             </div>
           </div>
 
@@ -209,8 +209,8 @@ const AppInfo = () => {
           <div className="space-y-4">
             <h4 className="text-xl font-semibold text-foreground">Gold Accent (Use Sparingly)</h4>
             <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
-              <ColorSwatch color="bg-amber-500" name="Amber 500" hex="#f59e0b" />
-              <ColorSwatch color="bg-amber-600" name="Amber 600" hex="#d97706" />
+              <ColorSwatch name="Amber 500" hex="#f59e0b" />
+              <ColorSwatch name="Amber 600" hex="#d97706" />
             </div>
           </div>
 
@@ -218,11 +218,11 @@ const AppInfo = () => {
           <div className="space-y-4">
             <h4 className="text-xl font-semibold text-foreground">Neutral Scale</h4>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              <ColorSwatch color="bg-gray-50" name="Gray 50" hex="#f9fafb" />
-              <ColorSwatch color="bg-gray-100" name="Gray 100" hex="#f3f4f6" />
-              <ColorSwatch color="bg-gray-600" name="Gray 600" hex="#4b5563" />
-              <ColorSwatch color="bg-gray-800" name="Gray 800" hex="#1f2937" />
-              <ColorSwatch color="bg-gray-900" name="Gray 900" hex="#111827" />
+              <ColorSwatch name="Gray 50" hex="#f9fafb" />
+              <ColorSwatch name="Gray 100" hex="#f3f4f6" />
+              <ColorSwatch name="Gray 600" hex="#4b5563" />
+              <ColorSwatch name="Gray 800" hex="#1f2937" />
+              <ColorSwatch name="Gray 900" hex="#111827" />
             </div>
           </div>
 
@@ -230,9 +230,9 @@ const AppInfo = () => {
           <div className="space-y-4">
             <h4 className="text-xl font-semibold text-foreground">Status Colors</h4>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <ColorSwatch color="bg-green-500" name="Success" hex="#10b981" />
-              <ColorSwatch color="bg-red-500" name="Error" hex="#ef4444" />
-              <ColorSwatch color="bg-yellow-500" name="Warning" hex="#f59e0b" />
+              <ColorSwatch name="Success" hex="#10b981" />
+              <ColorSwatch name="Error" hex="#ef4444" />
+              <ColorSwatch name="Warning" hex="#f59e0b" />
             </div>
           </div>
         </section>
@@ -503,9 +503,9 @@ const AppInfo = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Prayer Time Display */}
-            <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100">
+            <Card className="bg-card dark:bg-muted">
               <CardHeader>
-                <CardTitle className="text-emerald-900 text-center">Prayer Times Today</CardTitle>
+                <CardTitle className="text-center text-foreground">Prayer Times Today</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
@@ -516,12 +516,12 @@ const AppInfo = () => {
                     { name: "Maghrib", time: "6:23 PM", next: false },
                     { name: "Isha", time: "8:15 PM", next: false }
                   ].map((prayer) => (
-                    <div key={prayer.name} className={`flex items-center justify-between p-3 rounded-lg ${prayer.next ? 'bg-emerald-200' : 'bg-white/50'}`}>
-                      <span className={`font-medium ${prayer.next ? 'text-emerald-900' : 'text-emerald-700'}`}>
+                    <div key={prayer.name} className={`flex items-center justify-between p-3 rounded-lg ${prayer.next ? 'bg-primary/20' : 'bg-card/60 dark:bg-muted/60'}`}>
+                      <span className={`font-medium ${prayer.next ? 'text-primary' : 'text-muted-foreground'}`}>
                         {prayer.name}
                       </span>
                       <div className="flex items-center space-x-2">
-                        <span className={`text-lg font-bold ${prayer.next ? 'text-emerald-900' : 'text-emerald-700'}`}>
+                        <span className={`text-lg font-bold ${prayer.next ? 'text-primary' : 'text-muted-foreground'}`}>
                           {prayer.time}
                         </span>
                         {prayer.next && <Badge variant="secondary">Next</Badge>}
@@ -636,7 +636,7 @@ const AppInfo = () => {
                     <span>Primary on White</span>
                     <Badge variant="outline" className="text-green-600 border-green-600">AA</Badge>
                   </div>
-                  <div className="p-3 bg-white border rounded text-primary">
+                  <div className="p-3 bg-card border rounded text-primary dark:bg-muted">
                     Sample text with primary color
                   </div>
                 </div>
@@ -646,7 +646,7 @@ const AppInfo = () => {
                     <span>Body Text</span>
                     <Badge variant="outline" className="text-green-600 border-green-600">AAA</Badge>
                   </div>
-                  <div className="p-3 bg-white border rounded text-foreground">
+                  <div className="p-3 bg-card border rounded text-foreground dark:bg-muted">
                     Regular body text with sufficient contrast
                   </div>
                 </div>
@@ -731,9 +731,9 @@ const AppInfo = () => {
 }
 
 // Helper Components
-const ColorSwatch = ({ color, name, hex }: { color: string; name: string; hex: string }) => (
+const ColorSwatch = ({ name, hex }: { name: string; hex: string }) => (
   <div className="text-center">
-    <div className={`w-full h-20 rounded-lg ${color} border border-border shadow-sm mb-2`} />
+    <div className="w-full h-20 rounded-lg border border-border shadow-sm mb-2" style={{ backgroundColor: hex }} />
     <div className="text-sm font-medium text-foreground">{name}</div>
     <div className="text-xs text-muted-foreground">{hex}</div>
   </div>

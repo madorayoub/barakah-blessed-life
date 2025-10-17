@@ -146,7 +146,7 @@ export function TaskCalendarView({ tasks, onTaskComplete, onTaskDelete, onTaskEd
                       onClick={() => setSelectedDate(day)}
                       className={`
                         relative p-2 text-sm min-h-12 border rounded-lg transition-all hover:bg-accent
-                        ${isSelected ? 'bg-primary text-white' : 'bg-background'}
+                        ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-background'}
                         ${isToday && !isSelected ? 'border-primary' : 'border-border'}
                       `}
                     >
@@ -156,7 +156,7 @@ export function TaskCalendarView({ tasks, onTaskComplete, onTaskDelete, onTaskEd
                           <Badge 
                             variant="secondary" 
                             className={`h-4 w-4 p-0 text-xs flex items-center justify-center ${
-                              isSelected ? 'bg-white/20 text-white' : ''
+                              isSelected ? 'bg-primary/20 text-primary-foreground' : ''
                             }`}
                           >
                             {dayTasks.length}

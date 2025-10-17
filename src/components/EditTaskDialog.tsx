@@ -98,20 +98,29 @@ export function EditTaskDialog({ task, open, onOpenChange }: EditTaskDialogProps
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'urgent': return 'text-red-600 bg-red-50'
-      case 'high': return 'text-orange-600 bg-orange-50'
-      case 'medium': return 'text-blue-600 bg-blue-50'
-      case 'low': return 'text-gray-600 bg-gray-50'
-      default: return 'text-gray-600 bg-gray-50'
+      case 'urgent':
+        return 'text-destructive bg-destructive/10'
+      case 'high':
+        return 'text-accent-foreground bg-accent/10'
+      case 'medium':
+        return 'text-primary bg-primary/10'
+      case 'low':
+        return 'text-muted-foreground bg-muted'
+      default:
+        return 'text-muted-foreground bg-muted'
     }
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'text-green-600 bg-green-50'
-      case 'in_progress': return 'text-blue-600 bg-blue-50'
-      case 'cancelled': return 'text-red-600 bg-red-50'
-      default: return 'text-gray-600 bg-gray-50'
+      case 'completed':
+        return 'text-primary bg-primary/10'
+      case 'in_progress':
+        return 'text-accent-foreground bg-accent/10'
+      case 'cancelled':
+        return 'text-destructive bg-destructive/10'
+      default:
+        return 'text-muted-foreground bg-muted'
     }
   }
 

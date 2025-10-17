@@ -201,12 +201,12 @@ const LocationSetup = () => {
                 
                 {/* Autocomplete suggestions */}
                 {showSuggestions && suggestions.length > 0 && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
+                  <div className="absolute z-10 w-full mt-1 bg-popover border border-border rounded-md shadow-lg max-h-60 overflow-auto">
                     {suggestions.map((suggestion, index) => (
                       <button
                         key={index}
                         type="button"
-                        className="w-full px-4 py-2 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none"
+                        className="w-full px-4 py-2 text-left hover:bg-muted focus:bg-muted focus:outline-none"
                         onClick={() => selectSuggestion(suggestion)}
                       >
                         {suggestion}

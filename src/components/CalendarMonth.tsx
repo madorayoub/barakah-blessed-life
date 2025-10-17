@@ -183,13 +183,13 @@ const CalendarMonth = () => {
             return (
               <div
                 key={index}
-                className={`min-h-[100px] p-1 border border-gray-100 ${
-                  !isCurrentMonth(date) ? 'bg-gray-50 text-gray-400' : 'bg-white'
-                } ${isToday(date) ? 'ring-2 ring-emerald-500 bg-emerald-50' : ''}`}
+                className={`min-h-[100px] p-1 border border-border ${
+                  !isCurrentMonth(date) ? 'bg-muted text-muted-foreground' : 'bg-card'
+                } ${isToday(date) ? 'ring-2 ring-primary bg-primary/10' : ''}`}
               >
                 <div className={`text-sm font-medium mb-1 ${
-                  isToday(date) ? 'text-emerald-900' : 
-                  !isCurrentMonth(date) ? 'text-gray-400' : 'text-foreground'
+                  isToday(date) ? 'text-primary' :
+                  !isCurrentMonth(date) ? 'text-muted-foreground' : 'text-foreground'
                 }`}>
                   {date.getDate()}
                 </div>
@@ -199,7 +199,7 @@ const CalendarMonth = () => {
                   {prayers.slice(0, 2).map(prayer => (
                     <div
                       key={prayer.id}
-                      className="text-xs p-1 rounded bg-emerald-100 text-emerald-800 flex items-center gap-1"
+                      className="text-xs p-1 rounded bg-primary/10 text-primary flex items-center gap-1"
                     >
                       <Clock className="h-2 w-2" />
                       <span className="truncate">
@@ -215,7 +215,7 @@ const CalendarMonth = () => {
                   
                   {/* Show prayer count if more than 2 */}
                   {prayers.length > 2 && (
-                    <div className="text-xs text-emerald-600 px-1">
+                    <div className="text-xs text-primary px-1">
                       +{prayers.length - 2} more prayers
                     </div>
                   )}

@@ -215,7 +215,7 @@ const EnhancedTaskCard = memo(function EnhancedTaskCard({ task, onComplete, onDe
               variant="outline"
               className={cn(
                 "text-xs px-1.5 py-0.5",
-                task.priority === 'high' ? 'text-red-600 border-red-200' : 'text-gray-500 border-gray-200'
+                task.priority === 'high' ? 'text-destructive border-destructive/20' : 'text-muted-foreground border-border'
               )}
             >
               {task.priority}

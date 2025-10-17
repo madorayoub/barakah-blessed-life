@@ -17,21 +17,31 @@ interface TaskCardProps {
 export function TaskCard({ task, onComplete, onDelete, onEdit, onClick }: TaskCardProps) {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'urgent': return 'border-red-500 bg-red-50'
-      case 'high': return 'border-orange-500 bg-orange-50'
-      case 'medium': return 'border-blue-500 bg-blue-50'
-      case 'low': return 'border-gray-500 bg-gray-50'
-      default: return 'border-gray-500 bg-gray-50'
+      case 'urgent':
+        return 'border-destructive bg-destructive/10'
+      case 'high':
+        return 'border-accent/40 bg-accent/10'
+      case 'medium':
+        return 'border-primary/30 bg-primary/10'
+      case 'low':
+        return 'border-border bg-muted'
+      default:
+        return 'border-border bg-muted'
     }
   }
 
   const getPriorityTextColor = (priority: string) => {
     switch (priority) {
-      case 'urgent': return 'text-red-700'
-      case 'high': return 'text-orange-700'
-      case 'medium': return 'text-blue-700'
-      case 'low': return 'text-gray-700'
-      default: return 'text-gray-700'
+      case 'urgent':
+        return 'text-destructive'
+      case 'high':
+        return 'text-accent-foreground'
+      case 'medium':
+        return 'text-primary'
+      case 'low':
+        return 'text-muted-foreground'
+      default:
+        return 'text-muted-foreground'
     }
   }
 

@@ -273,3 +273,11 @@ Exact color specifications as per Phase 2 requirements
   0%, 100% { box-shadow: var(--shadow-soft); }
   50% { box-shadow: var(--shadow-glow); }
 }
+
+:root {
+  color-scheme: light;
+}
+
+.dark {
+  color-scheme: dark;
+}

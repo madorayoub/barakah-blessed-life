@@ -253,9 +253,9 @@ export default function Quran() {
                           <div 
                             key={verse.id} 
                             className={`p-4 rounded-lg border-r-4 cursor-pointer transition-colors ${
-                              isVerseRead(verse.surah, verse.verse) 
-                                ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20' 
-                                : 'border-gray-200 hover:border-emerald-300 hover:bg-emerald-25'
+                              isVerseRead(verse.surah, verse.verse)
+                                ? 'border-primary bg-primary/10 dark:bg-primary/20'
+                                : 'border-border hover:border-primary hover:bg-primary/10'
                             }`}
                             onClick={() => handleVerseClick(verse.surah, verse.verse)}
                           >
@@ -283,7 +283,7 @@ export default function Quran() {
                                 {verse.verse}
                               </Badge>
                             </div>
-                            <p className={`${fontSize === 'text-sm' ? 'text-2xl' : fontSize === 'text-lg' ? 'text-3xl' : 'text-4xl'} leading-relaxed font-arabic text-gray-800 dark:text-gray-100`}>
+                            <p className={`${fontSize === 'text-sm' ? 'text-2xl' : fontSize === 'text-lg' ? 'text-3xl' : 'text-4xl'} leading-relaxed font-arabic text-foreground`}>
                               {verse.arabic}
                             </p>
                           </div>
@@ -309,9 +309,9 @@ export default function Quran() {
                           <div 
                             key={verse.id} 
                             className={`p-4 rounded-lg border-l-4 cursor-pointer transition-colors ${
-                              isVerseRead(verse.surah, verse.verse) 
-                                ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20' 
-                                : 'border-gray-200 hover:border-emerald-300 hover:bg-emerald-25'
+                              isVerseRead(verse.surah, verse.verse)
+                                ? 'border-primary bg-primary/10 dark:bg-primary/20'
+                                : 'border-border hover:border-primary hover:bg-primary/10'
                             }`}
                             onClick={() => handleVerseClick(verse.surah, verse.verse)}
                           >
@@ -340,8 +340,8 @@ export default function Quran() {
                               </div>
                             </div>
                             
-                            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-                              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                            <div className="bg-muted rounded-lg p-4">
+                              <p className="text-muted-foreground leading-relaxed">
                                 {verse.translation}
                               </p>
                             </div>
