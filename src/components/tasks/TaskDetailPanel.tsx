@@ -210,9 +210,9 @@ export function TaskDetailPanel({ task, isOpen, onClose, onUpdate, onDelete, onC
       />
       
       {/* Panel */}
-      <div 
+      <div
         className={cn(
-          "fixed right-0 top-0 h-full w-full md:w-[420px] bg-white border-l border-gray-200 shadow-2xl z-50 transform transition-transform duration-300 cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+          "fixed right-0 top-0 h-full w-full md:w-[420px] bg-card border-l border-border shadow-2xl z-50 transform transition-transform duration-300 cubic-bezier(0.25, 0.46, 0.45, 0.94)",
           isOpen ? "translate-x-0" : "translate-x-full"
         )}
         onKeyDown={handleKeyDown}
@@ -220,9 +220,9 @@ export function TaskDetailPanel({ task, isOpen, onClose, onUpdate, onDelete, onC
       >
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="relative p-6 border-b border-gray-200 bg-gray-50">
-            <h2 className="text-xl font-bold text-gray-900">Task Details</h2>
-            <p className="text-sm text-gray-600 mt-1">Edit your task information</p>
+          <div className="relative p-6 border-b border-border bg-muted">
+            <h2 className="text-xl font-bold text-foreground">Task Details</h2>
+            <p className="text-sm text-muted-foreground mt-1">Edit your task information</p>
             <div className="flex items-center gap-3 mt-3">
               {hasChanges && !isAutoSaving && (
                 <Button onClick={handleSave} size="sm" variant="default" disabled={isAutoSaving}>
@@ -231,46 +231,46 @@ export function TaskDetailPanel({ task, isOpen, onClose, onUpdate, onDelete, onC
                 </Button>
               )}
               {isAutoSaving && (
-                <div className="text-sm text-gray-600 flex items-center gap-2">
+                <div className="text-sm text-muted-foreground flex items-center gap-2">
                   <div className="animate-spin h-3 w-3 border-2 border-primary border-t-transparent rounded-full"></div>
                   Auto-saving...
                 </div>
               )}
             </div>
-            <Button 
-              onClick={onClose} 
-              size="icon" 
+            <Button
+              onClick={onClose}
+              size="icon"
               variant="ghost"
-              className="absolute top-4 right-4 h-8 w-8 rounded-md hover:bg-gray-200 text-gray-500 hover:text-gray-700"
+              className="absolute top-4 right-4 h-8 w-8 rounded-md hover:bg-muted/60 text-muted-foreground hover:text-foreground"
             >
               <X className="h-4 w-4" />
             </Button>
           </div>
-          
+
           {/* Content */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-white">
+          <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-card">
             {/* Title */}
             <div className="space-y-3">
-              <label className="text-sm font-semibold text-gray-900">Task Title</label>
+              <label className="text-sm font-semibold text-foreground">Task Title</label>
               <Input
                 value={editedTask.title}
                 onChange={(e) => handleFieldChange('title', e.target.value)}
-                className="text-xl font-bold border-2 border-gray-200 focus:border-primary py-3 text-gray-900 bg-white placeholder:text-gray-400"
+                className="text-xl font-bold border-2 border-border focus:border-primary py-3 text-foreground placeholder:text-muted-foreground"
                 placeholder="Enter task title..."
               />
             </div>
-            
+
             {/* Status */}
             <div className="space-y-3">
-              <label className="text-sm font-semibold text-gray-900">Status</label>
-              <Select 
-                value={editedTask.status} 
+              <label className="text-sm font-semibold text-foreground">Status</label>
+              <Select
+                value={editedTask.status}
                 onValueChange={(value) => handleFieldChange('status', value)}
               >
-                <SelectTrigger className="h-12 text-base border-2 border-gray-200 bg-white text-gray-900">
+                <SelectTrigger className="h-12 text-base border-2 border-border text-foreground">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-white border-2 border-gray-200 shadow-lg">
+                <SelectContent className="bg-card border-2 border-border shadow-lg">
                   {statuses.length > 0 ? (
                     statuses.map(status => {
                       const statusValue = status.name.toLowerCase().replace(/\s+/g, '_')
@@ -280,7 +280,7 @@ export function TaskDetailPanel({ task, isOpen, onClose, onUpdate, onDelete, onC
                       if (statusValue === 'done') mappedValue = 'completed'
                       
                       return (
-                        <SelectItem key={status.id} value={mappedValue} className="text-gray-900">
+                        <SelectItem key={status.id} value={mappedValue} className="text-foreground">
                           <div className="flex items-center gap-2">
                             <div 
                               className="w-3 h-3 rounded-full" 
@@ -293,41 +293,41 @@ export function TaskDetailPanel({ task, isOpen, onClose, onUpdate, onDelete, onC
                     })
                   ) : (
                     <>
-                      <SelectItem value="pending" className="text-gray-900">📋 To Do</SelectItem>
-                      <SelectItem value="in_progress" className="text-gray-900">⚡ In Progress</SelectItem>
-                      <SelectItem value="completed" className="text-gray-900">✅ Done</SelectItem>
+                      <SelectItem value="pending" className="text-foreground">📋 To Do</SelectItem>
+                      <SelectItem value="in_progress" className="text-foreground">⚡ In Progress</SelectItem>
+                      <SelectItem value="completed" className="text-foreground">✅ Done</SelectItem>
                     </>
                   )}
                 </SelectContent>
               </Select>
             </div>
-            
+
             {/* Priority */}
             <div className="space-y-3">
-              <label className="text-sm font-semibold text-gray-900">Priority</label>
-              <Select 
-                value={editedTask.priority} 
+              <label className="text-sm font-semibold text-foreground">Priority</label>
+              <Select
+                value={editedTask.priority}
                 onValueChange={(value) => handleFieldChange('priority', value)}
               >
-                <SelectTrigger className="h-12 text-base border-2 border-gray-200 bg-white text-gray-900">
+                <SelectTrigger className="h-12 text-base border-2 border-border text-foreground">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-white border-2 border-gray-200 shadow-lg">
-                  <SelectItem value="high" className="text-gray-900">
+                <SelectContent className="bg-card border-2 border-border shadow-lg">
+                  <SelectItem value="high" className="text-foreground">
                     <div className="flex items-center gap-2">
-                      <Flag className="h-4 w-4 text-red-500" />
+                      <Flag className="h-4 w-4 text-destructive" />
                       🔴 High Priority
                     </div>
                   </SelectItem>
-                  <SelectItem value="medium" className="text-gray-900">
+                  <SelectItem value="medium" className="text-foreground">
                     <div className="flex items-center gap-2">
-                      <Flag className="h-4 w-4 text-yellow-500" />
+                      <Flag className="h-4 w-4 text-accent" />
                       🟡 Medium Priority
                     </div>
                   </SelectItem>
-                  <SelectItem value="low" className="text-gray-900">
+                  <SelectItem value="low" className="text-foreground">
                     <div className="flex items-center gap-2">
-                      <Flag className="h-4 w-4 text-green-500" />
+                      <Flag className="h-4 w-4 text-primary" />
                       🟢 Low Priority
                     </div>
                   </SelectItem>
@@ -348,7 +348,7 @@ export function TaskDetailPanel({ task, isOpen, onClose, onUpdate, onDelete, onC
                 className="w-full"
               />
               {prayerConflict && (
-                <div className="flex items-center gap-2 text-sm text-red-600">
+                <div className="flex items-center gap-2 text-sm text-destructive">
                   <Clock className="h-4 w-4" />
                   <span>
                     Heads up: this due time overlaps with {prayerConflict.displayName} prayer around{' '}
@@ -360,16 +360,16 @@ export function TaskDetailPanel({ task, isOpen, onClose, onUpdate, onDelete, onC
             
             {/* Description */}
             <div className="space-y-3">
-              <label className="text-sm font-semibold text-gray-900">Description</label>
+              <label className="text-sm font-semibold text-foreground">Description</label>
               <Textarea
                 value={editedTask.description || ''}
                 onChange={(e) => handleFieldChange('description', e.target.value || null)}
                 placeholder="Add task description..."
                 rows={5}
-                className="text-base leading-relaxed resize-none border-2 border-gray-200 bg-white text-gray-900 placeholder:text-gray-400"
+                className="text-base leading-relaxed resize-none border-2 border-border text-foreground placeholder:text-muted-foreground"
               />
             </div>
-            
+
             {/* Subtasks */}
             <SubtaskManager
               parentTask={task}
@@ -379,42 +379,42 @@ export function TaskDetailPanel({ task, isOpen, onClose, onUpdate, onDelete, onC
             />
             
             {/* Task Info */}
-            <Card className="p-4 bg-gray-50 border-2 border-gray-200">
+            <Card className="p-4 bg-muted border-2 border-border">
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-600 font-medium">Created:</span>
-                  <span className="text-gray-900 font-semibold">{new Date(task.created_at).toLocaleDateString()}</span>
+                  <span className="text-muted-foreground font-medium">Created:</span>
+                  <span className="text-foreground font-semibold">{new Date(task.created_at).toLocaleDateString()}</span>
                 </div>
                 {task.updated_at !== task.created_at && (
                   <div className="flex justify-between">
-                    <span className="text-gray-600 font-medium">Updated:</span>
-                    <span className="text-gray-900 font-semibold">{new Date(task.updated_at).toLocaleDateString()}</span>
+                    <span className="text-muted-foreground font-medium">Updated:</span>
+                    <span className="text-foreground font-semibold">{new Date(task.updated_at).toLocaleDateString()}</span>
                   </div>
                 )}
                 {task.completed_at && (
                   <div className="flex justify-between">
-                    <span className="text-gray-600 font-medium">Completed:</span>
-                    <span className="text-green-600 font-semibold">{new Date(task.completed_at).toLocaleDateString()}</span>
+                    <span className="text-muted-foreground font-medium">Completed:</span>
+                    <span className="text-primary font-semibold">{new Date(task.completed_at).toLocaleDateString()}</span>
                   </div>
                 )}
               </div>
             </Card>
           </div>
-          
+
           {/* Footer */}
-          <div className="p-6 border-t border-gray-200 bg-gray-50">
+          <div className="p-6 border-t border-border bg-muted">
             <div className="flex justify-between items-center">
-              <Button 
-                onClick={handleDelete} 
-                variant="destructive" 
+              <Button
+                onClick={handleDelete}
+                variant="destructive"
                 size="sm"
-                className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white"
+                className="flex items-center gap-2"
               >
                 <Trash2 className="h-4 w-4" />
                 Delete Task
               </Button>
-              
-              <div className="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-md">
+
+              <div className="text-xs text-muted-foreground bg-muted px-3 py-1 rounded-md">
                 Press Esc to close • Ctrl+S to save
               </div>
             </div>

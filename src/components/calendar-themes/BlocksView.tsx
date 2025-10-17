@@ -44,9 +44,7 @@ const BlocksView = ({ date, events, onEventClick, onAddTask }: BlocksViewProps) 
         endTime: '6:00 AM',
         period: 'Early Morning',
         events: earlyMorningEvents,
-        color: 'from-indigo-50 to-purple-50',
-        borderColor: 'border-indigo-200',
-        textColor: 'text-indigo-800'
+        styleClass: 'bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20'
       })
     }
 
@@ -61,9 +59,7 @@ const BlocksView = ({ date, events, onEventClick, onAddTask }: BlocksViewProps) 
         endTime: '12:00 PM',
         period: 'Morning',
         events: morningEvents,
-        color: 'from-yellow-50 to-orange-50',
-        borderColor: 'border-orange-200',
-        textColor: 'text-orange-800'
+        styleClass: 'bg-gradient-to-r from-accent/10 to-accent/5 border border-accent/20'
       })
     }
 
@@ -78,9 +74,7 @@ const BlocksView = ({ date, events, onEventClick, onAddTask }: BlocksViewProps) 
         endTime: '6:00 PM',
         period: 'Afternoon',
         events: afternoonEvents,
-        color: 'from-blue-50 to-cyan-50',
-        borderColor: 'border-blue-200',
-        textColor: 'text-blue-800'
+        styleClass: 'bg-gradient-to-r from-secondary/60 to-secondary/40 border border-border'
       })
     }
 
@@ -95,9 +89,7 @@ const BlocksView = ({ date, events, onEventClick, onAddTask }: BlocksViewProps) 
         endTime: '10:00 PM',
         period: 'Evening',
         events: eveningEvents,
-        color: 'from-purple-50 to-pink-50',
-        borderColor: 'border-purple-200',
-        textColor: 'text-purple-800'
+        styleClass: 'bg-gradient-to-r from-primary/15 to-primary/10 border border-primary/20'
       })
     }
 
@@ -112,9 +104,7 @@ const BlocksView = ({ date, events, onEventClick, onAddTask }: BlocksViewProps) 
         endTime: '12:00 AM',
         period: 'Night',
         events: nightEvents,
-        color: 'from-slate-50 to-gray-50',
-        borderColor: 'border-slate-200',
-        textColor: 'text-slate-800'
+        styleClass: 'bg-gradient-to-r from-muted to-muted/70 border border-border'
       })
     }
 
@@ -168,29 +158,29 @@ const BlocksView = ({ date, events, onEventClick, onAddTask }: BlocksViewProps) 
             day: 'numeric' 
           })} - Time Blocks
         </h2>
-        <Badge variant="outline" className="bg-emerald-50 text-emerald-700">
+        <Badge variant="outline" className="bg-primary/10 text-primary">
           Productivity Focus
         </Badge>
       </div>
 
       {/* Productivity Score */}
-      <Card className="bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-200">
+      <Card className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Zap className="h-6 w-6 text-emerald-600" />
+              <Zap className="h-6 w-6 text-primary" />
               <div>
-                <div className="font-semibold text-emerald-800">Productivity Score</div>
-                <div className="text-sm text-emerald-600">
+                <div className="font-semibold text-primary">Productivity Score</div>
+                <div className="text-sm text-primary/80">
                   {completedEvents}/{totalEvents} items completed
                 </div>
               </div>
             </div>
             <div className="text-right">
-              <div className="text-2xl font-bold text-emerald-800">{productivityScore}%</div>
-              <div className="w-32 h-2 bg-emerald-100 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-emerald-500 transition-all duration-500"
+              <div className="text-2xl font-bold text-primary">{productivityScore}%</div>
+              <div className="w-32 h-2 bg-primary/20 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-primary transition-all duration-500"
                   style={{ width: `${productivityScore}%` }}
                 />
               </div>
@@ -205,21 +195,21 @@ const BlocksView = ({ date, events, onEventClick, onAddTask }: BlocksViewProps) 
           const blockStatus = getBlockStatus(block)
           
           return (
-            <Card 
+            <Card
               key={block.id}
               className={`
                 transition-all duration-300
-                ${blockStatus === 'active' 
-                  ? 'ring-2 ring-amber-400 shadow-lg bg-amber-50' 
+                ${blockStatus === 'active'
+                  ? 'ring-2 ring-accent shadow-lg bg-accent/10 border border-accent/30'
                   : blockStatus === 'completed'
-                    ? 'bg-emerald-50 border-emerald-200'
-                    : `bg-gradient-to-r ${block.color} ${block.borderColor}`
+                    ? 'bg-primary/10 border border-primary/20'
+                    : `${block.styleClass}`
                 }
               `}
             >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className={`text-lg ${block.textColor}`}>
+                  <CardTitle className="text-lg text-foreground">
                     <div className="flex items-center gap-3">
                       <Clock className="h-5 w-5" />
                       <div>
@@ -233,12 +223,12 @@ const BlocksView = ({ date, events, onEventClick, onAddTask }: BlocksViewProps) 
                   
                   <div className="flex items-center gap-2">
                     {blockStatus === 'active' && (
-                      <Badge variant="default" className="bg-amber-600">
+                      <Badge variant="default" className="bg-accent text-accent-foreground">
                         → ACTIVE
                       </Badge>
                     )}
                     {blockStatus === 'completed' && (
-                      <Badge variant="default" className="bg-emerald-600">
+                      <Badge variant="default" className="bg-primary text-primary-foreground">
                         ✅ COMPLETE
                       </Badge>
                     )}
@@ -259,15 +249,15 @@ const BlocksView = ({ date, events, onEventClick, onAddTask }: BlocksViewProps) 
               
               <CardContent className="space-y-3">
                 {block.events.map((event: CalendarEvent) => (
-                  <div 
+                  <div
                     key={event.id}
                     className={`
                       flex items-center justify-between p-3 rounded-lg border transition-all cursor-pointer
-                      ${event.completed 
-                        ? 'bg-emerald-100 border-emerald-200 opacity-75 hover:opacity-90' 
+                      ${event.completed
+                        ? 'bg-primary/10 border-primary/20 opacity-75 hover:opacity-90'
                         : event.isNext
-                          ? 'bg-amber-100 border-amber-200 hover:bg-amber-150'
-                          : 'bg-white border-gray-200 hover:shadow-sm hover:bg-gray-50'
+                          ? 'bg-accent/10 border-accent/30 hover:bg-accent/20'
+                          : 'bg-card border-border hover:shadow-sm hover:bg-muted'
                       }
                     `}
                     onClick={() => onEventClick?.(event)}
@@ -284,15 +274,15 @@ const BlocksView = ({ date, events, onEventClick, onAddTask }: BlocksViewProps) 
                           </div>
                         )}
                         {event.isNext && (
-                          <div className="text-xs text-amber-600 font-medium">
+                          <div className="text-xs text-accent font-medium">
                             Current focus
                           </div>
                         )}
                       </div>
                     </div>
-                    
+
                     {event.completed && (
-                      <CheckCircle className="h-5 w-5 text-emerald-600" />
+                      <CheckCircle className="h-5 w-5 text-primary" />
                     )}
                   </div>
                 ))}
@@ -303,12 +293,12 @@ const BlocksView = ({ date, events, onEventClick, onAddTask }: BlocksViewProps) 
       </div>
 
       {/* Motivation Footer */}
-      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+      <Card className="bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 border border-primary/20">
         <CardContent className="p-6 text-center">
-          <div className="text-lg font-semibold text-blue-800 mb-2">
+          <div className="text-lg font-semibold text-primary mb-2">
             🎯 Time Management Excellence
           </div>
-          <div className="text-blue-700">
+          <div className="text-muted-foreground">
             "Time is the most valuable thing we have. Use it wisely in worship and productivity."
           </div>
         </CardContent>
