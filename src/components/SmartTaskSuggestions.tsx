@@ -1,20 +1,31 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import type { LucideIcon } from 'lucide-react'
 import { Lightbulb, Clock, BookOpen, Heart, Sun, Moon, Star } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useTasks } from '@/contexts/TasksContext'
-import { usePrayerTimes } from '@/hooks/usePrayerTimes'
 import { getLocalDateString } from '@/utils/date'
 
 interface SmartTaskSuggestionsProps {
   onTaskSuggested: (taskTitle: string) => void
 }
 
+type SuggestionAction = 'prayer' | 'dhikr' | 'study' | 'existing_task'
+
+interface SmartSuggestion {
+  title: string
+  reason: string
+  priority: 'urgent' | 'high' | 'medium' | 'low'
+  icon: LucideIcon
+  isIslamic: boolean
+  action: SuggestionAction
+  taskId?: string
+}
+
 export function SmartTaskSuggestions({ onTaskSuggested }: SmartTaskSuggestionsProps) {
   const { tasks, createTask } = useTasks()
-  const { prayerTimes } = usePrayerTimes()
-  const [suggestions, setSuggestions] = useState<any[]>([])
+  const [suggestions, setSuggestions] = useState<SmartSuggestion[]>([])
   const [lastGeneratedTime, setLastGeneratedTime] = useState<number>(0)
 
   // Memoize today's date to prevent unnecessary recalculations
@@ -41,7 +52,7 @@ export function SmartTaskSuggestions({ onTaskSuggested }: SmartTaskSuggestionsPr
     }
     
     const currentHour = now.getHours()
-    const newSuggestions = []
+    const newSuggestions: SmartSuggestion[] = []
 
     // Get current completed and pending tasks
     const currentTodayCompleted = tasks.filter(task => task.completed_at?.startsWith(today))
@@ -213,7 +224,7 @@ export function SmartTaskSuggestions({ onTaskSuggested }: SmartTaskSuggestionsPr
     return () => clearInterval(interval)
   }, [generateSmartSuggestions])
 
-  const handleCreateSuggestion = async (suggestion: any) => {
+  const handleCreateSuggestion = async (suggestion: SmartSuggestion) => {
     if (suggestion.action === 'existing_task') {
       onTaskSuggested(suggestion.title)
       return
@@ -223,7 +234,7 @@ export function SmartTaskSuggestions({ onTaskSuggested }: SmartTaskSuggestionsPr
       await createTask({
         title: suggestion.title,
         description: `Smart suggestion: ${suggestion.reason}`,
-        priority: suggestion.priority as any,
+        priority: suggestion.priority,
         status: 'pending',
         due_date: today,
         is_recurring: suggestion.isIslamic
@@ -232,15 +243,13 @@ export function SmartTaskSuggestions({ onTaskSuggested }: SmartTaskSuggestionsPr
       onTaskSuggested(suggestion.title)
       
       // Remove the created suggestion from current suggestions
-      setSuggestions(prev => prev.filter((_, index) => 
-        suggestions.findIndex(s => s.title === suggestion.title) !== index
-      ))
+      setSuggestions(prev => prev.filter(item => item.title !== suggestion.title))
     } catch (error) {
       console.error('Failed to create suggested task:', error)
     }
   }
 
-  const getPriorityColor = (priority: string) => {
+  const getPriorityColor = (priority: SmartSuggestion['priority']) => {
     switch (priority) {
       case 'urgent':
         return 'bg-destructive/10 text-destructive border-destructive/20'

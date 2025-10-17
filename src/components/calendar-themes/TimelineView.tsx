@@ -2,23 +2,14 @@ import { Clock, CheckCircle, Plus } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { formatPrayerTime } from '@/lib/prayerTimes'
-
-interface CalendarEvent {
-  id: string
-  type: 'prayer' | 'task'
-  title: string
-  time?: Date
-  completed?: boolean
-  isNext?: boolean
-  taskData?: any // Full task object for editing
-}
+import type { CalendarEvent, CalendarAddTaskHandler } from '@/types/calendar'
 
 interface TimelineViewProps {
   date: Date
   events: CalendarEvent[]
   onPrayerComplete?: (prayerName: string) => void
   onEventClick?: (event: CalendarEvent) => void
-  onAddTask?: (hour: number) => void
+  onAddTask?: CalendarAddTaskHandler
 }
 
 const TimelineView = ({ date, events, onEventClick, onAddTask }: TimelineViewProps) => {

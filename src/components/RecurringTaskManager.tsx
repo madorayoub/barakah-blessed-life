@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useTasks } from '@/contexts/TasksContext'
+import { useTasks, type Task } from '@/contexts/TasksContext'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/integrations/supabase/client'
 import { yyyyMmDd } from '@/lib/dateLocal'
@@ -20,6 +20,7 @@ export function RecurringTaskManager() {
         .eq('user_id', user.id)
         .eq('is_recurring', true)
         .is('parent_task_id', null)
+        .returns<Task[]>()
 
       if (!recurringTasks) return
 
@@ -35,7 +36,7 @@ export function RecurringTaskManager() {
     return () => clearInterval(interval)
   }, [user])
 
-  const getNextOccurrence = (parentTask: any, referenceDate: Date) => {
+  const getNextOccurrence = (parentTask: Task, referenceDate: Date) => {
     const pattern = parentTask.recurring_pattern
     const dueDate = yyyyMmDd(referenceDate)
 
@@ -56,7 +57,7 @@ export function RecurringTaskManager() {
     return null
   }
 
-  const processRecurringParent = async (parentTask: any, referenceDate: Date) => {
+  const processRecurringParent = async (parentTask: Task, referenceDate: Date) => {
     const occurrence = getNextOccurrence(parentTask, referenceDate)
     if (!occurrence) return
 

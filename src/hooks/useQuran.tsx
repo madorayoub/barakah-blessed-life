@@ -45,6 +45,23 @@ interface ReadingSession {
   surahs_read: number[]
 }
 
+interface QuranArabicAyah {
+  number: number
+  numberInSurah: number
+  text: string
+}
+
+interface QuranTranslatedAyah {
+  text: string
+}
+
+interface QuranApiResponse<T> {
+  code: number
+  data: {
+    ayahs: T[]
+  }
+}
+
 export const useQuran = () => {
   const { user } = useAuth()
   const [verses, setVerses] = useState<Verse[]>([])
@@ -64,16 +81,16 @@ export const useQuran = () => {
       const arabicResponse = await fetch(
         `https://api.alquran.cloud/v1/surah/${surahNumber}`
       )
-      const arabicData = await arabicResponse.json()
+      const arabicData = await arabicResponse.json() as QuranApiResponse<QuranArabicAyah>
       
       // Fetch English translation
       const englishResponse = await fetch(
         `https://api.alquran.cloud/v1/surah/${surahNumber}/en.asad`
       )
-      const englishData = await englishResponse.json()
+      const englishData = await englishResponse.json() as QuranApiResponse<QuranTranslatedAyah>
 
       if (arabicData.code === 200 && englishData.code === 200) {
-        const versesData: Verse[] = arabicData.data.ayahs.map((ayah: any, index: number) => ({
+        const versesData: Verse[] = arabicData.data.ayahs.map((ayah, index) => ({
           id: ayah.number,
           surah: surahNumber,
           verse: ayah.numberInSurah,

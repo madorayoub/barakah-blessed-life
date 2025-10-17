@@ -3,17 +3,56 @@ import { useAuth } from '@/hooks/useAuth'
 import { usePrayerTimes } from '@/hooks/usePrayerTimes'
 import { useTasks } from '@/contexts/TasksContext'
 import { useToast } from '@/hooks/use-toast'
-import { format, addDays } from 'date-fns'
+import { addDays } from 'date-fns'
+
+interface GoogleCalendarEvent {
+  summary: string
+  start: { dateTime: string }
+  end: { dateTime: string }
+  description?: string
+}
+
+interface GapiCalendarEvents {
+  insert: (params: { calendarId: string; resource: GoogleCalendarEvent }) => Promise<unknown>
+}
+
+interface GapiClientCalendar {
+  events: GapiCalendarEvents
+}
+
+interface GapiClient {
+  load: (api: string, version: string) => Promise<void>
+  calendar?: GapiClientCalendar
+}
+
+interface GapiAuthUser {
+  isSignedIn: () => boolean
+}
+
+interface GapiAuthInstance {
+  signIn: () => Promise<GapiAuthUser>
+  signOut: () => Promise<void>
+}
+
+interface GapiAuth2 {
+  init: (params: { client_id: string; scope: string }) => Promise<void>
+  getAuthInstance: () => GapiAuthInstance
+}
+
+interface Gapi {
+  load: (module: string, callback: () => void) => void
+  auth2?: GapiAuth2
+  client?: GapiClient
+}
 
 // Real Google Calendar API configuration
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || 'demo-client-id'
-const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'
 const SCOPES = 'https://www.googleapis.com/auth/calendar'
 
 declare global {
   interface Window {
-    gapi: any
-    google: any
+    gapi?: Gapi
+    google?: unknown
   }
 }
 
@@ -65,11 +104,11 @@ export function useGoogleCalendar() {
     try {
       setIsLoading(true)
       
-      if (window.gapi && window.gapi.auth2) {
+      if (window.gapi?.auth2) {
         // Real Google OAuth
         const authInstance = window.gapi.auth2.getAuthInstance()
         const user = await authInstance.signIn()
-        
+
         if (user.isSignedIn()) {
           setIsAuthorized(true)
           setCalendarId('primary') // Use primary calendar
@@ -104,7 +143,7 @@ export function useGoogleCalendar() {
 
   const signOut = async () => {
     try {
-      if (window.gapi && window.gapi.auth2) {
+      if (window.gapi?.auth2) {
         const authInstance = window.gapi.auth2.getAuthInstance()
         await authInstance.signOut()
       }
@@ -127,13 +166,13 @@ export function useGoogleCalendar() {
     try {
       setIsLoading(true)
       
-      if (window.gapi && window.gapi.client) {
+      if (window.gapi?.client) {
         // Real Google Calendar API sync
         await window.gapi.load('client', async () => {
-          await window.gapi.client.load('calendar', 'v3')
-          
+          await window.gapi?.client?.load('calendar', 'v3')
+
           // Create events for each prayer time
-          const events = []
+          const events: GoogleCalendarEvent[] = []
           for (let i = 0; i < days; i++) {
             const date = addDays(new Date(), i)
             prayerTimes.prayers.forEach(prayer => {
@@ -153,11 +192,14 @@ export function useGoogleCalendar() {
           }
           
           // Batch create events
-          for (const event of events) {
-            await window.gapi.client.calendar.events.insert({
-              calendarId: calendarId,
-              resource: event
-            })
+          const calendarClient = window.gapi?.client?.calendar
+          if (calendarClient) {
+            for (const event of events) {
+              await calendarClient.events.insert({
+                calendarId: calendarId,
+                resource: event
+              })
+            }
           }
         })
       } else {

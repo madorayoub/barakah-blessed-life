@@ -75,6 +75,17 @@ interface RawTask extends Partial<Task> {
   subtasks?: RawTask[]
 }
 
+type SupabaseTaskRow = Omit<Task, 'category' | 'subtasks'> & {
+  category: TaskCategory | null
+  subtasks: SupabaseTaskRow[] | null
+}
+
+const mapSupabaseTask = (task: SupabaseTaskRow): Task => ({
+  ...task,
+  category: task.category ?? undefined,
+  subtasks: (task.subtasks ?? []).map(mapSupabaseTask)
+})
+
 const normalizeTask = (task: RawTask): Task => {
   const rawSubtasks = Array.isArray(task.subtasks) ? (task.subtasks as RawTask[]) : []
 
@@ -209,23 +220,14 @@ export function TasksProvider({ children }: { children: ReactNode }) {
           .eq('user_id', user.id)
           .is('parent_task_id', null)
           .order('created_at', { ascending: false })
+          .returns<SupabaseTaskRow[]>()
 
         if (error) {
           console.error('Error loading tasks:', error)
           return
         }
 
-        const formattedTasks = (data as any[])?.map(task => ({
-          ...task,
-          priority: task.priority as Task['priority'],
-          status: task.status as Task['status'],
-          subtasks: Array.isArray(task.subtasks) ? task.subtasks.map((sub: any) => ({
-            ...sub,
-            priority: sub.priority as Task['priority'],
-            status: sub.status as Task['status'],
-            subtasks: []
-          })) : []
-        })) || []
+        const formattedTasks = data?.map(mapSupabaseTask) ?? []
 
         setTasks(formattedTasks)
         console.log('🔄 CONTEXT: Loaded tasks from database:', formattedTasks.length)
@@ -357,15 +359,17 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     if (!user) return
 
     // Clean and validate task data
-    const cleanTaskData: Record<string, any> = { ...taskData }
-    
+    const cleanTaskData: Partial<Omit<Task, 'id' | 'user_id' | 'created_at' | 'updated_at'>> = {
+      ...taskData
+    }
+
     // Remove undefined/null fields that shouldn't be sent to database
-    Object.keys(cleanTaskData).forEach(key => {
-      const value = cleanTaskData[key as keyof typeof cleanTaskData]
+    for (const key of Object.keys(cleanTaskData) as (keyof typeof cleanTaskData)[]) {
+      const value = cleanTaskData[key]
       if (value === undefined || value === null || value === '') {
-        delete cleanTaskData[key as keyof typeof cleanTaskData]
+        delete cleanTaskData[key]
       }
-    })
+    }
 
     try {
       const { data, error } = await supabase
@@ -379,10 +383,10 @@ export function TasksProvider({ children }: { children: ReactNode }) {
           category:task_categories(*),
           subtasks:tasks!parent_task_id(*)
         `)
-        .single()
+        .single<SupabaseTaskRow>()
 
       if (error) {
-        if ((error as any)?.code === '23505') {
+        if (error.code === '23505') {
           console.info('Skipping duplicate recurring child task due to unique constraint')
           return
         }
@@ -396,10 +400,10 @@ export function TasksProvider({ children }: { children: ReactNode }) {
         return
       }
 
-      const newTask = normalizeTask(data as RawTask)
+      const newTask = data ? mapSupabaseTask(data) : undefined
 
       // 🚀 CONTEXT NUCLEAR UPDATE: JSON Deep Copy for Create
-      if (!cleanTaskData.parent_task_id) {
+      if (newTask && !cleanTaskData.parent_task_id) {
         setTasks(prevTasks => {
           console.log('✅ CONTEXT NUCLEAR CREATE - Task:', newTask.title)
           console.log('✅ Tasks BEFORE create:', prevTasks.length)
@@ -411,7 +415,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
 
           return finalTasks
         })
-      } else {
+      } else if (newTask) {
         // Handle subtask creation
         setTasks(prevTasks => insertOrReplaceSubtask(prevTasks, newTask))
       }
@@ -644,7 +648,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     if (tasks.length === 0) return 0
     
     let streak = 0
-    let currentDate = new Date()
+    const currentDate = new Date()
     currentDate.setHours(0, 0, 0, 0)
     
     while (true) {

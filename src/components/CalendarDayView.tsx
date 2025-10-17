@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { usePrayerTimes } from '@/hooks/usePrayerTimes'
-import { useTasks } from '@/contexts/TasksContext'
+import { useTasks, type Task } from '@/contexts/TasksContext'
 import { calculatePrayerTimes } from '@/lib/prayerTimes'
 import { GoogleCalendarConnect } from '@/components/GoogleCalendarConnect'
 import { AppleCalendarExport } from '@/components/AppleCalendarExport'
@@ -18,22 +18,13 @@ import CardsView from '@/components/calendar-themes/CardsView'
 import ZenView from '@/components/calendar-themes/ZenView'
 import BlocksView from '@/components/calendar-themes/BlocksView'
 import { getLocalDateString } from '@/utils/date'
-
-interface CalendarEvent {
-  id: string
-  type: 'prayer' | 'task'
-  title: string
-  time?: Date
-  completed?: boolean
-  isNext?: boolean
-  taskData?: any // Full task object for editing
-}
+import type { CalendarEvent } from '@/types/calendar'
 
 const CalendarDayView = () => {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [currentTheme, setCurrentTheme] = useState<ThemeType>('timeline')
-  const [editingTask, setEditingTask] = useState<any>(null)
-  const [editingPrayer, setEditingPrayer] = useState<any>(null)
+  const [editingTask, setEditingTask] = useState<Task | null>(null)
+  const [editingPrayer, setEditingPrayer] = useState<CalendarEvent | null>(null)
   const [showNewTaskDialog, setShowNewTaskDialog] = useState(false)
   const [newTaskTime, setNewTaskTime] = useState<string | undefined>()
   const { prayerTimes, settings, location, markPrayerComplete, isPrayerComplete } = usePrayerTimes()
@@ -146,7 +137,7 @@ const CalendarDayView = () => {
     }
   }
 
-  const handleAddTask = (hour?: number, timeBlock?: string) => {
+  const handleAddTask = (hour?: number, _timeBlock?: string) => {
     // Set default due time based on hour or time block
     if (hour !== undefined) {
       setNewTaskTime(`${hour.toString().padStart(2, '0')}:00`)

@@ -132,7 +132,7 @@ export function useAppleCalendarSubscription() {
       return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
     }
 
-    let ics = [
+    const ics = [
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
       'PRODID:-//Barakah Tasks//EN',

@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, format, isToday, subDays, eachDayOfInterval } from 'date-fns'
 import { FairTrackingSystem, calculateIslamicMetrics, calculateBarakahScore, getIslamicMotivationalMessage } from '@/utils/fairTrackingSystem'
 
-interface PrayerStats {
+export interface PrayerStats {
   totalPrayers: number
   completedPrayers: number
   completionRate: number
@@ -24,7 +24,7 @@ interface PrayerStats {
   }
 }
 
-interface TaskStats {
+export interface TaskStats {
   totalTasks: number
   completedTasks: number
   completionRate: number
@@ -34,7 +34,7 @@ interface TaskStats {
   productivityScore: number
 }
 
-interface Achievement {
+export interface Achievement {
   id: string
   title: string
   description: string
