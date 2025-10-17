@@ -37,7 +37,7 @@ export function TaskBoardView({ tasks, onTaskComplete, onTaskDelete, onTaskEdit,
     id: status.name.toLowerCase().replace(/\s+/g, '_'),
     title: status.name,
     status: status.name.toLowerCase().replace(/\s+/g, '_'),
-    color: `bg-gray-50/50 border-gray-200`,
+    color: `bg-muted/60 border-border`,
     customColor: status.color
   })) : [
     { id: 'pending', title: 'To Do', status: 'pending', color: 'bg-blue-50/50 border-blue-200' },

@@ -25,7 +25,7 @@ export function PrayerAnalytics({ stats }: PrayerAnalyticsProps) {
   }))
 
   const getHeatmapColor = (count: number) => {
-    if (count === 0) return 'bg-gray-100'
+    if (count === 0) return 'bg-muted'
     if (count === 1) return 'bg-emerald-100'
     if (count === 2) return 'bg-emerald-200'
     if (count === 3) return 'bg-emerald-300'
@@ -111,7 +111,7 @@ export function PrayerAnalytics({ stats }: PrayerAnalyticsProps) {
               <div key={index} className="flex items-center justify-between">
                 <span className="text-sm">{day.date}</span>
                 <div className="flex items-center gap-2">
-                  <div className="w-20 bg-gray-200 rounded-full h-2">
+                  <div className="w-20 bg-muted rounded-full h-2">
                     <div 
                       className="bg-emerald-500 h-2 rounded-full"
                       style={{ width: `${(day.completed / day.total) * 100}%` }}

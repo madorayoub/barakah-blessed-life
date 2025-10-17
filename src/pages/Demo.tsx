@@ -99,7 +99,7 @@ export default function Demo() {
     <div className="min-h-screen bg-background">
       
       {/* Header */}
-      <header className="border-b bg-white sticky top-0 z-50">
+      <header className="border-b border-border bg-card sticky top-0 z-50 dark:bg-muted">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -110,15 +110,15 @@ export default function Demo() {
                 </Button>
               </Link>
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold">ب</span>
                 </div>
-                <h1 className="text-xl font-bold text-gray-900">Barakah Life Demo</h1>
+                <h1 className="text-xl font-bold text-foreground">Barakah Life Demo</h1>
               </div>
             </div>
-            
+
             <Link to="/auth/signup">
-              <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">
+              <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
                 Get Started
               </Button>
             </Link>
@@ -127,28 +127,28 @@ export default function Demo() {
       </header>
 
       {/* Hero Section */}
-      <section className="py-16 px-6 bg-gradient-to-br from-emerald-50 to-white">
+      <section className="py-16 px-6 bg-card dark:bg-muted">
         <div className="container mx-auto max-w-6xl text-center">
-          <Badge className="mb-6 bg-emerald-100 text-emerald-700 border-emerald-200">
+          <Badge className="mb-6 bg-primary/10 text-primary border border-primary/30">
             📱 Interactive Demo
           </Badge>
-          
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+
+          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
             Explore Barakah Life Features
           </h1>
-          
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            See how Barakah Life seamlessly integrates your Islamic practices with modern productivity. 
+
+          <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
+            See how Barakah Life seamlessly integrates your Islamic practices with modern productivity.
             Each feature is designed to help you excel in both your spiritual and worldly goals.
           </p>
-          
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/auth/signup">
-              <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-6 text-lg">
+              <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-lg">
                 Start Free Trial
               </Button>
             </Link>
-            <Button size="lg" variant="outline" onClick={() => document.getElementById('demo-sections')?.scrollIntoView({ behavior: 'smooth' })}>
+            <Button size="lg" variant="outline" className="border border-primary/40 text-primary hover:bg-primary/10" onClick={() => document.getElementById('demo-sections')?.scrollIntoView({ behavior: 'smooth' })}>
               <Play className="mr-2 h-5 w-5" />
               Explore Features
             </Button>
@@ -160,10 +160,10 @@ export default function Demo() {
       <section id="demo-sections" className="py-20 px-6">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl font-bold text-foreground mb-4">
               Complete Islamic Productivity Suite
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Click on each feature to learn more about how it can transform your daily routine
             </p>
           </div>
@@ -176,9 +176,9 @@ export default function Demo() {
                 variant={activeDemo === section.id ? "default" : "outline"}
                 onClick={() => setActiveDemo(section.id)}
                 className={`flex items-center gap-2 ${
-                  activeDemo === section.id 
-                    ? "bg-emerald-600 text-white" 
-                    : "hover:bg-emerald-50 hover:text-emerald-700"
+                  activeDemo === section.id
+                    ? "bg-primary text-primary-foreground"
+                    : "hover:bg-primary/10 hover:text-primary"
                 }`}
               >
                 <section.icon className="h-4 w-4" />
@@ -190,39 +190,39 @@ export default function Demo() {
           {/* Active Demo Content */}
           {demoSections.map((section) => (
             activeDemo === section.id && (
-              <Card key={section.id} className="max-w-4xl mx-auto shadow-xl border-0">
-                <CardHeader className="text-center bg-gradient-to-r from-emerald-50 to-teal-50">
-                  <div className="w-16 h-16 bg-emerald-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+              <Card key={section.id} className="max-w-4xl mx-auto shadow-xl border border-border bg-card dark:bg-muted">
+                <CardHeader className="text-center bg-card dark:bg-muted">
+                  <div className="w-16 h-16 bg-primary rounded-xl flex items-center justify-center mx-auto mb-4">
                     <section.icon className="h-8 w-8 text-white" />
                   </div>
-                  <CardTitle className="text-2xl font-bold text-gray-900">{section.title}</CardTitle>
-                  <p className="text-lg text-gray-600">{section.description}</p>
+                  <CardTitle className="text-2xl font-bold text-foreground">{section.title}</CardTitle>
+                  <p className="text-lg text-muted-foreground">{section.description}</p>
                 </CardHeader>
                 <CardContent className="p-8">
                   <div className="grid md:grid-cols-2 gap-8">
                     {/* Feature List */}
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Key Features:</h3>
+                      <h3 className="text-lg font-semibold text-foreground mb-4">Key Features:</h3>
                       <ul className="space-y-3">
                         {section.features.map((feature, index) => (
                           <li key={index} className="flex items-start gap-3">
-                            <div className="w-5 h-5 bg-emerald-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                               <Check className="h-3 w-3 text-white" />
                             </div>
-                            <span className="text-gray-700">{feature}</span>
+                            <span className="text-muted-foreground">{feature}</span>
                           </li>
                         ))}
                       </ul>
                     </div>
-                    
+
                     {/* Mock Interface Preview */}
-                    <div className="bg-gray-50 rounded-lg p-6 border-2 border-dashed border-gray-200">
-                      <div className="text-center text-gray-500 py-8">
-                        <Smartphone className="h-12 w-12 mx-auto mb-4 text-emerald-600" />
+                    <div className="bg-muted rounded-lg p-6 border-2 border-dashed border-border">
+                      <div className="text-center text-muted-foreground py-8">
+                        <Smartphone className="h-12 w-12 mx-auto mb-4 text-primary" />
                         <p className="font-medium">Interactive Preview</p>
                         <p className="text-sm mt-2">Sign up to see the full interface</p>
                         <Link to="/auth/signup">
-                          <Button className="mt-4 bg-emerald-600 hover:bg-emerald-700">
+                          <Button className="mt-4 bg-primary hover:bg-primary/90 text-primary-foreground">
                             Try It Live
                           </Button>
                         </Link>
@@ -237,44 +237,44 @@ export default function Demo() {
       </section>
 
       {/* How It Works */}
-      <section className="py-20 px-6 bg-gray-50">
+      <section className="py-20 px-6 bg-muted">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl font-bold text-foreground mb-4">
               How Barakah Life Works
             </h2>
-            <p className="text-lg text-gray-600">
+            <p className="text-lg text-muted-foreground">
               Simple setup, powerful results for your Islamic productivity
             </p>
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center">
-              <div className="w-16 h-16 bg-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-6">
                 <span className="text-white font-bold text-xl">1</span>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Sign Up & Setup</h3>
-              <p className="text-gray-600">
+              <h3 className="text-xl font-bold text-foreground mb-4">Sign Up & Setup</h3>
+              <p className="text-muted-foreground">
                 Create your account and set your location for accurate prayer times. The setup takes less than 2 minutes.
               </p>
             </div>
-            
+
             <div className="text-center">
-              <div className="w-16 h-16 bg-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-6">
                 <span className="text-white font-bold text-xl">2</span>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Organize Your Life</h3>
-              <p className="text-gray-600">
+              <h3 className="text-xl font-bold text-foreground mb-4">Organize Your Life</h3>
+              <p className="text-muted-foreground">
                 Add your spiritual goals, daily tasks, and sync with your existing calendars for a unified view.
               </p>
             </div>
-            
+
             <div className="text-center">
-              <div className="w-16 h-16 bg-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-6">
                 <span className="text-white font-bold text-xl">3</span>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Track & Improve</h3>
-              <p className="text-gray-600">
+              <h3 className="text-xl font-bold text-foreground mb-4">Track & Improve</h3>
+              <p className="text-muted-foreground">
                 Monitor your progress, build consistent habits, and achieve your spiritual and worldly goals.
               </p>
             </div>
@@ -283,31 +283,31 @@ export default function Demo() {
       </section>
 
       {/* Testimonials */}
-      <section className="py-20 px-6 bg-white">
+      <section className="py-20 px-6 bg-card dark:bg-muted">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl font-bold text-foreground mb-4">
               Loved by Muslims Worldwide
             </h2>
-            <p className="text-lg text-gray-600">
+            <p className="text-lg text-muted-foreground">
               See what our community says about their experience with Barakah Life
             </p>
           </div>
-          
+
           <div className="grid md:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
-              <Card key={index} className="shadow-lg border-0 bg-gradient-to-br from-white to-emerald-50">
+              <Card key={index} className="shadow-lg border border-border bg-card dark:bg-muted">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-1 mb-4">
                     {[...Array(testimonial.rating)].map((_, i) => (
                       <Star key={i} className="h-4 w-4 text-yellow-400 fill-current" />
                     ))}
                   </div>
-                  <p className="text-gray-700 mb-6 italic">"{testimonial.quote}"</p>
+                  <p className="text-muted-foreground mb-6 italic">"{testimonial.quote}"</p>
                   <div>
-                    <p className="font-semibold text-gray-900">{testimonial.author}</p>
-                    <p className="text-sm text-gray-600">{testimonial.role}</p>
-                    <p className="text-sm text-emerald-600">{testimonial.location}</p>
+                    <p className="font-semibold text-foreground">{testimonial.author}</p>
+                    <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                    <p className="text-sm text-primary">{testimonial.location}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -317,7 +317,7 @@ export default function Demo() {
       </section>
 
       {/* Final CTA */}
-      <section className="py-20 px-6 bg-emerald-600 text-white">
+      <section className="py-20 px-6 bg-primary text-primary-foreground">
         <div className="container mx-auto max-w-4xl text-center">
           <h2 className="text-4xl font-bold mb-6">
             Ready to Transform Your Productivity?
@@ -328,16 +328,16 @@ export default function Demo() {
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
             <Link to="/auth/signup">
-              <Button size="lg" className="bg-white text-emerald-600 hover:bg-gray-100 px-8 py-6 text-lg font-semibold">
+              <Button size="lg" className="bg-card text-primary hover:bg-muted px-8 py-6 text-lg font-semibold">
                 Start Your Free Account
               </Button>
             </Link>
-            <Button size="lg" variant="outline" className="text-white border-white hover:bg-white hover:text-emerald-600 px-8 py-6 text-lg font-semibold">
+            <Button size="lg" variant="outline" className="border border-primary/40 text-primary-foreground hover:bg-card hover:text-primary px-8 py-6 text-lg font-semibold">
               <Users className="mr-2 h-5 w-5" />
               Join the Community
             </Button>
           </div>
-          
+
           <p className="text-sm opacity-75">
             Free forever • No credit card required • Privacy-first design
           </p>

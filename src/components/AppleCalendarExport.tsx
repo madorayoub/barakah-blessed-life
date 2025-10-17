@@ -45,7 +45,7 @@ export function AppleCalendarExport() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Smartphone className="h-5 w-5 text-gray-600" />
+          <Smartphone className="h-5 w-5 text-muted-foreground" />
           Apple Calendar Integration
         </CardTitle>
         <CardDescription>

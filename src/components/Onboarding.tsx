@@ -428,7 +428,7 @@ export function Onboarding({ onComplete }: OnboardingProps) {
                 <div
                   key={index}
                   className={`w-2 h-2 rounded-full ${
-                    index <= currentStep ? 'bg-emerald-600' : 'bg-gray-300'
+                    index <= currentStep ? 'bg-primary' : 'bg-muted'
                   }`}
                 />
               ))}
@@ -731,9 +731,9 @@ export function Onboarding({ onComplete }: OnboardingProps) {
           {currentStep === 3 && (
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div 
+                <div
                   className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                    formData.difficulty_mode === 'basic' ? 'border-emerald-500 bg-emerald-50' : 'border-gray-300'
+                    formData.difficulty_mode === 'basic' ? 'border-primary bg-primary/10' : 'border-border'
                   }`}
                   onClick={() => setFormData(prev => ({ ...prev, difficulty_mode: 'basic' }))}
                 >
@@ -744,14 +744,14 @@ export function Onboarding({ onComplete }: OnboardingProps) {
                       <Badge className="ml-auto">Selected</Badge>
                     )}
                   </div>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted-foreground">
                     Focus on the 5 daily prayers. Perfect for beginners.
                   </p>
                 </div>
-                
-                <div 
+
+                <div
                   className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                    formData.difficulty_mode === 'advanced' ? 'border-emerald-500 bg-emerald-50' : 'border-gray-300'
+                    formData.difficulty_mode === 'advanced' ? 'border-primary bg-primary/10' : 'border-border'
                   }`}
                   onClick={() => setFormData(prev => ({ ...prev, difficulty_mode: 'advanced' }))}
                 >
@@ -762,7 +762,7 @@ export function Onboarding({ onComplete }: OnboardingProps) {
                       <Badge className="ml-auto">Selected</Badge>
                     )}
                   </div>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted-foreground">
                     Include Sunnah prayers, Quran reading, dhikr, and more.
                   </p>
                 </div>
@@ -783,7 +783,7 @@ export function Onboarding({ onComplete }: OnboardingProps) {
                   Enable Notifications
                 </Button>
               </div>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 You can always change notification settings later in the Settings page.
               </p>
             </div>

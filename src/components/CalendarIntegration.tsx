@@ -169,11 +169,11 @@ const CalendarIntegration = () => {
           </Button>
           
           {isGoogleAuthorized && (
-            <Button 
+            <Button
               onClick={signOutGoogle}
               variant="outline"
               size="sm"
-              className="w-full text-blue-600 border-blue-200"
+              className="w-full text-primary border-primary/40"
             >
               Disconnect
             </Button>
@@ -181,23 +181,23 @@ const CalendarIntegration = () => {
         </div>
 
         {/* Apple Calendar Integration */}
-        <div className="space-y-3 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-gray-200">
+        <div className="space-y-3 p-4 bg-card dark:bg-muted rounded-lg border border-border">
           <div className="flex items-center gap-2">
-            <Smartphone className="h-5 w-5 text-gray-600" />
-            <div className="text-sm font-medium text-gray-900">Apple Calendar</div>
+            <Smartphone className="h-5 w-5 text-muted-foreground" />
+            <div className="text-sm font-medium text-foreground">Apple Calendar</div>
             <Badge variant={isAppleConnected ? "default" : "secondary"}>
               {isAppleConnected ? "Connected" : "Not Connected"}
             </Badge>
           </div>
-          
-          <div className="text-xs text-gray-700 mb-3">
+
+          <div className="text-xs text-muted-foreground mb-3">
             {isAppleConnected ? 'Subscription active - updates automatically' : 'One-click connection to Apple Calendar'}
           </div>
-          
-          <Button 
+
+          <Button
             onClick={handleAppleConnect}
             disabled={isAppleGenerating}
-            className="w-full bg-gray-600 hover:bg-gray-700 text-white"
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             {isAppleGenerating ? (
               <>

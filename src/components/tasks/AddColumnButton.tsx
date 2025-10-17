@@ -46,11 +46,11 @@ export function AddColumnButton({ onColumnAdded }: AddColumnButtonProps) {
 
   if (!isAdding) {
     return (
-      <Button 
+      <Button
         onClick={() => setIsAdding(true)}
         variant="outline"
         size="sm"
-        className="flex items-center gap-2 h-9 border-dashed border-2 hover:border-primary hover:bg-primary/5 text-gray-600 hover:text-primary"
+        className="flex items-center gap-2 h-9 border-dashed border-2 hover:border-primary hover:bg-primary/5 text-muted-foreground hover:text-primary"
       >
         <Plus className="h-4 w-4" />
         Add Column
@@ -59,7 +59,7 @@ export function AddColumnButton({ onColumnAdded }: AddColumnButtonProps) {
   }
 
   return (
-    <div className="flex items-center gap-2 bg-white border-2 border-primary rounded-md p-2 shadow-sm">
+    <div className="flex items-center gap-2 bg-card border-2 border-primary rounded-md p-2 shadow-sm">
       <Input
         type="text"
         placeholder="Column name..."
@@ -75,7 +75,7 @@ export function AddColumnButton({ onColumnAdded }: AddColumnButtonProps) {
           onClick={handleAddColumn}
           size="icon"
           variant="ghost"
-          className="h-7 w-7 hover:bg-green-100 hover:text-green-600"
+          className="h-7 w-7 hover:bg-primary/10 hover:text-primary"
           disabled={!columnName.trim() || isLoading}
         >
           <Check className="h-3 w-3" />
@@ -84,7 +84,7 @@ export function AddColumnButton({ onColumnAdded }: AddColumnButtonProps) {
           onClick={handleCancel}
           size="icon"
           variant="ghost"
-          className="h-7 w-7 hover:bg-red-100 hover:text-red-600"
+          className="h-7 w-7 hover:bg-destructive/10 hover:text-destructive"
           disabled={isLoading}
         >
           <X className="h-3 w-3" />

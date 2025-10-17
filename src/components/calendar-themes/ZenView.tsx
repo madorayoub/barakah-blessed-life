@@ -150,17 +150,17 @@ const ZenView = ({ date, events, onEventClick, onAddTask }: ZenViewProps) => {
 
       {/* Tasks (if any) */}
       {tasks.length > 0 && (
-        <Card className="bg-gradient-to-r from-gray-50 to-slate-50 border-gray-100 shadow-sm">
+        <Card className="bg-card dark:bg-muted border border-border shadow-sm">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-light text-gray-800">
+              <h3 className="text-lg font-light text-foreground">
                 Tasks
               </h3>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={onAddTask}
-                className="text-gray-600 hover:text-gray-800"
+                className="text-muted-foreground hover:text-foreground"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Add
@@ -179,7 +179,7 @@ const ZenView = ({ date, events, onEventClick, onAddTask }: ZenViewProps) => {
                       {task.title}
                     </div>
                   </div>
-                  {task.completed && <CheckCircle className="h-4 w-4 text-emerald-600" />}
+                  {task.completed && <CheckCircle className="h-4 w-4 text-primary" />}
                 </div>
               ))}
             </div>
@@ -188,13 +188,13 @@ const ZenView = ({ date, events, onEventClick, onAddTask }: ZenViewProps) => {
       )}
 
       {/* Spiritual Quote */}
-      <Card className="bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-100 shadow-sm">
+      <Card className="bg-card dark:bg-muted border border-border shadow-sm">
         <CardContent className="p-8 text-center">
           <div className="text-2xl mb-4">☪️</div>
-          <div className="text-lg font-light text-emerald-800 mb-2 leading-relaxed">
+          <div className="text-lg font-light text-foreground mb-2 leading-relaxed">
             "And whoever relies upon Allah - then He is sufficient for him"
           </div>
-          <div className="text-sm text-emerald-600 font-medium">
+          <div className="text-sm text-primary font-medium">
             Quran 65:3
           </div>
         </CardContent>

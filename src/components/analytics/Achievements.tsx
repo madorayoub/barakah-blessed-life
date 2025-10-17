@@ -27,23 +27,23 @@ export function Achievements({ achievements, motivationalMessage, quranVerse }: 
   return (
     <div className="space-y-6">
       {/* Motivational Header */}
-      <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200">
+      <Card className="bg-card dark:bg-muted border border-border">
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-emerald-600 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center">
               <Star className="h-6 w-6 text-white" />
             </div>
             <div>
-              <CardTitle className="text-emerald-900">Your Spiritual Journey</CardTitle>
-              <CardDescription className="text-emerald-700">
+              <CardTitle className="text-foreground">Your Spiritual Journey</CardTitle>
+              <CardDescription className="text-muted-foreground">
                 {motivationalMessage}
               </CardDescription>
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="bg-white/70 p-4 rounded-lg border border-emerald-200">
-            <p className="text-sm text-emerald-800 font-medium italic">
+          <div className="bg-card/80 dark:bg-muted/80 p-4 rounded-lg border border-border">
+            <p className="text-sm text-primary font-medium italic">
               {quranVerse}
             </p>
           </div>

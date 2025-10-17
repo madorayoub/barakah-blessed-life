@@ -136,7 +136,7 @@ export function DroppableColumn({
           <Button
             variant="ghost"
             onClick={onToggleExpansion}
-            className="w-full py-2 mt-2 text-sm text-muted-foreground hover:text-foreground border border-gray-300 hover:bg-gray-50 rounded-lg"
+            className="w-full py-2 mt-2 text-sm text-muted-foreground hover:text-foreground border border-border hover:bg-muted rounded-lg"
           >
             Show Less
           </Button>

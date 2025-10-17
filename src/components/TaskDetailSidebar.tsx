@@ -44,7 +44,7 @@ export function TaskDetailSidebar({ task, isOpen, onClose, onComplete, onDelete 
       case 'high': return 'bg-orange-500'
       case 'medium': return 'bg-yellow-500'
       case 'low': return 'bg-green-500'
-      default: return 'bg-gray-500'
+      default: return 'bg-muted'
     }
   }
 

@@ -93,11 +93,16 @@ export function QuickAddTask({ groupId, columnStatus }: QuickAddTaskProps) {
 
   const getPriorityColor = (p: string) => {
     switch (p) {
-      case 'urgent': return 'text-red-600 bg-red-50 border-red-200'
-      case 'high': return 'text-orange-600 bg-orange-50 border-orange-200'
-      case 'medium': return 'text-blue-600 bg-blue-50 border-blue-200'
-      case 'low': return 'text-gray-600 bg-gray-50 border-gray-200'
-      default: return 'text-gray-600 bg-gray-50 border-gray-200'
+      case 'urgent':
+        return 'text-destructive bg-destructive/10 border-destructive/20'
+      case 'high':
+        return 'text-accent-foreground bg-accent/10 border-accent/30'
+      case 'medium':
+        return 'text-primary bg-primary/10 border-primary/20'
+      case 'low':
+        return 'text-muted-foreground bg-muted border-border'
+      default:
+        return 'text-muted-foreground bg-muted border-border'
     }
   }
 

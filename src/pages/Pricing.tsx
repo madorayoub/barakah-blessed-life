@@ -92,11 +92,11 @@ export default function Pricing() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-white border-b border-border/50">
+      <header className="bg-card border-b border-border/50 dark:bg-muted">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <Link to="/" className="flex items-center gap-3 group">
-              <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow">
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow">
                 <span className="text-white font-bold text-lg">ب</span>
               </div>
               <h1 className="text-xl font-bold text-foreground tracking-tight">Barakah Life</h1>
@@ -118,15 +118,15 @@ export default function Pricing() {
       </header>
 
       {/* Hero Section */}
-      <section className="py-20 bg-gradient-to-br from-emerald-50 to-emerald-100">
+      <section className="py-20 bg-card dark:bg-muted">
         <div className="container mx-auto px-6 text-center">
-          <Badge className="mb-6 bg-emerald-100 text-emerald-800 hover:bg-emerald-100">
+          <Badge className="mb-6 bg-primary/10 text-primary border border-primary/30">
             Premium Islamic Productivity + Social Impact
           </Badge>
-          
+
           <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-6 leading-tight">
             Organize Your Life,<br />
-            <span className="text-emerald-600">Transform the World</span>
+            <span className="text-primary">Transform the World</span>
           </h1>
           
           <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
@@ -135,14 +135,14 @@ export default function Pricing() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-            <div className="bg-white rounded-full px-6 py-3 shadow-sm border">
-              <div className="flex items-center gap-3 text-emerald-600">
+            <div className="bg-card rounded-full px-6 py-3 shadow-sm border border-border dark:bg-muted">
+              <div className="flex items-center gap-3 text-primary">
                 <Heart className="h-5 w-5" />
                 <span className="font-semibold">${impactStats.totalSubscribers * 5} donated this month</span>
               </div>
             </div>
-            <div className="bg-white rounded-full px-6 py-3 shadow-sm border">
-              <div className="flex items-center gap-3 text-emerald-600">
+            <div className="bg-card rounded-full px-6 py-3 shadow-sm border border-border dark:bg-muted">
+              <div className="flex items-center gap-3 text-primary">
                 <Users className="h-5 w-5" />
                 <span className="font-semibold">{impactStats.totalSubscribers} Muslims making impact</span>
               </div>
@@ -155,36 +155,36 @@ export default function Pricing() {
       <section className="py-20">
         <div className="container mx-auto px-6">
           <div className="max-w-lg mx-auto">
-            <Card className="border-2 border-emerald-200 shadow-xl bg-gradient-to-br from-white to-emerald-50">
+            <Card className="border-2 border-primary/40 shadow-xl bg-card dark:bg-muted">
               <CardHeader className="text-center pb-6">
-                <Badge className="self-center mb-4 bg-emerald-600 text-white">Most Popular</Badge>
+                <Badge className="self-center mb-4 bg-primary text-primary-foreground">Most Popular</Badge>
                 <CardTitle className="text-3xl font-bold">Barakah Life Premium</CardTitle>
                 <CardDescription className="text-lg">
                   Complete Islamic productivity + social impact
                 </CardDescription>
-                
+
                 <div className="mt-6">
                   <div className="text-5xl font-bold text-foreground">$19</div>
                   <div className="text-muted-foreground">per month</div>
-                  <div className="mt-2 text-sm bg-emerald-100 text-emerald-800 rounded-full px-3 py-1 inline-block">
+                  <div className="mt-2 text-sm bg-primary/10 text-primary rounded-full px-3 py-1 inline-block">
                     $5 goes to Islamic charity
                   </div>
                 </div>
               </CardHeader>
-              
+
               <CardContent className="space-y-6">
                 <div className="space-y-3">
                   {features.map((feature, index) => (
                     <div key={index} className="flex items-center gap-3">
-                      <Check className="h-5 w-5 text-emerald-600" />
+                      <Check className="h-5 w-5 text-primary" />
                       <span className="text-foreground">{feature}</span>
                     </div>
                   ))}
                 </div>
-                
+
                 <div className="pt-6 border-t">
                   <Link to="/auth/signup" className="block">
-                    <Button className="w-full h-12 text-lg bg-emerald-600 hover:bg-emerald-700">
+                    <Button className="w-full h-12 text-lg bg-primary hover:bg-primary/90 text-primary-foreground">
                       Start Making Impact Today
                     </Button>
                   </Link>
@@ -199,7 +199,7 @@ export default function Pricing() {
       </section>
 
       {/* Impact Section */}
-      <section className="py-20 bg-emerald-50">
+      <section className="py-20 bg-muted">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-foreground mb-4">
@@ -213,29 +213,29 @@ export default function Pricing() {
 
           <div className="grid md:grid-cols-3 gap-8 mb-16">
             {impactAreas.map((area, index) => (
-              <Card key={index} className="bg-white shadow-lg border-0">
+              <Card key={index} className="bg-card shadow-lg border border-border dark:bg-muted">
                 <CardContent className="p-8 text-center">
-                  <div className="bg-emerald-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 text-emerald-600">
+                  <div className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 text-primary">
                     {area.icon}
                   </div>
                   <h3 className="text-xl font-bold text-foreground mb-2">{area.title}</h3>
                   <p className="text-muted-foreground mb-4">{area.description}</p>
-                  <div className="text-2xl font-bold text-emerald-600">{area.stat}</div>
+                  <div className="text-2xl font-bold text-primary">{area.stat}</div>
                 </CardContent>
               </Card>
             ))}
           </div>
 
           <div className="text-center">
-            <Card className="bg-emerald-600 text-white max-w-2xl mx-auto">
+            <Card className="bg-primary text-primary-foreground max-w-2xl mx-auto">
               <CardContent className="p-8">
                 <TrendingUp className="h-12 w-12 mx-auto mb-4" />
                 <h3 className="text-2xl font-bold mb-2">Growing Impact Every Month</h3>
-                <p className="text-emerald-100 mb-4">
+                <p className="text-primary-foreground/80 mb-4">
                   As our community grows, so does our collective ability to create positive change in the world.
                 </p>
                 <div className="text-3xl font-bold">${(impactStats.totalSubscribers * 5).toLocaleString()}</div>
-                <div className="text-emerald-100">donated this month alone</div>
+                <div className="text-primary-foreground/80">donated this month alone</div>
               </CardContent>
             </Card>
           </div>
@@ -256,9 +256,9 @@ export default function Pricing() {
 
           <div className="grid md:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
-              <Card key={index} className="bg-white shadow-lg border-0">
+              <Card key={index} className="bg-card shadow-lg border border-border dark:bg-muted">
                 <CardContent className="p-8">
-                  <Badge className="mb-4 bg-emerald-100 text-emerald-800">
+                  <Badge className="mb-4 bg-primary/10 text-primary border border-primary/30">
                     {testimonial.feature}
                   </Badge>
                   <blockquote className="text-foreground mb-6 italic">
@@ -276,7 +276,7 @@ export default function Pricing() {
       </section>
 
       {/* FAQ */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-20 bg-muted">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-foreground mb-4">
@@ -289,7 +289,7 @@ export default function Pricing() {
 
           <div className="max-w-3xl mx-auto space-y-6">
             {faqs.map((faq, index) => (
-              <Card key={index} className="bg-white shadow-sm">
+              <Card key={index} className="bg-card shadow-sm border border-border dark:bg-muted">
                 <CardContent className="p-8">
                   <h3 className="text-lg font-semibold text-foreground mb-3">
                     {faq.question}
@@ -305,40 +305,40 @@ export default function Pricing() {
       </section>
 
       {/* Final CTA */}
-      <section className="py-20 bg-emerald-600">
+      <section className="py-20 bg-primary">
         <div className="container mx-auto px-6 text-center">
-          <h2 className="text-4xl font-bold text-white mb-4">
+          <h2 className="text-4xl font-bold text-primary-foreground mb-4">
             Ready to Join the Movement?
           </h2>
-          <p className="text-xl text-emerald-100 mb-8 max-w-2xl mx-auto">
+          <p className="text-xl text-primary-foreground/80 mb-8 max-w-2xl mx-auto">
             Start your Islamic productivity journey while making a real difference in the world.
           </p>
-          
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/auth/signup">
-              <Button size="lg" className="bg-white text-emerald-600 hover:bg-gray-100 h-12 px-8">
+              <Button size="lg" className="bg-card text-primary hover:bg-muted h-12 px-8 text-lg font-semibold">
                 Start Free Trial
               </Button>
             </Link>
             <Link to="/demo">
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10 h-12 px-8">
+              <Button size="lg" variant="outline" className="border border-primary-foreground/60 text-primary-foreground hover:bg-card hover:text-primary h-12 px-8">
                 Explore Features
               </Button>
             </Link>
           </div>
-          
-          <p className="text-emerald-100 mt-6">
+
+          <p className="text-primary-foreground/80 mt-6">
             14-day free trial • No credit card required • Cancel anytime
           </p>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-border py-12">
+      <footer className="bg-card border-t border-border py-12 dark:bg-muted">
         <div className="container mx-auto px-6">
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="flex items-center gap-3 mb-4 md:mb-0">
-              <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-lg">ب</span>
               </div>
               <span className="font-bold text-foreground text-lg">Barakah Life</span>

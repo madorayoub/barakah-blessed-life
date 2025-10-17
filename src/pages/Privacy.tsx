@@ -35,7 +35,7 @@ export default function Privacy() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-white border-b">
+      <header className="bg-card border-b border-border dark:bg-muted">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
             <Button 
