@@ -6,12 +6,31 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Download, Share2, FileText, Calendar } from 'lucide-react'
 import { format, startOfMonth, endOfMonth, subMonths } from 'date-fns'
 import { toast } from '@/hooks/use-toast'
+import type { Achievement, PrayerStats, TaskStats } from '@/hooks/useAnalytics'
 
 interface ExportReportProps {
-  prayerStats: any
-  taskStats: any
-  achievements: any[]
+  prayerStats: PrayerStats | null
+  taskStats: TaskStats | null
+  achievements: Achievement[]
 }
+
+interface ReportData {
+  period: string
+  format: string
+  prayer: {
+    completionRate: number
+    currentStreak: number
+    totalPrayers: number
+  }
+  tasks: {
+    completionRate: number
+    totalCompleted: number
+  }
+  achievements: number
+  generatedAt: string
+}
+
+type ExportFormat = 'pdf' | 'json'
 
 export function ExportReport({ prayerStats, taskStats, achievements }: ExportReportProps) {
   const [selectedPeriod, setSelectedPeriod] = useState('current-month')
@@ -23,7 +42,7 @@ export function ExportReport({ prayerStats, taskStats, achievements }: ExportRep
     
     // Simulate report generation
     setTimeout(() => {
-      const reportData = {
+      const reportData: ReportData = {
         period: selectedPeriod,
         format: exportFormat,
         prayer: {
@@ -51,9 +70,9 @@ export function ExportReport({ prayerStats, taskStats, achievements }: ExportRep
     }, 2000)
   }
 
-  const generateReportContent = (data: any) => {
+  const generateReportContent = (data: ReportData) => {
     const currentDate = format(new Date(), 'MMMM yyyy')
-    
+
     if (exportFormat === 'pdf') {
       // In a real app, you'd use a PDF library like jsPDF
       return `
@@ -89,9 +108,9 @@ Your Islamic Productivity Companion
     }
   }
 
-  const downloadReport = (content: string, fileFormat: string) => {
-    const blob = new Blob([content], { 
-      type: fileFormat === 'pdf' ? 'text/plain' : 'application/json' 
+  const downloadReport = (content: string, fileFormat: ExportFormat) => {
+    const blob = new Blob([content], {
+      type: fileFormat === 'pdf' ? 'text/plain' : 'application/json'
     })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')

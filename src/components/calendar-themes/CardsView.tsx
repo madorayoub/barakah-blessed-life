@@ -3,23 +3,14 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { formatPrayerTime } from '@/lib/prayerTimes'
-
-interface CalendarEvent {
-  id: string
-  type: 'prayer' | 'task'
-  title: string
-  time?: Date
-  completed?: boolean
-  isNext?: boolean
-  taskData?: any // Full task object for editing
-}
+import type { CalendarEvent, CalendarAddTaskHandler } from '@/types/calendar'
 
 interface CardsViewProps {
   date: Date
   events: CalendarEvent[]
   onPrayerComplete?: (prayerName: string) => void
   onEventClick?: (event: CalendarEvent) => void
-  onAddTask?: () => void
+  onAddTask?: CalendarAddTaskHandler
 }
 
 const CardsView = ({ date, events, onEventClick, onAddTask }: CardsViewProps) => {

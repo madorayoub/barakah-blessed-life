@@ -3,29 +3,20 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { formatPrayerTime } from '@/lib/prayerTimes'
-
-interface CalendarEvent {
-  id: string
-  type: 'prayer' | 'task'
-  title: string
-  time?: Date
-  completed?: boolean
-  isNext?: boolean
-  taskData?: any // Full task object for editing
-}
+import type { CalendarEvent, CalendarTimeBlock, CalendarAddTaskHandler } from '@/types/calendar'
 
 interface BlocksViewProps {
   date: Date
   events: CalendarEvent[]
   onPrayerComplete?: (prayerName: string) => void
   onEventClick?: (event: CalendarEvent) => void
-  onAddTask?: (timeBlock?: string) => void
+  onAddTask?: CalendarAddTaskHandler
 }
 
 const BlocksView = ({ date, events, onEventClick, onAddTask }: BlocksViewProps) => {
   // Generate time blocks covering the full day
-  const generateTimeBlocks = () => {
-    const blocks = []
+  const generateTimeBlocks = (): CalendarTimeBlock[] => {
+    const blocks: CalendarTimeBlock[] = []
     const sortedEvents = [...events].sort((a, b) => {
       if (!a.time && !b.time) return 0
       if (!a.time) return 1
@@ -49,7 +40,7 @@ const BlocksView = ({ date, events, onEventClick, onAddTask }: BlocksViewProps) 
     }
 
     // Morning block (6:00-12:00)
-    const morningEvents = sortedEvents.filter(e => 
+    const morningEvents = sortedEvents.filter(e =>
       e.time && e.time.getHours() >= 6 && e.time.getHours() < 12
     )
     if (morningEvents.length > 0) {
@@ -130,7 +121,7 @@ const BlocksView = ({ date, events, onEventClick, onAddTask }: BlocksViewProps) 
     return '📋'
   }
 
-  const getBlockStatus = (block: any) => {
+  const getBlockStatus = (block: CalendarTimeBlock) => {
     const now = new Date()
     const currentHour = now.getHours()
     

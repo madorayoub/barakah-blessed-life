@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import type { LucideIcon } from 'lucide-react'
 import { Plus, Calendar, Clock, Flag, BookOpen, Heart, Star, Gift, GraduationCap, Phone, Users, Sun, Moon, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -11,7 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import { ModernDatePicker } from '@/components/ui/modern-date-picker'
 import { useTasks, TaskTemplate, Task } from '@/contexts/TasksContext'
 
-const iconMap: Record<string, any> = {
+const iconMap: Record<string, LucideIcon> = {
   'sun': Sun,
   'moon': Moon,
   'book-open': BookOpen,

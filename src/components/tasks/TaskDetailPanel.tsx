@@ -110,7 +110,7 @@ export function TaskDetailPanel({ task, isOpen, onClose, onUpdate, onDelete, onC
 
   if (!isOpen || !task || !editedTask) return null
 
-  const handleFieldChange = (field: keyof Task, value: any) => {
+  const handleFieldChange = (field: keyof Task, value: Task[keyof Task]) => {
     setEditedTask(prev => prev ? { ...prev, [field]: value } : null)
     setHasChanges(true)
   }

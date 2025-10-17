@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import type { LucideIcon } from 'lucide-react'
 import { MapPin, Clock, Settings, Bell, CheckCircle2, ArrowRight, ArrowLeft, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -19,7 +20,7 @@ interface OnboardingStep {
   id: string
   title: string
   description: string
-  icon: React.ComponentType<any>
+  icon: LucideIcon
 }
 
 const steps: OnboardingStep[] = [
