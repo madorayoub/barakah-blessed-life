@@ -8,6 +8,7 @@ Exact color specifications as per Phase 2 requirements
 
 @layer base {
   :root {
+    color-scheme: light;
     /* Emerald Brand Colors (Primary) */
     --emerald-50: 152 68% 96%;
     --emerald-100: 152 56% 91%;  
@@ -112,6 +113,7 @@ Exact color specifications as per Phase 2 requirements
   }
 
   .dark {
+    color-scheme: dark;
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
 

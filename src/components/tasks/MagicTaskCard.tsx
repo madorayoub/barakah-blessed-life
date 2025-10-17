@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Task } from '@/contexts/TasksContext'
 import { format } from 'date-fns'
+import { cn } from '@/lib/utils'
 
 interface MagicTaskCardProps {
   task: Task
@@ -41,35 +42,62 @@ export function MagicTaskCard({ task, onComplete, onDelete, onEdit, level = 0 }:
     }
   }
 
-  const getPriorityColor = (priority: string) => {
+  const getPriorityBorderColor = (priority: string) => {
     switch (priority) {
-      case 'urgent': return 'border-l-red-500 hover:shadow-red-100'
-      case 'high': return 'border-l-orange-500 hover:shadow-orange-100'
-      case 'medium': return 'border-l-primary hover:shadow-primary/10'
-      case 'low': return 'border-l-gray-400 hover:shadow-gray-100'
-      default: return 'border-l-gray-400 hover:shadow-gray-100'
+      case 'urgent':
+        return 'hsl(var(--destructive))'
+      case 'high':
+        return 'hsl(var(--accent))'
+      case 'medium':
+        return 'hsl(var(--primary))'
+      case 'low':
+      default:
+        return 'hsl(var(--muted-foreground))'
+    }
+  }
+
+  const getPriorityHoverClass = (priority: string) => {
+    switch (priority) {
+      case 'urgent':
+        return 'hover:ring-1 hover:ring-destructive/40'
+      case 'high':
+        return 'hover:ring-1 hover:ring-accent/40'
+      case 'medium':
+        return 'hover:ring-1 hover:ring-primary/30'
+      case 'low':
+      default:
+        return 'hover:ring-1 hover:ring-muted-foreground/20'
     }
   }
 
   const getPriorityBadgeColor = (priority: string) => {
     switch (priority) {
-      case 'urgent': return 'bg-red-50 text-red-700 border-red-200'
-      case 'high': return 'bg-orange-50 text-orange-700 border-orange-200'
-      case 'medium': return 'bg-blue-50 text-blue-700 border-blue-200'
-      case 'low': return 'bg-gray-50 text-gray-700 border-gray-200'
-      default: return 'bg-gray-50 text-gray-700 border-gray-200'
+      case 'urgent':
+        return 'bg-destructive/10 text-destructive border border-destructive/20'
+      case 'high':
+        return 'bg-accent/10 text-accent border border-accent/20'
+      case 'medium':
+        return 'bg-primary/10 text-primary border border-primary/20'
+      case 'low':
+      default:
+        return 'bg-muted text-muted-foreground border border-border'
     }
   }
 
   return (
-    <Card 
-      className={`
-        group transition-all duration-200 border-l-4 
-        ${getPriorityColor(task.priority)}
-        ${isCompleted ? 'opacity-60 bg-muted/30' : 'hover:shadow-md bg-card'}
-        ${level > 0 ? 'ml-6 border-l-2' : ''}
-      `}
-      style={{ marginLeft: level > 0 ? `${level * 24}px` : '0' }}
+    <Card
+      className={cn(
+        'group transition-all duration-200 border border-border',
+        isCompleted ? 'opacity-60 bg-muted/30' : 'hover:shadow-md bg-card',
+        level > 0 && 'ml-6',
+        getPriorityHoverClass(task.priority)
+      )}
+      style={{
+        marginLeft: level > 0 ? `${level * 24}px` : '0',
+        borderLeftColor: getPriorityBorderColor(task.priority),
+        borderLeftWidth: level > 0 ? '2px' : '4px',
+        borderLeftStyle: 'solid'
+      }}
     >
       <CardContent className="p-3">
         <div className="flex items-start gap-3">
@@ -125,9 +153,9 @@ export function MagicTaskCard({ task, onComplete, onDelete, onEdit, level = 0 }:
             <div className="flex items-center gap-2 flex-wrap">
               {/* Priority Badge (only show if not low) */}
               {task.priority !== 'low' && (
-                <Badge 
-                  variant="outline" 
-                  className={`text-xs h-5 ${getPriorityBadgeColor(task.priority)}`}
+                <Badge
+                  variant="outline"
+                  className={cn('text-xs h-5', getPriorityBadgeColor(task.priority))}
                 >
                   <Flag className="h-2.5 w-2.5 mr-1" />
                   {task.priority}
@@ -153,8 +181,8 @@ export function MagicTaskCard({ task, onComplete, onDelete, onEdit, level = 0 }:
               {task.due_date && (
                 <div className={`
                   flex items-center gap-1 text-xs px-2 py-0.5 rounded
-                  ${isOverdue 
-                    ? 'text-red-600 bg-red-50' 
+                  ${isOverdue
+                    ? 'text-destructive bg-destructive/10'
                     : 'text-muted-foreground bg-muted/50'
                   }
                 `}>

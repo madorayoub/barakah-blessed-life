@@ -171,12 +171,12 @@ export function NewTaskDialog({ children, onTaskCreate: propOnTaskCreate, initia
 
   const getTemplateColor = (index: number) => {
     const colors = [
-      'bg-green-50 border-green-200 hover:bg-green-100',
-      'bg-blue-50 border-blue-200 hover:bg-blue-100', 
-      'bg-purple-50 border-purple-200 hover:bg-purple-100',
-      'bg-pink-50 border-pink-200 hover:bg-pink-100',
-      'bg-indigo-50 border-indigo-200 hover:bg-indigo-100',
-      'bg-teal-50 border-teal-200 hover:bg-teal-100'
+      'bg-primary/10 border border-primary/20 hover:bg-primary/15',
+      'bg-accent/10 border border-accent/20 hover:bg-accent/15',
+      'bg-secondary border border-border hover:bg-secondary/80',
+      'bg-muted border border-border hover:bg-muted/80',
+      'bg-card border border-border hover:bg-muted',
+      'bg-primary/5 border border-primary/15 hover:bg-primary/10'
     ]
     return colors[index % colors.length]
   }
@@ -186,34 +186,34 @@ export function NewTaskDialog({ children, onTaskCreate: propOnTaskCreate, initia
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="max-w-[600px] p-0 bg-white border border-gray-200 shadow-lg">
-        
+      <DialogContent className="max-w-[600px] p-0 bg-card border border-border shadow-lg">
+
         {/* Compact Header */}
-        <div className="px-6 py-4 border-b border-gray-100">
+        <div className="px-6 py-4 border-b border-border bg-muted">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center">
               <Plus className="h-4 w-4 text-primary" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">Create Task</h2>
-              <p className="text-sm text-gray-500">Add a new task to your list</p>
+              <h2 className="text-lg font-semibold text-foreground">Create Task</h2>
+              <p className="text-sm text-muted-foreground">Add a new task to your list</p>
             </div>
           </div>
         </div>
 
         <div className="p-6 space-y-4">
-          
+
           {/* Template Toggle (Compact) */}
           <div className="flex items-center justify-center mb-4">
-            <div className="flex bg-gray-100 rounded-lg p-1">
+            <div className="flex bg-muted rounded-lg p-1">
               <Button
                 type="button"
                 variant={!isTemplate ? "default" : "ghost"}
                 onClick={() => setIsTemplate(false)}
                 className={`px-4 py-2 text-sm rounded-md transition-all ${
-                  !isTemplate 
-                    ? 'bg-white shadow-sm text-gray-900' 
-                    : 'text-gray-600 hover:text-gray-900'
+                  !isTemplate
+                    ? 'bg-card shadow-sm text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 Custom Task
@@ -223,9 +223,9 @@ export function NewTaskDialog({ children, onTaskCreate: propOnTaskCreate, initia
                 variant={isTemplate ? "default" : "ghost"}
                 onClick={() => setIsTemplate(true)}
                 className={`px-4 py-2 text-sm rounded-md transition-all ${
-                  isTemplate 
-                    ? 'bg-white shadow-sm text-gray-900' 
-                    : 'text-gray-600 hover:text-gray-900'
+                  isTemplate
+                    ? 'bg-card shadow-sm text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 Templates
@@ -236,16 +236,16 @@ export function NewTaskDialog({ children, onTaskCreate: propOnTaskCreate, initia
           {isTemplate ? (
             /* Compact Templates Section */
             <div className="space-y-3">
-              <h3 className="text-sm font-medium text-gray-700 text-center">Islamic Templates</h3>
+              <h3 className="text-sm font-medium text-muted-foreground text-center">Islamic Templates</h3>
               <div className="grid grid-cols-2 gap-3 max-h-48 overflow-y-auto">
                 {templates.map((template, index) => {
                   // Use the comprehensive icon detection function
                   const templateIcon = getTemplateIcon(template.name)
-                  
+
                   return (
-                    <Card 
-                      key={template.id} 
-                      className={`cursor-pointer transition-all duration-200 border-2 rounded-lg shadow-sm hover:shadow-md ${getTemplateColor(index)}`}
+                    <Card
+                      key={template.id}
+                      className={`cursor-pointer transition-all duration-200 rounded-lg shadow-sm hover:shadow-md ${getTemplateColor(index)}`}
                       onClick={() => handleTemplateSelect(template)}
                     >
                        <CardContent className="p-4">
@@ -254,8 +254,8 @@ export function NewTaskDialog({ children, onTaskCreate: propOnTaskCreate, initia
                              {templateIcon}
                            </div>
                            <div className="flex-1 min-w-0 ml-3">
-                            <h4 className="text-sm font-semibold text-gray-900 truncate">{template.name}</h4>
-                            <p className="text-xs text-gray-600 truncate mt-1">{template.description}</p>
+                            <h4 className="text-sm font-semibold text-foreground truncate">{template.name}</h4>
+                            <p className="text-xs text-muted-foreground truncate mt-1">{template.description}</p>
                           </div>
                         </div>
                       </CardContent>
@@ -271,18 +271,18 @@ export function NewTaskDialog({ children, onTaskCreate: propOnTaskCreate, initia
               {/* Top Row: Title and Date */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <Label htmlFor="title" className="text-sm font-medium text-gray-700">Task Title *</Label>
+                  <Label htmlFor="title" className="text-sm font-medium text-foreground">Task Title *</Label>
                   <Input
                     id="title"
                     value={formData.title}
                     onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                     placeholder="What needs to be done?"
-                    className="h-10 px-3 text-sm bg-gray-50 border border-gray-300 rounded-md focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                    className="h-10 px-3 text-sm bg-background border border-border rounded-md focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                     required
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-sm font-medium text-gray-700">Due Date</Label>
+                  <Label className="text-sm font-medium text-foreground">Due Date</Label>
                   <ModernDatePicker
                     value={formData.due_date}
                     onChange={(date) => setFormData(prev => ({ ...prev, due_date: date }))}
@@ -298,49 +298,49 @@ export function NewTaskDialog({ children, onTaskCreate: propOnTaskCreate, initia
               {/* Second Row: Priority and Category */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <Label className="text-sm font-medium text-gray-700">Priority</Label>
+                  <Label className="text-sm font-medium text-foreground">Priority</Label>
                   <Select
                     value={formData.priority}
-                    onValueChange={(value: 'low' | 'medium' | 'high' | 'urgent') => 
+                    onValueChange={(value: 'low' | 'medium' | 'high' | 'urgent') =>
                       setFormData(prev => ({ ...prev, priority: value }))
                     }
                   >
-                    <SelectTrigger className="h-10 px-3 text-sm bg-gray-50 border border-gray-300 rounded-md focus:bg-white focus:border-primary transition-all">
+                    <SelectTrigger className="h-10 px-3 text-sm bg-background border border-border rounded-md focus:border-primary transition-all">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="low">🟢 Low</SelectItem>
-                      <SelectItem value="medium">🟡 Medium</SelectItem>
-                      <SelectItem value="high">🟠 High</SelectItem>
-                      <SelectItem value="urgent">🔴 Urgent</SelectItem>
+                    <SelectContent className="bg-card border border-border">
+                      <SelectItem value="low" className="text-foreground">🟢 Low</SelectItem>
+                      <SelectItem value="medium" className="text-foreground">🟡 Medium</SelectItem>
+                      <SelectItem value="high" className="text-foreground">🟠 High</SelectItem>
+                      <SelectItem value="urgent" className="text-foreground">🔴 Urgent</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-sm font-medium text-gray-700">Category</Label>
+                  <Label className="text-sm font-medium text-foreground">Category</Label>
                   {!showNewCategory ? (
                     <Select
                       value={formData.category_id}
                       onValueChange={(value) => setFormData(prev => ({ ...prev, category_id: value }))}
                     >
-                      <SelectTrigger className="h-10 px-3 text-sm bg-gray-50 border border-gray-300 rounded-md focus:bg-white focus:border-primary transition-all">
+                      <SelectTrigger className="h-10 px-3 text-sm bg-background border border-border rounded-md focus:border-primary transition-all">
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-card border border-border">
                         {categories.map((category) => (
-                          <SelectItem key={category.id} value={category.id}>
+                          <SelectItem key={category.id} value={category.id} className="text-foreground">
                             <div className="flex items-center gap-2">
-                              <div 
-                                className="w-2 h-2 rounded-full" 
+                              <div
+                                className="w-2 h-2 rounded-full"
                                 style={{ backgroundColor: category.color }}
                               />
                               <span className="text-sm">{category.name}</span>
                             </div>
                           </SelectItem>
                         ))}
-                        <SelectItem value="__add_new__" onSelect={() => setShowNewCategory(true)}>
-                          <div className="flex items-center gap-2 text-primary">
+                        <SelectItem value="__add_new__" onSelect={() => setShowNewCategory(true)} className="text-primary">
+                          <div className="flex items-center gap-2">
                             <Plus className="w-3 h-3" />
                             <span className="text-sm">Add Category</span>
                           </div>
@@ -353,7 +353,7 @@ export function NewTaskDialog({ children, onTaskCreate: propOnTaskCreate, initia
                         placeholder="Category name"
                         value={newCategoryName}
                         onChange={(e) => setNewCategoryName(e.target.value)}
-                        className="h-10 px-3 text-sm bg-gray-50 border border-gray-300 rounded-md focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                        className="h-10 px-3 text-sm bg-background border border-border rounded-md focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
                             e.preventDefault()
@@ -381,20 +381,20 @@ export function NewTaskDialog({ children, onTaskCreate: propOnTaskCreate, initia
 
               {/* Description */}
               <div className="space-y-1">
-                <Label htmlFor="description" className="text-sm font-medium text-gray-700">Description</Label>
+                <Label htmlFor="description" className="text-sm font-medium text-foreground">Description</Label>
                 <Textarea
                   id="description"
                   value={formData.description}
                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                   placeholder="Add details about this task..."
                   rows={3}
-                  className="px-3 py-2 text-sm bg-gray-50 border border-gray-300 rounded-md focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all resize-none"
+                  className="px-3 py-2 text-sm bg-background border border-border rounded-md focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all resize-none"
                 />
               </div>
 
               {/* Quick Duration */}
               <div className="space-y-1">
-                <Label className="text-sm font-medium text-gray-700">Quick Duration</Label>
+                <Label className="text-sm font-medium text-foreground">Quick Duration</Label>
                 <div className="flex gap-2">
                   <Button
                     type="button"
@@ -431,10 +431,10 @@ export function NewTaskDialog({ children, onTaskCreate: propOnTaskCreate, initia
 
         {/* Compact Footer */}
         {!isTemplate && (
-          <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50">
+          <div className="px-6 py-4 border-t border-border bg-muted">
             <div className="flex justify-end gap-2">
-              <Button 
-                type="button" 
+              <Button
+                type="button"
                 variant="outline" 
                 onClick={() => setOpen(false)}
                 className="px-4 py-2 text-sm"
