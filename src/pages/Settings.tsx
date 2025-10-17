@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { ArrowLeft, MapPin, Navigation, Loader2, Bell, Volume2, User, Clock, BookOpen, Heart, Shield, Settings as SettingsIcon, Star, Info, CheckCircle, AlertTriangle } from "lucide-react"
+import { ArrowLeft, MapPin, Navigation, Loader2, Bell, Volume2, User, Clock, BookOpen, Heart, Shield, Settings as SettingsIcon, Star, Info, CheckCircle, AlertTriangle, Sun, Moon, Laptop } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -13,6 +13,8 @@ import { useToast } from "@/hooks/use-toast"
 import { useNavigate } from "react-router-dom"
 import { Badge } from "@/components/ui/badge"
 import { AppHeader } from "@/components/AppHeader"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { useTheme } from "next-themes"
 
 const Settings = () => {
   const { user, signOut } = useAuth()
@@ -20,6 +22,29 @@ const Settings = () => {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
   const [autoSaving, setAutoSaving] = useState(false)
+  const { theme, setTheme, resolvedTheme } = useTheme()
+  const [selectedTheme, setSelectedTheme] = useState("light")
+
+  const themeOptions = [
+    {
+      value: "light",
+      label: "Light",
+      description: "Clean, bright interface",
+      icon: Sun
+    },
+    {
+      value: "dark",
+      label: "Dark",
+      description: "Low-light friendly",
+      icon: Moon
+    },
+    {
+      value: "system",
+      label: "System",
+      description: "Follow device setting",
+      icon: Laptop
+    }
+  ]
 
   const [profile, setProfile] = useState({
     display_name: '',
@@ -40,6 +65,17 @@ const Settings = () => {
     notifications_enabled: true,
     notification_minutes_before: 10
   })
+
+  useEffect(() => {
+    if (theme) {
+      setSelectedTheme(theme)
+    }
+  }, [theme])
+
+  const handleThemeChange = (value: string) => {
+    setSelectedTheme(value)
+    setTheme(value)
+  }
 
   // Load user data
   useEffect(() => {
@@ -332,11 +368,78 @@ const Settings = () => {
                   Detect Location
                 </Button>
               </div>
-            </CardContent>
-          </Card>
+          </CardContent>
+        </Card>
 
-          {/* Prayer Time Settings */}
-          <Card>
+        {/* Appearance Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <SettingsIcon className="h-5 w-5" />
+              Appearance
+            </CardTitle>
+            <CardDescription>
+              Choose your preferred theme for the app experience
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <RadioGroup
+              value={selectedTheme}
+              onValueChange={handleThemeChange}
+              className="grid gap-3 md:grid-cols-3"
+            >
+              {themeOptions.map((option) => {
+                const Icon = option.icon
+                return (
+                  <div key={option.value} className="relative">
+                    <RadioGroupItem
+                      id={`theme-${option.value}`}
+                      value={option.value}
+                      className="peer sr-only"
+                    />
+                    <label
+                      htmlFor={`theme-${option.value}`}
+                      className="flex h-full cursor-pointer flex-col gap-3 rounded-xl border border-border/70 bg-muted/30 p-4 transition-all hover:border-primary/40 hover:bg-muted/50 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 peer-data-[state=checked]:shadow"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="rounded-lg border bg-background p-2 shadow-sm">
+                          <Icon className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <p className="font-medium">{option.label}</p>
+                          <p className="text-xs text-muted-foreground">{option.description}</p>
+                        </div>
+                      </div>
+                      <div className="mt-2 rounded-lg border bg-background p-3 text-xs text-muted-foreground shadow-inner">
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 w-12 rounded-full bg-primary/60"></div>
+                          <div className="h-2 flex-1 rounded-full bg-muted"></div>
+                        </div>
+                        <div className="mt-3 space-y-2">
+                          <div className="h-2 rounded-full bg-muted"></div>
+                          <div className="h-2 w-3/4 rounded-full bg-muted"></div>
+                          <div className="h-2 w-1/2 rounded-full bg-muted"></div>
+                        </div>
+                      </div>
+                    </label>
+                  </div>
+                )
+              })}
+            </RadioGroup>
+
+            <div className="rounded-lg border border-dashed border-border/60 bg-muted/20 p-4 text-sm text-muted-foreground">
+              <p>
+                The public landing pages always stay bright for clarity, while your in-app experience remembers this preference across sessions.
+              </p>
+              <p className="mt-2 font-medium text-foreground">
+                Current theme: {resolvedTheme ? resolvedTheme.charAt(0).toUpperCase() + resolvedTheme.slice(1) : 'Light'}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Prayer Time Settings */}
+        <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Clock className="h-5 w-5" />

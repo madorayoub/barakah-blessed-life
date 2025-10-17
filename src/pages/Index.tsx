@@ -38,12 +38,10 @@ const Index = () => {
   ]
 
   return (
-    <div
-      className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 dark:from-gray-950 dark:via-slate-950 dark:to-gray-900 text-foreground transition-colors"
-    >
-      
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 text-gray-900">
+
       {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50 border-border dark:border-gray-800 dark:bg-gray-950/80">
+      <header className="sticky top-0 z-50 border-b border-emerald-100 bg-white/90 backdrop-blur-sm">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             {/* Logo */}
@@ -52,28 +50,28 @@ const Index = () => {
                 <span className="text-white font-bold text-xl">ب</span>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 tracking-tight dark:text-white">Barakah Life</h1>
-                <p className="text-sm text-emerald-600 font-medium dark:text-emerald-300">Islamic Productivity</p>
+                <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Barakah Life</h1>
+                <p className="text-sm font-medium text-emerald-600">Islamic Productivity</p>
               </div>
             </div>
 
             {/* Navigation */}
-            <nav className="hidden md:flex items-center gap-6">
+            <nav className="hidden items-center gap-6 md:flex">
               <Link
                 to="/demo"
-                className="text-gray-600 hover:text-gray-900 font-medium transition-colors dark:text-gray-300 dark:hover:text-white"
+                className="font-medium text-gray-600 transition-colors hover:text-gray-900"
               >
                 Demo
               </Link>
               <Link
                 to="/pricing"
-                className="text-gray-600 hover:text-gray-900 font-medium transition-colors dark:text-gray-300 dark:hover:text-white"
+                className="font-medium text-gray-600 transition-colors hover:text-gray-900"
               >
                 Pricing
               </Link>
               <Link
                 to="/about"
-                className="text-gray-600 hover:text-gray-900 font-medium transition-colors dark:text-gray-300 dark:hover:text-white"
+                className="font-medium text-gray-600 transition-colors hover:text-gray-900"
               >
                 About
               </Link>
@@ -95,22 +93,22 @@ const Index = () => {
       {/* Hero Section */}
       <section className="py-20 px-6">
         <div className="container mx-auto max-w-6xl text-center">
-          <Badge className="mb-6 bg-emerald-100 text-emerald-700 border-emerald-200 text-sm font-medium px-4 py-2 dark:border-emerald-900/60 dark:bg-emerald-900/40 dark:text-emerald-200">
+          <Badge className="mb-6 border border-emerald-200 bg-emerald-100 px-4 py-2 text-sm font-medium text-emerald-700">
             ✨ Transform Your Spiritual Productivity
           </Badge>
-          
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight dark:text-white">
+
+          <h1 className="mb-6 text-5xl font-bold leading-tight text-gray-900 md:text-6xl">
             Integrate Your
-            <span className="text-emerald-600 dark:text-emerald-400"> Islamic Life</span>
+            <span className="text-emerald-600"> Islamic Life</span>
             <br />
             With Modern Productivity
           </h1>
-          
-          <p className="text-xl text-gray-600 mb-10 max-w-3xl mx-auto leading-relaxed dark:text-gray-300">
-            Barakah Life seamlessly blends your prayers, spiritual goals, and daily tasks into one beautifully organized system. 
+
+          <p className="mx-auto mb-10 max-w-3xl text-xl leading-relaxed text-gray-600">
+            Barakah Life seamlessly blends your prayers, spiritual goals, and daily tasks into one beautifully organized system.
             Stay connected to your faith while achieving your worldly goals.
           </p>
-          
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Link to="/auth/signup">
               <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-6 text-lg font-semibold shadow-xl">
@@ -122,16 +120,16 @@ const Index = () => {
               <Button
                 size="lg"
                 variant="outline"
-                className="px-8 py-6 text-lg font-semibold border-2 dark:border-emerald-500 dark:text-emerald-200 dark:hover:bg-emerald-500/10"
+                className="border-emerald-200 px-8 py-6 text-lg font-semibold text-emerald-700 transition-colors hover:bg-emerald-50"
               >
                 <Play className="mr-2 h-5 w-5" />
                 Watch Demo
               </Button>
             </Link>
           </div>
-          
+
           {/* Trust Indicators */}
-          <div className="flex flex-wrap justify-center items-center gap-8 text-sm text-gray-500 dark:text-gray-400">
+          <div className="flex flex-wrap items-center justify-center gap-8 text-sm text-gray-500">
             <div className="flex items-center gap-2">
               <Shield className="h-4 w-4 text-emerald-600" />
               Privacy-first design
@@ -149,28 +147,28 @@ const Index = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 px-6 bg-white dark:bg-gray-900">
+      <section className="bg-white px-6 py-20">
         <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4 dark:text-white">
+          <div className="mb-16 text-center">
+            <h2 className="mb-4 text-4xl font-bold text-gray-900">
               Everything You Need for Islamic Productivity
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto dark:text-gray-300">
+            <p className="mx-auto max-w-2xl text-xl text-gray-600">
               Thoughtfully designed features that respect your faith while boosting your productivity
             </p>
           </div>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
             {features.map((feature, index) => (
-              <Card key={index} className="border border-border/60 shadow-lg hover:shadow-xl transition-shadow bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 dark:border-gray-800">
-                <CardHeader className="text-center pb-4">
-                  <div className="w-16 h-16 bg-emerald-100 rounded-xl flex items-center justify-center mx-auto mb-4 dark:bg-emerald-900/50">
-                    <feature.icon className="h-8 w-8 text-emerald-600 dark:text-emerald-300" />
+              <Card key={index} className="border border-emerald-100/80 bg-gradient-to-br from-white to-gray-50 shadow-lg transition-shadow hover:shadow-xl">
+                <CardHeader className="pb-4 text-center">
+                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-xl bg-emerald-100">
+                    <feature.icon className="h-8 w-8 text-emerald-600" />
                   </div>
-                  <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">{feature.title}</CardTitle>
+                  <CardTitle className="text-xl font-bold text-gray-900">{feature.title}</CardTitle>
                 </CardHeader>
                 <CardContent className="text-center">
-                  <p className="text-gray-600 leading-relaxed dark:text-gray-300">{feature.description}</p>
+                  <p className="leading-relaxed text-gray-600">{feature.description}</p>
                 </CardContent>
               </Card>
             ))}
@@ -179,24 +177,24 @@ const Index = () => {
       </section>
 
       {/* Benefits Section */}
-      <section className="py-20 px-6 bg-emerald-50 dark:bg-emerald-950/30">
+      <section className="bg-emerald-50 px-6 py-20">
         <div className="container mx-auto max-w-4xl">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4 dark:text-white">
+          <div className="mb-16 text-center">
+            <h2 className="mb-4 text-4xl font-bold text-gray-900">
               Why Choose Barakah Life?
             </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300">
+            <p className="text-xl text-gray-600">
               Built specifically for Muslims who want to excel in both dunya and akhirah
             </p>
           </div>
-          
-          <div className="grid md:grid-cols-2 gap-6">
+
+          <div className="grid gap-6 md:grid-cols-2">
             {benefits.map((benefit, index) => (
               <div key={index} className="flex items-start gap-4 p-4">
                 <div className="w-6 h-6 bg-emerald-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
                   <Check className="h-4 w-4 text-white" />
                 </div>
-                <p className="text-gray-700 font-medium dark:text-gray-200">{benefit}</p>
+                <p className="font-medium text-gray-700">{benefit}</p>
               </div>
             ))}
           </div>
@@ -204,13 +202,13 @@ const Index = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-6 bg-gray-900 text-white dark:bg-gray-950">
+      <section className="bg-gray-900 px-6 py-20 text-white">
         <div className="container mx-auto max-w-4xl text-center">
           <h2 className="text-4xl font-bold mb-6">
             Start Your Islamic Productivity Journey Today
           </h2>
-          <p className="text-xl text-gray-300 mb-10 max-w-2xl mx-auto dark:text-gray-200">
-            Join thousands of Muslims who have transformed their daily routine with Barakah Life. 
+          <p className="mx-auto mb-10 max-w-2xl text-xl text-gray-300">
+            Join thousands of Muslims who have transformed their daily routine with Barakah Life.
             It's free to start, and your spiritual data stays private.
           </p>
           
@@ -225,47 +223,47 @@ const Index = () => {
               <Button
                 size="lg"
                 variant="outline"
-                className="text-white border-white hover:bg-white hover:text-gray-900 px-8 py-6 text-lg font-semibold dark:hover:bg-white/10 dark:hover:text-white"
+                className="border-white px-8 py-6 text-lg font-semibold text-white transition-colors hover:bg-white hover:text-gray-900"
               >
                 Explore Features
               </Button>
             </Link>
           </div>
-          
-          <p className="text-sm text-gray-400 mt-8 dark:text-gray-300">
+
+          <p className="mt-8 text-sm text-gray-300">
             "And it is He who created the heavens and earth in truth. And the day He says, 'Be,' and it is, His word is the truth." - Quran 6:73
           </p>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-white border-t py-12 px-6 dark:bg-gray-950 dark:border-gray-800">
+      <footer className="border-t border-emerald-100 bg-white px-6 py-12">
         <div className="container mx-auto max-w-6xl">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex items-center gap-3 mb-6 md:mb-0">
-              <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center">
+          <div className="flex flex-col items-center justify-between md:flex-row">
+            <div className="mb-6 flex items-center gap-3 md:mb-0">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600">
                 <span className="text-white font-bold">ب</span>
               </div>
               <div>
-                <h3 className="font-bold text-gray-900 dark:text-white">Barakah Life</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Islamic Productivity</p>
+                <h3 className="font-bold text-gray-900">Barakah Life</h3>
+                <p className="text-sm text-gray-500">Islamic Productivity</p>
               </div>
             </div>
-            
-            <div className="flex items-center gap-6 text-sm text-gray-600 dark:text-gray-400">
-              <Link to="/privacy" className="hover:text-gray-900 transition-colors dark:hover:text-gray-100">
+
+            <div className="flex items-center gap-6 text-sm text-gray-600">
+              <Link to="/privacy" className="transition-colors hover:text-gray-900">
                 Privacy Policy
               </Link>
-              <Link to="/about" className="hover:text-gray-900 transition-colors dark:hover:text-gray-100">
+              <Link to="/about" className="transition-colors hover:text-gray-900">
                 About
               </Link>
-              <Link to="/help" className="hover:text-gray-900 transition-colors dark:hover:text-gray-100">
+              <Link to="/help" className="transition-colors hover:text-gray-900">
                 Support
               </Link>
             </div>
           </div>
-          
-          <div className="border-t mt-8 pt-8 text-center text-sm text-gray-500 dark:border-gray-800 dark:text-gray-400">
+
+          <div className="mt-8 border-t border-emerald-100 pt-8 text-center text-sm text-gray-500">
             <p>© 2024 Barakah Life. Built with love for the Muslim community.</p>
           </div>
         </div>
