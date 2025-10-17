@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { ArrowLeft, MapPin, Navigation, Loader2, Bell, Volume2, User, Clock, BookOpen, Heart, Shield, Settings as SettingsIcon, Star, Info, CheckCircle, AlertTriangle, Sun, Moon, Laptop } from "lucide-react"
+import { Navigation, User, Clock, BookOpen, Heart, Shield, Settings as SettingsIcon, Star, Info, Sun, Moon, Laptop } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -11,10 +11,36 @@ import { useAuth } from "@/hooks/useAuth"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 import { useNavigate } from "react-router-dom"
-import { Badge } from "@/components/ui/badge"
 import { AppHeader } from "@/components/AppHeader"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { useTheme } from "next-themes"
+
+type ProfileState = {
+  display_name: string
+  location_city: string
+  location_country: string
+  location_latitude: number | null
+  location_longitude: number | null
+  difficulty_mode: string
+}
+
+type PrayerSettingsState = {
+  calculation_method: string
+  madhab: string
+  high_latitude_rule: string
+  fajr_adjustment: number
+  dhuhr_adjustment: number
+  asr_adjustment: number
+  maghrib_adjustment: number
+  isha_adjustment: number
+  notifications_enabled: boolean
+  notification_minutes_before: number
+}
+
+type SettingsUpdates = {
+  profile?: Partial<ProfileState>
+  prayerSettings?: Partial<PrayerSettingsState>
+}
 
 const Settings = () => {
   const { user, signOut } = useAuth()
@@ -46,14 +72,16 @@ const Settings = () => {
     }
   ]
 
-  const [profile, setProfile] = useState({
+  const [profile, setProfile] = useState<ProfileState>({
     display_name: '',
     location_city: '',
     location_country: '',
+    location_latitude: null as number | null,
+    location_longitude: null as number | null,
     difficulty_mode: 'basic'
   })
 
-  const [prayerSettings, setPrayerSettings] = useState({
+  const [prayerSettings, setPrayerSettings] = useState<PrayerSettingsState>({
     calculation_method: 'ISNA',
     madhab: 'Shafi',
     high_latitude_rule: 'MiddleOfTheNight',
@@ -95,6 +123,8 @@ const Settings = () => {
             display_name: profileData.display_name || '',
             location_city: profileData.location_city || '',
             location_country: profileData.location_country || '',
+            location_latitude: profileData.location_latitude ?? null,
+            location_longitude: profileData.location_longitude ?? null,
             difficulty_mode: profileData.difficulty_mode || 'basic'
           })
         }
@@ -147,7 +177,7 @@ const Settings = () => {
     loadUserData()
   }, [user])
 
-  const autoSaveSettings = async (updates: any) => {
+  const autoSaveSettings = async (updates: SettingsUpdates) => {
     if (!user || autoSaving) return
 
     setAutoSaving(true)
@@ -193,12 +223,12 @@ const Settings = () => {
   }
 
   // Auto-save functions for different setting types
-  const updateProfile = (updates: any) => {
+  const updateProfile = (updates: Partial<ProfileState>) => {
     setProfile(prev => ({ ...prev, ...updates }))
     autoSaveSettings({ profile: updates })
   }
 
-  const updatePrayerSettings = (updates: any) => {
+  const updatePrayerSettings = (updates: Partial<PrayerSettingsState>) => {
     setPrayerSettings(prev => ({ ...prev, ...updates }))
     autoSaveSettings({ prayerSettings: updates })
   }
