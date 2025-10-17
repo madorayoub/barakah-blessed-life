@@ -15,7 +15,7 @@ export function AppHeader({ title, subtitle }: AppHeaderProps) {
   const isCurrentPath = (path: string) => location.pathname === path
 
   return (
-    <header className="bg-white dark:bg-gray-950 border-b border-border/50 shadow-sm">
+    <header className="border-b border-border/60 bg-card/95 shadow-sm supports-[backdrop-filter]:backdrop-blur">
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           {/* Left: Logo & Page Title */}
@@ -40,82 +40,82 @@ export function AppHeader({ title, subtitle }: AppHeaderProps) {
 
           {/* Right: Navigation + Theme */}
           <nav className="hidden md:flex items-center gap-3">
-            <div className="flex items-center bg-gray-50 dark:bg-gray-800 rounded-xl p-1 gap-1">
-              <Link 
-                to="/dashboard" 
+            <div className="flex items-center gap-1 rounded-xl border border-border/60 bg-muted/40 p-1">
+              <Link
+                to="/dashboard"
                 className={cn(
-                  "px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200",
-                  isCurrentPath('/dashboard') 
-                    ? "bg-white dark:bg-gray-700 text-emerald-600 shadow-sm" 
-                    : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-gray-700/50"
+                  "rounded-lg px-4 py-2 text-sm font-medium transition-colors",
+                  isCurrentPath('/dashboard')
+                    ? "bg-background text-emerald-600 shadow-sm"
+                    : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
                 )}
               >
                 Dashboard
               </Link>
               <Link 
-                to="/tasks" 
+                to="/tasks"
                 className={cn(
-                  "px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200",
-                  isCurrentPath('/tasks') 
-                    ? "bg-white dark:bg-gray-700 text-emerald-600 shadow-sm" 
-                    : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-gray-700/50"
+                  "rounded-lg px-4 py-2 text-sm font-medium transition-colors",
+                  isCurrentPath('/tasks')
+                    ? "bg-background text-emerald-600 shadow-sm"
+                    : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
                 )}
               >
                 Tasks
               </Link>
               <Link 
-                to="/calendar" 
+                to="/calendar"
                 className={cn(
-                  "px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200",
-                  isCurrentPath('/calendar') 
-                    ? "bg-white dark:bg-gray-700 text-emerald-600 shadow-sm" 
-                    : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-gray-700/50"
+                  "rounded-lg px-4 py-2 text-sm font-medium transition-colors",
+                  isCurrentPath('/calendar')
+                    ? "bg-background text-emerald-600 shadow-sm"
+                    : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
                 )}
               >
                 Calendar
               </Link>
               <Link 
-                to="/prayers" 
+                to="/prayers"
                 className={cn(
-                  "px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200",
-                  isCurrentPath('/prayers') 
-                    ? "bg-white dark:bg-gray-700 text-emerald-600 shadow-sm" 
-                    : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-gray-700/50"
+                  "rounded-lg px-4 py-2 text-sm font-medium transition-colors",
+                  isCurrentPath('/prayers')
+                    ? "bg-background text-emerald-600 shadow-sm"
+                    : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
                 )}
               >
                 Prayers
               </Link>
               <Link 
-                to="/quran" 
+                to="/quran"
                 className={cn(
-                  "px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200",
-                  isCurrentPath('/quran') 
-                    ? "bg-white dark:bg-gray-700 text-emerald-600 shadow-sm" 
-                    : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-gray-700/50"
+                  "rounded-lg px-4 py-2 text-sm font-medium transition-colors",
+                  isCurrentPath('/quran')
+                    ? "bg-background text-emerald-600 shadow-sm"
+                    : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
                 )}
               >
                 Qur'an
               </Link>
               <Link 
-                to="/settings" 
+                to="/settings"
                 className={cn(
-                  "px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200",
-                  isCurrentPath('/settings') 
-                    ? "bg-white dark:bg-gray-700 text-emerald-600 shadow-sm" 
-                    : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-gray-700/50"
+                  "rounded-lg px-4 py-2 text-sm font-medium transition-colors",
+                  isCurrentPath('/settings')
+                    ? "bg-background text-emerald-600 shadow-sm"
+                    : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
                 )}
               >
                 Settings
               </Link>
               {/* Only show pricing for non-logged-in users */}
               {!user && (
-                <Link 
-                  to="/pricing" 
+                <Link
+                  to="/pricing"
                   className={cn(
-                    "px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200",
-                    isCurrentPath('/pricing') 
-                      ? "bg-white dark:bg-gray-700 text-emerald-600 shadow-sm" 
-                      : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-gray-700/50"
+                    "rounded-lg px-4 py-2 text-sm font-medium transition-colors",
+                    isCurrentPath('/pricing')
+                      ? "bg-background text-emerald-600 shadow-sm"
+                      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
                   )}
                 >
                   Pricing
@@ -129,7 +129,7 @@ export function AppHeader({ title, subtitle }: AppHeaderProps) {
         {/* Subtitle - Clean, subtle */}
         {subtitle && (
           <div className="mt-2 hidden sm:block">
-            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{subtitle}</p>
+            <p className="text-sm font-medium text-muted-foreground">{subtitle}</p>
           </div>
         )}
       </div>
